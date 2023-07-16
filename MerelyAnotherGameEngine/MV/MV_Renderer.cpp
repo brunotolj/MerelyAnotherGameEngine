@@ -1,7 +1,7 @@
 #include "MV/MV_Renderer.h"
 
 MV::Renderer::Renderer(Window& window, Device& device) :
-	mWindow(window), mDevice(device)
+	privWindow(window), privDevice(device)
 {
 	RecreateSwapchain();
 	CreateCommandBuffers();
@@ -14,9 +14,9 @@ MV::Renderer::~Renderer()
 
 VkCommandBuffer MV::Renderer::BeginFrame()
 {
-	check(!mIsFrameInProgress);
+	check(!privIsFrameInProgress);
 
-	VkResult result = mSwapchain->acquireNextImage(&mCurrentImageIndex);
+	VkResult result = privSwapchain->AcquireNextImage(&privCurrentImageIndex);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
 		RecreateSwapchain();
@@ -25,7 +25,7 @@ VkCommandBuffer MV::Renderer::BeginFrame()
 
 	check(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
 
-	mIsFrameInProgress = true;
+	privIsFrameInProgress = true;
 
 	VkCommandBuffer commandBuffer = GetCurrentCommandBuffer();
 
@@ -39,18 +39,18 @@ VkCommandBuffer MV::Renderer::BeginFrame()
 
 void MV::Renderer::EndFrame()
 {
-	check(mIsFrameInProgress);
+	check(privIsFrameInProgress);
 
 	VkCommandBuffer commandBuffer = GetCurrentCommandBuffer();
 
-	mIsFrameInProgress = false;
+	privIsFrameInProgress = false;
 
 	check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS);
 
-	VkResult result = mSwapchain->submitCommandBuffers(&commandBuffer, &mCurrentImageIndex);
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mWindow.WasWindowResized())
+	VkResult result = privSwapchain->SubmitCommandBuffers(&commandBuffer, &privCurrentImageIndex);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || privWindow.WasWindowResized())
 	{
-		mWindow.ResetWindowResizedFlag();
+		privWindow.ResetWindowResizedFlag();
 		RecreateSwapchain();
 	}
 	else
@@ -58,21 +58,21 @@ void MV::Renderer::EndFrame()
 		check(result == VK_SUCCESS);
 	}
 
-	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mCommandBuffers.size();
+	privCurrentFrameIndex = (privCurrentFrameIndex + 1) % privCommandBuffers.size();
 }
 
 void MV::Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
-	check(mIsFrameInProgress);
+	check(privIsFrameInProgress);
 	check(commandBuffer == GetCurrentCommandBuffer());
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = mSwapchain->getRenderPass();
-	renderPassInfo.framebuffer = mSwapchain->getFrameBuffer(mCurrentImageIndex);
+	renderPassInfo.renderPass = privSwapchain->GetRenderPass();
+	renderPassInfo.framebuffer = privSwapchain->GetFrameBuffer(privCurrentImageIndex);
 
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = mSwapchain->getSwapChainExtent();
+	renderPassInfo.renderArea.extent = privSwapchain->GetExtent();
 
 	std::array<VkClearValue, 2> clearValues{};
 	clearValues[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
@@ -85,19 +85,19 @@ void MV::Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(mSwapchain->getSwapChainExtent().width);
-	viewport.height = static_cast<float>(mSwapchain->getSwapChainExtent().height);
+	viewport.width = static_cast<float>(privSwapchain->GetExtent().width);
+	viewport.height = static_cast<float>(privSwapchain->GetExtent().height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-	VkRect2D scissor{ { 0,0 }, mSwapchain->getSwapChainExtent() };
+	VkRect2D scissor{ { 0,0 }, privSwapchain->GetExtent() };
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
 void MV::Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
-	check(mIsFrameInProgress);
+	check(privIsFrameInProgress);
 	check(commandBuffer == GetCurrentCommandBuffer());
 
 	vkCmdEndRenderPass(commandBuffer);
@@ -105,65 +105,65 @@ void MV::Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
 
 VkCommandBuffer MV::Renderer::GetCurrentCommandBuffer() const
 {
-	check(mIsFrameInProgress);
-	return mCommandBuffers[mCurrentFrameIndex];
+	check(privIsFrameInProgress);
+	return privCommandBuffers[privCurrentFrameIndex];
 }
 
 int32_t MV::Renderer::GetCurrentFrameIndex() const
 {
-	check(mIsFrameInProgress);
-	return mCurrentFrameIndex;
+	check(privIsFrameInProgress);
+	return privCurrentFrameIndex;
 }
 
 VkRenderPass MV::Renderer::GetSwapchainRenderPass() const
 {
-	return mSwapchain->getRenderPass();
+	return privSwapchain->GetRenderPass();
 }
 
 void MV::Renderer::CreateCommandBuffers()
 {
-	mCommandBuffers.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+	privCommandBuffers.resize(Swapchain::gMaxFramesInFlight);
 
 	VkCommandBufferAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = mDevice.GetCommandPool();
-	allocInfo.commandBufferCount = static_cast<uint32_t>(mCommandBuffers.size());
+	allocInfo.commandPool = privDevice.GetCommandPool();
+	allocInfo.commandBufferCount = static_cast<uint32_t>(privCommandBuffers.size());
 
-	check(vkAllocateCommandBuffers(mDevice.GetDevice(), &allocInfo, mCommandBuffers.data()) == VK_SUCCESS);
+	check(vkAllocateCommandBuffers(privDevice.GetDevice(), &allocInfo, privCommandBuffers.data()) == VK_SUCCESS);
 }
 
 void MV::Renderer::FreeCommandBuffers()
 {
 	vkFreeCommandBuffers(
-		mDevice.GetDevice(),
-		mDevice.GetCommandPool(),
-		static_cast<uint32_t>(mCommandBuffers.size()),
-		mCommandBuffers.data());
+		privDevice.GetDevice(),
+		privDevice.GetCommandPool(),
+		static_cast<uint32_t>(privCommandBuffers.size()),
+		privCommandBuffers.data());
 }
 
 void MV::Renderer::RecreateSwapchain()
 {
-	VkExtent2D extent = mWindow.GetExtent();
+	VkExtent2D extent = privWindow.GetExtent();
 
 	while (extent.width == 0 || extent.height == 0)
 	{
-		extent = mWindow.GetExtent();
+		extent = privWindow.GetExtent();
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(mDevice.GetDevice());
+	vkDeviceWaitIdle(privDevice.GetDevice());
 
-	if (mSwapchain != nullptr)
+	if (privSwapchain != nullptr)
 	{
-		std::shared_ptr<Swapchain> oldSwapchain = std::move(mSwapchain);
+		std::shared_ptr<Swapchain> oldSwapchain = std::move(privSwapchain);
 
-		mSwapchain = std::make_unique<MV::Swapchain>(mDevice, extent, oldSwapchain);
+		privSwapchain = std::make_unique<MV::Swapchain>(privDevice, extent, oldSwapchain);
 
-		check(mSwapchain->CompareSwapFormats(*oldSwapchain));
+		check(privSwapchain->CompareSwapFormats(*oldSwapchain));
 	}
 	else
 	{
-		mSwapchain = std::make_unique<MV::Swapchain>(mDevice, extent);
+		privSwapchain = std::make_unique<MV::Swapchain>(privDevice, extent);
 	}
 }

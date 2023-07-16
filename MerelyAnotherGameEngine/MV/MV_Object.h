@@ -15,17 +15,17 @@ namespace MV
 	class Object : public NonCopyableClass
 	{
 	public:	
-		std::shared_ptr<Model> model;
+		std::shared_ptr<Model> pubModel;
 
 		struct Transform
 		{
-			glm::vec2 Position = { 0.0f,0.0f };
-			float Rotation = 0.0f;
-			glm::vec2 Scale = { 1.0f,1.0f };
+			glm::vec2 pubPosition = { 0.0f,0.0f };
+			float pubRotation = 0.0f;
+			glm::vec2 pubScale = { 1.0f,1.0f };
 
 			glm::mat4 Matrix();
-		} transform;
+		} pubTransform;
 
-		glm::vec3 color = { 1.0f,1.0f,1.0f };
+		glm::vec3 pubColor = { 1.0f,1.0f,1.0f };
 	};
 }

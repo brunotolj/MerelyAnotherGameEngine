@@ -4,17 +4,17 @@
 using MV::Window;
 
 Window::Window(int width, int height, const std::string& name) :
-	mWidth(width), mHeight(height), mName(name)
+	privWidth(width), privHeight(height), privName(name)
 {
 	IncrementWindowCount();
-	mWindow = glfwCreateWindow(mWidth, mHeight, mName.c_str(), nullptr, nullptr);
-	glfwSetWindowUserPointer(mWindow, this);
-	glfwSetFramebufferSizeCallback(mWindow, FramebufferResizedCallback);
+	privWindow = glfwCreateWindow(privWidth, privHeight, privName.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(privWindow, this);
+	glfwSetFramebufferSizeCallback(privWindow, FramebufferResizedCallback);
 }
 
 Window::~Window()
 {
-	glfwDestroyWindow(mWindow);
+	glfwDestroyWindow(privWindow);
 	DecrementWindowCount();
 }
 
@@ -27,27 +27,27 @@ void Window::PollEvents()
 
 bool MV::Window::ShouldClose() const
 {
-	return glfwWindowShouldClose(mWindow);
+	return glfwWindowShouldClose(privWindow);
 }
 
 VkExtent2D MV::Window::GetExtent() const
 {
-	return { static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight) };
+	return { static_cast<uint32_t>(privWidth), static_cast<uint32_t>(privHeight) };
 }
 
 bool MV::Window::WasWindowResized() const
 {
-	return mFramebufferResized;
+	return privFramebufferResized;
 }
 
 void MV::Window::ResetWindowResizedFlag()
 {
-	mFramebufferResized = false;
+	privFramebufferResized = false;
 }
 
 void MV::Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
 {
-	check(glfwCreateWindowSurface(instance, mWindow, nullptr, surface) == VK_SUCCESS);
+	check(glfwCreateWindowSurface(instance, privWindow, nullptr, surface) == VK_SUCCESS);
 }
 
 void Window::IncrementWindowCount()
@@ -76,7 +76,7 @@ void Window::DecrementWindowCount()
 void MV::Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t width, int32_t height)
 {
 	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-	window->mFramebufferResized = true;
-	window->mWidth = width;
-	window->mHeight = height;
+	window->privFramebufferResized = true;
+	window->privWidth = width;
+	window->privHeight = height;
 }

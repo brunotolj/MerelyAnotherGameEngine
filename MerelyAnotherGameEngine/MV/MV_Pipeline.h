@@ -12,18 +12,18 @@ namespace MV
 	{
 		PipelineConfigInfo() { memset(this, 0, sizeof(PipelineConfigInfo)); }
 
-		VkPipelineViewportStateCreateInfo ViewportInfo;
-		VkPipelineInputAssemblyStateCreateInfo InputAssemblyInfo;
-		VkPipelineRasterizationStateCreateInfo RasterizationInfo;
-		VkPipelineMultisampleStateCreateInfo MultisampleInfo;
-		VkPipelineColorBlendAttachmentState ColorBlendAttachment;
-		VkPipelineColorBlendStateCreateInfo ColorBlendInfo;
-		VkPipelineDepthStencilStateCreateInfo DepthStencilInfo;
-		std::vector<VkDynamicState> DynamicStateEnables;
-		VkPipelineDynamicStateCreateInfo DynamicStateInfo;
-		VkPipelineLayout PipelineLayout = nullptr;
-		VkRenderPass RenderPass = nullptr;
-		uint32_t Subpass = 0;
+		VkPipelineViewportStateCreateInfo pubViewportInfo;
+		VkPipelineInputAssemblyStateCreateInfo pubInputAssemblyInfo;
+		VkPipelineRasterizationStateCreateInfo pubRasterizationInfo;
+		VkPipelineMultisampleStateCreateInfo pubMultisampleInfo;
+		VkPipelineColorBlendAttachmentState pubColorBlendAttachment;
+		VkPipelineColorBlendStateCreateInfo pubColorBlendInfo;
+		VkPipelineDepthStencilStateCreateInfo pubDepthStencilInfo;
+		std::vector<VkDynamicState> pubDynamicStateEnables;
+		VkPipelineDynamicStateCreateInfo pubDynamicStateInfo;
+		VkPipelineLayout pubPipelineLayout = nullptr;
+		VkRenderPass pubRenderPass = nullptr;
+		uint32_t pubSubpass = 0;
 	};
 
 	class Pipeline : public NonMovableClass
@@ -42,12 +42,11 @@ namespace MV
 		void Bind(VkCommandBuffer commandBuffer);
 
 	private:
-		Device& mDevice;
-		VkPipeline mGraphicsPipeline;
-		VkShaderModule mVertShaderModule;
-		VkShaderModule mFragShaderModule;
+		Device& privDevice;
+		VkPipeline privGraphicsPipeline;
+		VkShaderModule privVertShaderModule;
+		VkShaderModule privFragShaderModule;
 
-	private:
 		static std::vector<char> ReadFile(const std::string& path);
 
 		void CreateGraphicsPipeline(

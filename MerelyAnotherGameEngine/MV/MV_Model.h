@@ -14,14 +14,13 @@ namespace MV
 	public:
 		struct Vertex
 		{
-			glm::vec2 Position;
-			glm::vec3 Color;
+			glm::vec2 pubPosition;
+			glm::vec3 pubColor;
 
 			static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
 		};
 
-	public:
 		Model(Device& device, const std::vector<Vertex>& vertices);
 		~Model();
 
@@ -30,14 +29,13 @@ namespace MV
 		void Draw(VkCommandBuffer commandBuffer);
 
 	private:
-		Device& mDevice;
+		Device& privDevice;
 
-		VkBuffer mVertexBuffer;
-		VkDeviceMemory mVertexBufferMemory;
+		VkBuffer privVertexBuffer;
+		VkDeviceMemory privVertexBufferMemory;
 
-		uint32_t mVertexCount;
+		uint32_t privVertexCount;
 
-	private:
 		void CreateVertexBuffers(const std::vector<Vertex>& vertices); 
 	};
 }

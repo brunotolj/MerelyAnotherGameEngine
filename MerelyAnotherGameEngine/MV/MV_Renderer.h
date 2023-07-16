@@ -25,7 +25,7 @@ namespace MV
 
 		void EndSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
-		bool IsFrameInProgress() const { return mIsFrameInProgress; }
+		bool IsFrameInProgress() const { return privIsFrameInProgress; }
 
 		VkCommandBuffer GetCurrentCommandBuffer() const;
 
@@ -34,16 +34,15 @@ namespace MV
 		VkRenderPass GetSwapchainRenderPass() const;
 
 	private:
-		MV::Window& mWindow;
-		MV::Device& mDevice;
-		std::unique_ptr<MV::Swapchain> mSwapchain;
-		std::vector<VkCommandBuffer> mCommandBuffers;
+		MV::Window& privWindow;
+		MV::Device& privDevice;
+		std::unique_ptr<MV::Swapchain> privSwapchain;
+		std::vector<VkCommandBuffer> privCommandBuffers;
 
-		uint32_t mCurrentImageIndex = -1;
-		int32_t mCurrentFrameIndex = 0;
-		bool mIsFrameInProgress = false;
+		uint32_t privCurrentImageIndex = -1;
+		int32_t privCurrentFrameIndex = 0;
+		bool privIsFrameInProgress = false;
 
-	private:
 		void CreateCommandBuffers();
 
 		void FreeCommandBuffers();

@@ -4,9 +4,9 @@ glm::mat4 MV::Object::Transform::Matrix()
 {
 	return
 	{
-		{glm::cos(Rotation) * Scale.x, -glm::sin(Rotation) * Scale.x, 0.0f, 0.0f},
-		{glm::sin(Rotation) * Scale.y, glm::cos(Rotation) * Scale.y, 0.0f, 0.0f},
+		{glm::cos(pubRotation) * pubScale.x, -glm::sin(pubRotation) * pubScale.x, 0.0f, 0.0f},
+		{glm::sin(pubRotation) * pubScale.y, glm::cos(pubRotation) * pubScale.y, 0.0f, 0.0f},
 		{0.0f, 0.0f, 1.0f, 0.0f},
-		{Position.x, Position.y, 0.0f, 1.0f},
+		{pubPosition.x, pubPosition.y, 0.0f, 1.0f},
 	};
 }

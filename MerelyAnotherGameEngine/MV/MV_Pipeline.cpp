@@ -11,73 +11,73 @@ Pipeline::Pipeline(
 	const std::string& vertFilePath,
 	const std::string& fragFilePath,
 	const PipelineConfigInfo& configInfo) :
-	mDevice(device)
+	privDevice(device)
 {
 	CreateGraphicsPipeline(vertFilePath, fragFilePath, configInfo);
 }
 
 Pipeline::~Pipeline()
 {
-	vkDestroyShaderModule(mDevice.GetDevice(), mVertShaderModule, nullptr);
-	vkDestroyShaderModule(mDevice.GetDevice(), mFragShaderModule, nullptr);
-	vkDestroyPipeline(mDevice.GetDevice(), mGraphicsPipeline, nullptr);
+	vkDestroyShaderModule(privDevice.GetDevice(), privVertShaderModule, nullptr);
+	vkDestroyShaderModule(privDevice.GetDevice(), privFragShaderModule, nullptr);
+	vkDestroyPipeline(privDevice.GetDevice(), privGraphicsPipeline, nullptr);
 }
 
 void Pipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 {
-	configInfo.InputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-	configInfo.InputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	configInfo.InputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+	configInfo.pubInputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	configInfo.pubInputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	configInfo.pubInputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
-	configInfo.ViewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	configInfo.ViewportInfo.viewportCount = 1;
-	configInfo.ViewportInfo.pViewports = nullptr;
-	configInfo.ViewportInfo.scissorCount = 1;
-	configInfo.ViewportInfo.pScissors = nullptr;
+	configInfo.pubViewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	configInfo.pubViewportInfo.viewportCount = 1;
+	configInfo.pubViewportInfo.pViewports = nullptr;
+	configInfo.pubViewportInfo.scissorCount = 1;
+	configInfo.pubViewportInfo.pScissors = nullptr;
 
-	configInfo.RasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	configInfo.RasterizationInfo.depthClampEnable = VK_FALSE;
-	configInfo.RasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
-	configInfo.RasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
-	configInfo.RasterizationInfo.lineWidth = 1.0f;
-	configInfo.RasterizationInfo.cullMode = VK_CULL_MODE_NONE;
-	configInfo.RasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
-	configInfo.RasterizationInfo.depthBiasEnable = VK_FALSE;
+	configInfo.pubRasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	configInfo.pubRasterizationInfo.depthClampEnable = VK_FALSE;
+	configInfo.pubRasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
+	configInfo.pubRasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
+	configInfo.pubRasterizationInfo.lineWidth = 1.0f;
+	configInfo.pubRasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+	configInfo.pubRasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	configInfo.pubRasterizationInfo.depthBiasEnable = VK_FALSE;
 
-	configInfo.MultisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-	configInfo.MultisampleInfo.sampleShadingEnable = VK_FALSE;
-	configInfo.MultisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	configInfo.pubMultisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	configInfo.pubMultisampleInfo.sampleShadingEnable = VK_FALSE;
+	configInfo.pubMultisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-	configInfo.ColorBlendAttachment.colorWriteMask =
+	configInfo.pubColorBlendAttachment.colorWriteMask =
 		VK_COLOR_COMPONENT_R_BIT |
 		VK_COLOR_COMPONENT_G_BIT |
 		VK_COLOR_COMPONENT_B_BIT |
 		VK_COLOR_COMPONENT_A_BIT;
-	configInfo.ColorBlendAttachment.blendEnable = VK_FALSE;
+	configInfo.pubColorBlendAttachment.blendEnable = VK_FALSE;
 
-	configInfo.ColorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-	configInfo.ColorBlendInfo.logicOpEnable = VK_FALSE;
-	configInfo.ColorBlendInfo.attachmentCount = 1;
-	configInfo.ColorBlendInfo.pAttachments = &configInfo.ColorBlendAttachment;
+	configInfo.pubColorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	configInfo.pubColorBlendInfo.logicOpEnable = VK_FALSE;
+	configInfo.pubColorBlendInfo.attachmentCount = 1;
+	configInfo.pubColorBlendInfo.pAttachments = &configInfo.pubColorBlendAttachment;
 
-	configInfo.DepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	configInfo.DepthStencilInfo.depthTestEnable = VK_TRUE;
-	configInfo.DepthStencilInfo.depthWriteEnable = VK_TRUE;
-	configInfo.DepthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
-	configInfo.DepthStencilInfo.depthBoundsTestEnable = VK_FALSE;
-	configInfo.DepthStencilInfo.stencilTestEnable = VK_FALSE; 
+	configInfo.pubDepthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	configInfo.pubDepthStencilInfo.depthTestEnable = VK_TRUE;
+	configInfo.pubDepthStencilInfo.depthWriteEnable = VK_TRUE;
+	configInfo.pubDepthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	configInfo.pubDepthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+	configInfo.pubDepthStencilInfo.stencilTestEnable = VK_FALSE; 
 
-	configInfo.DynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-	configInfo.DynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	configInfo.DynamicStateInfo.pDynamicStates = configInfo.DynamicStateEnables.data();
-	configInfo.DynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.DynamicStateEnables.size());
-	configInfo.DynamicStateInfo.flags = 0;
-	configInfo.DynamicStateInfo.pNext = nullptr;
+	configInfo.pubDynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+	configInfo.pubDynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	configInfo.pubDynamicStateInfo.pDynamicStates = configInfo.pubDynamicStateEnables.data();
+	configInfo.pubDynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.pubDynamicStateEnables.size());
+	configInfo.pubDynamicStateInfo.flags = 0;
+	configInfo.pubDynamicStateInfo.pNext = nullptr;
 }
 
 void Pipeline::Bind(VkCommandBuffer commandBuffer)
 {
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, privGraphicsPipeline);
 }
 
 std::vector<char> Pipeline::ReadFile(const std::string& path)
@@ -100,20 +100,20 @@ void Pipeline::CreateGraphicsPipeline(
 	const std::string& fragFilePath,
 	const PipelineConfigInfo& configInfo)
 {
-	check(configInfo.PipelineLayout != VK_NULL_HANDLE);
-	check(configInfo.RenderPass != VK_NULL_HANDLE);
+	check(configInfo.pubPipelineLayout != VK_NULL_HANDLE);
+	check(configInfo.pubRenderPass != VK_NULL_HANDLE);
 
 	std::vector<char> vertCode = ReadFile(vertFilePath);
 	std::vector<char> fragCode = ReadFile(fragFilePath);
 
-	CreateShaderModule(vertCode, &mVertShaderModule);
-	CreateShaderModule(fragCode, &mFragShaderModule);
+	CreateShaderModule(vertCode, &privVertShaderModule);
+	CreateShaderModule(fragCode, &privFragShaderModule);
 
 	VkPipelineShaderStageCreateInfo shaderStages[2];
 
 	shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-	shaderStages[0].module = mVertShaderModule;
+	shaderStages[0].module = privVertShaderModule;
 	shaderStages[0].pName = "main";
 	shaderStages[0].flags = 0;
 	shaderStages[0].pNext = nullptr;
@@ -121,7 +121,7 @@ void Pipeline::CreateGraphicsPipeline(
 
 	shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	shaderStages[1].module = mFragShaderModule;
+	shaderStages[1].module = privFragShaderModule;
 	shaderStages[1].pName = "main";
 	shaderStages[1].flags = 0;
 	shaderStages[1].pNext = nullptr;
@@ -142,22 +142,22 @@ void Pipeline::CreateGraphicsPipeline(
 	pipelineInfo.stageCount = 2;
 	pipelineInfo.pStages = shaderStages;
 	pipelineInfo.pVertexInputState = &vertexInputInfo;
-	pipelineInfo.pInputAssemblyState = &configInfo.InputAssemblyInfo;
-	pipelineInfo.pViewportState = &configInfo.ViewportInfo;
-	pipelineInfo.pRasterizationState = &configInfo.RasterizationInfo;
-	pipelineInfo.pMultisampleState = &configInfo.MultisampleInfo;
-	pipelineInfo.pColorBlendState = &configInfo.ColorBlendInfo;
-	pipelineInfo.pDepthStencilState = &configInfo.DepthStencilInfo;
-	pipelineInfo.pDynamicState = &configInfo.DynamicStateInfo;
+	pipelineInfo.pInputAssemblyState = &configInfo.pubInputAssemblyInfo;
+	pipelineInfo.pViewportState = &configInfo.pubViewportInfo;
+	pipelineInfo.pRasterizationState = &configInfo.pubRasterizationInfo;
+	pipelineInfo.pMultisampleState = &configInfo.pubMultisampleInfo;
+	pipelineInfo.pColorBlendState = &configInfo.pubColorBlendInfo;
+	pipelineInfo.pDepthStencilState = &configInfo.pubDepthStencilInfo;
+	pipelineInfo.pDynamicState = &configInfo.pubDynamicStateInfo;
 
-	pipelineInfo.layout = configInfo.PipelineLayout;
-	pipelineInfo.renderPass = configInfo.RenderPass;
-	pipelineInfo.subpass = configInfo.Subpass;
+	pipelineInfo.layout = configInfo.pubPipelineLayout;
+	pipelineInfo.renderPass = configInfo.pubRenderPass;
+	pipelineInfo.subpass = configInfo.pubSubpass;
 
 	pipelineInfo.basePipelineIndex = -1;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	check(vkCreateGraphicsPipelines(mDevice.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) == VK_SUCCESS);
+	check(vkCreateGraphicsPipelines(privDevice.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &privGraphicsPipeline) == VK_SUCCESS);
 }
 
 void Pipeline::CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
@@ -167,5 +167,5 @@ void Pipeline::CreateShaderModule(const std::vector<char>& code, VkShaderModule*
 	createInfo.codeSize = code.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-	check(vkCreateShaderModule(mDevice.GetDevice(), &createInfo, nullptr, shaderModule) == VK_SUCCESS);
+	check(vkCreateShaderModule(privDevice.GetDevice(), &createInfo, nullptr, shaderModule) == VK_SUCCESS);
 }
