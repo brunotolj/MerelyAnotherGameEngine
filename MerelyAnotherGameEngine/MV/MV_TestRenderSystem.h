@@ -10,8 +10,8 @@ namespace MV
 	{
 		struct PushConstantData
 		{
-			alignas(64) glm::mat4 pubTransform{1.0f};
-			alignas(16) glm::vec3 pubColor{0.0f};
+			alignas(64) glm::mat4 mTransform{1.0f};
+			alignas(16) glm::vec3 mColor{0.0f};
 		};
 
 	public:
@@ -19,13 +19,13 @@ namespace MV
 
 		~TestRenderSystem();
 
-		void RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects);
+		void RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects, const glm::mat4& viewTransform);
 
 	private:
-		MV::Device& privDevice;
+		MV::Device& mDevice;
 
-		std::unique_ptr<MV::Pipeline> privPipeline;
-		VkPipelineLayout privPipelineLayout;
+		std::unique_ptr<MV::Pipeline> mPipeline;
+		VkPipelineLayout mPipelineLayout;
 
 		void CreatePipelineLayout();
 

@@ -26,14 +26,14 @@ namespace MV
 		void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
 	private:
-		int32_t privWidth;
-		int32_t privHeight;
+		int32_t mWidth;
+		int32_t mHeight;
 
-		bool privFramebufferResized = false;
+		bool mFramebufferResized = false;
 
-		std::string privName;
+		std::string mName;
 
-		GLFWwindow* privWindow;
+		GLFWwindow* mWindow;
 
 		static uint32_t sWindowCount;
 

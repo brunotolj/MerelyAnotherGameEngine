@@ -20,19 +20,19 @@ namespace MV
 		Swapchain(Device& device, VkExtent2D extent, std::shared_ptr<Swapchain> previous);
 		~Swapchain();
 
-		VkFramebuffer GetFrameBuffer(int index) { return privFrameBuffers[index]; }
-		VkRenderPass GetRenderPass() { return privRenderPass; }
-		VkImageView GetImageView(int index) { return privImageViews[index]; }
-		size_t GetImageCount() { return privSwapChainImages.size(); }
-		VkFormat GetImageFormat() { return privImageFormat; }
-		VkFormat GetDepthFormat() { return privDepthFormat; }
-		VkExtent2D GetExtent() { return privExtent; }
-		uint32_t GetWidth() { return privExtent.width; }
-		uint32_t GetHeight() { return privExtent.height; }
+		VkFramebuffer GetFrameBuffer(int index) { return mFrameBuffers[index]; }
+		VkRenderPass GetRenderPass() { return mRenderPass; }
+		VkImageView GetImageView(int index) { return mImageViews[index]; }
+		size_t GetImageCount() { return mSwapChainImages.size(); }
+		VkFormat GetImageFormat() { return mImageFormat; }
+		VkFormat GetDepthFormat() { return mDepthFormat; }
+		VkExtent2D GetExtent() { return mExtent; }
+		uint32_t GetWidth() { return mExtent.width; }
+		uint32_t GetHeight() { return mExtent.height; }
 
 		float GetAspectRatio()
 		{
-			return static_cast<float>(privExtent.width) / static_cast<float>(privExtent.height);
+			return static_cast<float>(mExtent.width) / static_cast<float>(mExtent.height);
 		}
 
 		VkFormat FindDepthFormat();
@@ -43,30 +43,30 @@ namespace MV
 		bool CompareSwapFormats(const Swapchain& other) const;
 
 	private:
-		VkFormat privImageFormat;
-		VkFormat privDepthFormat;
-		VkExtent2D privExtent;
+		VkFormat mImageFormat;
+		VkFormat mDepthFormat;
+		VkExtent2D mExtent;
 
-		std::vector<VkFramebuffer> privFrameBuffers;
-		VkRenderPass privRenderPass;
+		std::vector<VkFramebuffer> mFrameBuffers;
+		VkRenderPass mRenderPass;
 
-		std::vector<VkImage> privDepthImages;
-		std::vector<VkDeviceMemory> privDepthImageMemorys;
-		std::vector<VkImageView> privDepthImageViews;
-		std::vector<VkImage> privSwapChainImages;
-		std::vector<VkImageView> privImageViews;
+		std::vector<VkImage> mDepthImages;
+		std::vector<VkDeviceMemory> mDepthImageMemorys;
+		std::vector<VkImageView> mDepthImageViews;
+		std::vector<VkImage> mSwapChainImages;
+		std::vector<VkImageView> mImageViews;
 
-		Device& privDevice;
-		VkExtent2D privWindowExtent;
+		Device& mDevice;
+		VkExtent2D mWindowExtent;
 
-		VkSwapchainKHR privSwapChain;
-		std::shared_ptr<Swapchain> privPreviousSwapchain;
+		VkSwapchainKHR mSwapChain;
+		std::shared_ptr<Swapchain> mPreviousSwapchain;
 
-		std::vector<VkSemaphore> privImageAvailableSemaphores;
-		std::vector<VkSemaphore> privRenderFinishedSemaphores;
-		std::vector<VkFence> privInFlightFences;
-		std::vector<VkFence> privImagesInFlight;
-		size_t privCurrentFrame = 0;
+		std::vector<VkSemaphore> mImageAvailableSemaphores;
+		std::vector<VkSemaphore> mRenderFinishedSemaphores;
+		std::vector<VkFence> mInFlightFences;
+		std::vector<VkFence> mImagesInFlight;
+		size_t mCurrentFrame = 0;
 
 		void Init();
 		void CreateSwapChain();

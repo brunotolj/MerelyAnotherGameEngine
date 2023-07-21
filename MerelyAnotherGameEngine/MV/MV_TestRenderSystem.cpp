@@ -2,7 +2,7 @@
 #include "Asserts.h"
 
 MV::TestRenderSystem::TestRenderSystem(Device& device, VkRenderPass renderPass) :
-	privDevice(device)
+	mDevice(device)
 {
 	CreatePipelineLayout();
 	CreatePipeline(renderPass);
@@ -10,31 +10,31 @@ MV::TestRenderSystem::TestRenderSystem(Device& device, VkRenderPass renderPass) 
 
 MV::TestRenderSystem::~TestRenderSystem()
 {
-	vkDestroyPipelineLayout(privDevice.GetDevice(), privPipelineLayout, nullptr);
+	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects)
+void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects, const glm::mat4& viewTransform)
 {
-	privPipeline->Bind(commandBuffer);
+	mPipeline->Bind(commandBuffer);
 
 	for (const std::shared_ptr<Object>& object : objects)
 	{
 		PushConstantData push;
-		push.pubTransform = object->pubTransform.Matrix();
-		push.pubColor = object->pubColor;
+		push.mTransform = viewTransform * object->mTransform.Matrix();
+		push.mColor = object->mColor;
 
 		vkCmdPushConstants(
 			commandBuffer,
-			privPipelineLayout,
+			mPipelineLayout,
 			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 			0,
 			sizeof(PushConstantData),
 			&push);
 
-		check(object->pubModel != nullptr);
+		check(object->mModel != nullptr);
 
-		object->pubModel->Bind(commandBuffer);
-		object->pubModel->Draw(commandBuffer);
+		object->mModel->Bind(commandBuffer);
+		object->mModel->Draw(commandBuffer);
 	}
 }
 
@@ -52,20 +52,20 @@ void MV::TestRenderSystem::CreatePipelineLayout()
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	check(vkCreatePipelineLayout(privDevice.GetDevice(), &pipelineLayoutInfo, nullptr, &privPipelineLayout) == VK_SUCCESS);
+	check(vkCreatePipelineLayout(mDevice.GetDevice(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) == VK_SUCCESS);
 }
 
 void MV::TestRenderSystem::CreatePipeline(VkRenderPass renderPass)
 {
-	check(privPipelineLayout != nullptr);
+	check(mPipelineLayout != nullptr);
 
 	PipelineConfigInfo pipelineConfig{};
 	Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
 
-	pipelineConfig.pubRenderPass = renderPass;
-	pipelineConfig.pubPipelineLayout = privPipelineLayout;
-	privPipeline = std::make_unique<MV::Pipeline>(
-		privDevice,
+	pipelineConfig.mRenderPass = renderPass;
+	pipelineConfig.mPipelineLayout = mPipelineLayout;
+	mPipeline = std::make_unique<MV::Pipeline>(
+		mDevice,
 		"../shaders/SimpleShader.vert.spv",
 		"../shaders/SimpleShader.frag.spv",
 		pipelineConfig);

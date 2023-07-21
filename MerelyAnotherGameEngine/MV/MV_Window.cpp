@@ -4,17 +4,17 @@
 using MV::Window;
 
 Window::Window(int width, int height, const std::string& name) :
-	privWidth(width), privHeight(height), privName(name)
+	mWidth(width), mHeight(height), mName(name)
 {
 	IncrementWindowCount();
-	privWindow = glfwCreateWindow(privWidth, privHeight, privName.c_str(), nullptr, nullptr);
-	glfwSetWindowUserPointer(privWindow, this);
-	glfwSetFramebufferSizeCallback(privWindow, FramebufferResizedCallback);
+	mWindow = glfwCreateWindow(mWidth, mHeight, mName.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(mWindow, this);
+	glfwSetFramebufferSizeCallback(mWindow, FramebufferResizedCallback);
 }
 
 Window::~Window()
 {
-	glfwDestroyWindow(privWindow);
+	glfwDestroyWindow(mWindow);
 	DecrementWindowCount();
 }
 
@@ -27,27 +27,27 @@ void Window::PollEvents()
 
 bool MV::Window::ShouldClose() const
 {
-	return glfwWindowShouldClose(privWindow);
+	return glfwWindowShouldClose(mWindow);
 }
 
 VkExtent2D MV::Window::GetExtent() const
 {
-	return { static_cast<uint32_t>(privWidth), static_cast<uint32_t>(privHeight) };
+	return { static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight) };
 }
 
 bool MV::Window::WasWindowResized() const
 {
-	return privFramebufferResized;
+	return mFramebufferResized;
 }
 
 void MV::Window::ResetWindowResizedFlag()
 {
-	privFramebufferResized = false;
+	mFramebufferResized = false;
 }
 
 void MV::Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
 {
-	check(glfwCreateWindowSurface(instance, privWindow, nullptr, surface) == VK_SUCCESS);
+	check(glfwCreateWindowSurface(instance, mWindow, nullptr, surface) == VK_SUCCESS);
 }
 
 void Window::IncrementWindowCount()
@@ -76,7 +76,7 @@ void Window::DecrementWindowCount()
 void MV::Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t width, int32_t height)
 {
 	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-	window->privFramebufferResized = true;
-	window->privWidth = width;
-	window->privHeight = height;
+	window->mFramebufferResized = true;
+	window->mWidth = width;
+	window->mHeight = height;
 }

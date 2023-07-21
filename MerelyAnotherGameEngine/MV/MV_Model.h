@@ -14,8 +14,7 @@ namespace MV
 	public:
 		struct Vertex
 		{
-			glm::vec2 pubPosition;
-			glm::vec3 pubColor;
+			glm::vec3 mPosition;
 
 			static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
@@ -29,12 +28,12 @@ namespace MV
 		void Draw(VkCommandBuffer commandBuffer);
 
 	private:
-		Device& privDevice;
+		Device& mDevice;
 
-		VkBuffer privVertexBuffer;
-		VkDeviceMemory privVertexBufferMemory;
+		VkBuffer mVertexBuffer;
+		VkDeviceMemory mVertexBufferMemory;
 
-		uint32_t privVertexCount;
+		uint32_t mVertexCount;
 
 		void CreateVertexBuffers(const std::vector<Vertex>& vertices); 
 	};
