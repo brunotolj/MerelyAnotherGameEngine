@@ -1,5 +1,5 @@
+#include "Core/Asserts.h"
 #include "MV/MV_TestRenderSystem.h"
-#include "Asserts.h"
 
 MV::TestRenderSystem::TestRenderSystem(Device& device, VkRenderPass renderPass) :
 	mDevice(device)

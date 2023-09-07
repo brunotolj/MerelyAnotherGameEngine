@@ -1,6 +1,7 @@
 #pragma once
 
-#include "NonCopyable.h"
+#include "Core/NonCopyable.h"
+#include "Core/Rotor.h"
 #include "MV/MV_Model.h"
 
 #define GLM_FORCE_RADIANS
@@ -19,13 +20,13 @@ namespace MV
 
 		struct Transform
 		{
-			glm::vec2 mPosition = { 0.0f,0.0f };
-			float mRotation = 0.0f;
-			glm::vec2 mScale = { 1.0f,1.0f };
+			glm::vec3 mPosition = { 0.0f, 0.0f, 0.0f };
+			mage::Rotor mRotation = { 1.0f, 0.0f, 0.0f, 0.0f };
+			glm::vec3 mScale = { 1.0f, 1.0f, 1.0f };
 
 			glm::mat4 Matrix();
 		} mTransform;
 
-		glm::vec3 mColor = { 1.0f,1.0f,1.0f };
+		glm::vec3 mColor = { 1.0f, 1.0f, 1.0f };
 	};
 }

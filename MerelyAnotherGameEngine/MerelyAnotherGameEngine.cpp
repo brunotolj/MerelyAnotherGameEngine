@@ -1,4 +1,4 @@
-#include "Asserts.h"
+#include "Core/Asserts.h"
 #include "MV/MV_Device.h"
 #include "MV/MV_Object.h"
 #include "MV/MV_Renderer.h"
@@ -42,7 +42,7 @@ int main()
 		{
 			renderer.BeginSwapChainRenderPass(commandBuffer);
 
-			objects[0]->mTransform.mRotation += 0.002f;
+			//objects[0]->mTransform.mRotation += 0.002f;
 
 			float invAspectRatio = float(window.GetExtent().height) / window.GetExtent().width;
 

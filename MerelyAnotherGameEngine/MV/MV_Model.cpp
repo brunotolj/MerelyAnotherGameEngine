@@ -1,5 +1,5 @@
+#include "Core/Asserts.h"
 #include "MV/MV_Model.h"
-#include "Asserts.h"
 
 std::vector<VkVertexInputBindingDescription> MV::Model::Vertex::GetBindingDescriptions()
 {

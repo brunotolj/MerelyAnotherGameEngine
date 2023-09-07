@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NonCopyable.h"
+#include "Core/NonCopyable.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>

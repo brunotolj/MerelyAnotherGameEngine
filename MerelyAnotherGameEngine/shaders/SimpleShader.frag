@@ -1,5 +1,7 @@
 #version 460
 
+layout (location = 0) in float z;
+
 layout (location = 0) out vec4 color;
 
 layout(push_constant) uniform Push
@@ -10,5 +12,5 @@ layout(push_constant) uniform Push
 
 void main()
 {
-	color = vec4(push.Color, 1.0);
+	color = vec4(z * push.Color, 1.0);
 }

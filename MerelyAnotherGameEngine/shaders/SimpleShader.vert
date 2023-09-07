@@ -2,6 +2,8 @@
 
 layout (location = 0) in vec3 position;
 
+layout (location = 0) out float z;
+
 layout(push_constant) uniform Push
 {
 	mat4 Transform;
@@ -11,4 +13,5 @@ layout(push_constant) uniform Push
 void main()
 {
 	gl_Position = push.Transform * vec4(position, 1.0);
+	z = gl_Position.z;
 }

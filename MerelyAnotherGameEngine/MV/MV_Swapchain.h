@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Core/NonCopyable.h"
 #include "MV/MV_Device.h"
-#include "NonCopyable.h"
 
 #include <vulkan/vulkan.h>
 

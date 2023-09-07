@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NonCopyable.h"
+#include "Core/NonCopyable.h"
 #include "MV/MV_Device.h"
 
 #define GLM_FORCE_RADIANS
