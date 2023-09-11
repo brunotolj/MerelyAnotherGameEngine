@@ -20,29 +20,64 @@ int main()
 	std::vector<std::shared_ptr<MV::Object>> objects;
 
 	std::vector<MV::Model::Vertex> vertices {
-		{ { -0.4f, -0.4f, -0.3f } },
-		{ { 0.4f, 0.4f, 0.2f } },
-		{ { -0.4f, 0.4f, 0.5f } }};
+		{ { -0.25f, -0.25f, 0.25f } },
+		{ {  0.25f, -0.25f, 0.25f } },
+		{ {  0.25f,  0.25f, 0.25f } },
+		{ { -0.25f, -0.25f, 0.25f } },
+		{ {  0.25f,  0.25f, 0.25f } },
+		{ { -0.25f,  0.25f, 0.25f } }};
 
 	std::shared_ptr<MV::Model> model = std::make_shared<MV::Model>(device, vertices);
 
-	std::shared_ptr<MV::Object> triangle = std::make_shared<MV::Object>();
-	triangle->mModel = model;
-	triangle->mColor = { 0.5f, 0.2f, 0.8f };
+	glm::vec3 colors[6] = {
+		{1.0f, 0.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f},
+		{0.0f, 0.0f, 1.0f},
+		{1.0f, 1.0f, 0.0f},
+		{1.0f, 0.0f, 1.0f},
+		{0.0f, 1.0f, 1.0f}};
+	
+	constexpr float pi = glm::pi<float>();
 
-	objects.push_back(std::move(triangle));
+	mage::Rotor rotors[6] = {
+		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, 0.0f),
+		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, 0.5f * pi),
+		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, pi),
+		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, -0.5f * pi),
+		mage::Rotor::FromAxisAndAngle({1.0f, 0.0f, 0.0f}, 0.5f * pi),
+		mage::Rotor::FromAxisAndAngle({1.0f, 0.0f, 0.0f}, -0.5f * pi)};
+
+	for (int32_t i = 0; i < 6; i++)
+	{
+		std::shared_ptr<MV::Object> square = std::make_shared<MV::Object>();
+		
+		square->mModel = model;
+		square->mColor = colors[i];
+		square->mTransform.mPosition = {0.0f, 0.0f, 0.5f};
+		
+		objects.push_back(std::move(square));
+
+		rotors[i] = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, 0.2f * pi), rotors[i]);
+	}
 
 	MV::TestRenderSystem renderSystem(device, renderer.GetSwapchainRenderPass());
+
+	float kok = 0.0f;
 
 	while (!window.ShouldClose())
 	{
 		MV::Window::PollEvents();
 
+		kok += 0.002f;
+
 		if (VkCommandBuffer commandBuffer = renderer.BeginFrame())
 		{
 			renderer.BeginSwapChainRenderPass(commandBuffer);
 
-			//objects[0]->mTransform.mRotation += 0.002f;
+			for (int32_t i = 0; i < 6; i++)
+			{
+				objects[i]->mTransform.mRotation = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, kok), rotors[i]);
+			}
 
 			float invAspectRatio = float(window.GetExtent().height) / window.GetExtent().width;
 
