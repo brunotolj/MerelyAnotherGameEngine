@@ -27,6 +27,8 @@ namespace MV
 
 		bool IsFrameInProgress() const { return mIsFrameInProgress; }
 
+		float GetAspectRatio() const { return mSwapchain->GetAspectRatio(); }
+
 		VkCommandBuffer GetCurrentCommandBuffer() const;
 
 		int32_t GetCurrentFrameIndex() const;

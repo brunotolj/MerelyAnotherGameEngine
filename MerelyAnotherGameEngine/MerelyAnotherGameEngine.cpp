@@ -1,9 +1,12 @@
 #include "Core/Asserts.h"
+#include "MV/MV_Camera.h"
 #include "MV/MV_Device.h"
 #include "MV/MV_Object.h"
 #include "MV/MV_Renderer.h"
 #include "MV/MV_TestRenderSystem.h"
 #include "MV/MV_Window.h"
+
+#include <glm/ext/scalar_constants.hpp>
 
 #include <array>
 #include <memory>
@@ -20,32 +23,36 @@ int main()
 	std::vector<std::shared_ptr<MV::Object>> objects;
 
 	std::vector<MV::Model::Vertex> vertices {
-		{ { -0.25f, -0.25f, 0.25f } },
-		{ {  0.25f, -0.25f, 0.25f } },
-		{ {  0.25f,  0.25f, 0.25f } },
-		{ { -0.25f, -0.25f, 0.25f } },
-		{ {  0.25f,  0.25f, 0.25f } },
-		{ { -0.25f,  0.25f, 0.25f } }};
+		{{ -0.25f, -0.25f, 0.25f }},
+		{{  0.25f, -0.25f, 0.25f }},
+		{{  0.25f,  0.25f, 0.25f }},
+		{{ -0.25f, -0.25f, 0.25f }},
+		{{  0.25f,  0.25f, 0.25f }},
+		{{ -0.25f,  0.25f, 0.25f }}};
 
 	std::shared_ptr<MV::Model> model = std::make_shared<MV::Model>(device, vertices);
 
 	glm::vec3 colors[6] = {
-		{1.0f, 0.0f, 0.0f},
-		{0.0f, 1.0f, 0.0f},
-		{0.0f, 0.0f, 1.0f},
-		{1.0f, 1.0f, 0.0f},
-		{1.0f, 0.0f, 1.0f},
-		{0.0f, 1.0f, 1.0f}};
+		{ 1.0f, 0.0f, 0.0f },
+		{ 0.0f, 1.0f, 0.0f },
+		{ 0.0f, 0.0f, 1.0f },
+		{ 1.0f, 1.0f, 0.0f },
+		{ 1.0f, 0.0f, 1.0f },
+		{ 0.0f, 1.0f, 1.0f }};
 	
 	constexpr float pi = glm::pi<float>();
 
 	mage::Rotor rotors[6] = {
-		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, 0.0f),
-		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, 0.5f * pi),
-		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, pi),
-		mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, -0.5f * pi),
-		mage::Rotor::FromAxisAndAngle({1.0f, 0.0f, 0.0f}, 0.5f * pi),
-		mage::Rotor::FromAxisAndAngle({1.0f, 0.0f, 0.0f}, -0.5f * pi)};
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, 0.0f),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, 0.5f * pi),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, pi),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, -0.5f * pi),
+		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, 0.5f * pi),
+		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, -0.5f * pi)};
+
+	mage::Rotor tilt = mage::Rotor::Combine(
+		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, -0.2f * pi),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, 0.25f * pi));
 
 	for (int32_t i = 0; i < 6; i++)
 	{
@@ -53,14 +60,17 @@ int main()
 		
 		square->mModel = model;
 		square->mColor = colors[i];
-		square->mTransform.mPosition = {0.0f, 0.0f, 0.5f};
+		square->mTransformComponent.mTransform.Position = { 0.0f, 0.0f, 0.5f };
 		
 		objects.push_back(std::move(square));
 
-		rotors[i] = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, 0.2f * pi), rotors[i]);
+		rotors[i] = mage::Rotor::Combine(tilt, rotors[i]);
 	}
 
+	std::shared_ptr<MV::Camera> camera = std::make_shared<MV::Camera>();
+
 	MV::TestRenderSystem renderSystem(device, renderer.GetSwapchainRenderPass());
+	renderSystem.SetCamera(camera);
 
 	float kok = 0.0f;
 
@@ -76,19 +86,12 @@ int main()
 
 			for (int32_t i = 0; i < 6; i++)
 			{
-				objects[i]->mTransform.mRotation = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({0.0f, 1.0f, 0.0f}, kok), rotors[i]);
+				objects[i]->mTransformComponent.mTransform.Rotation = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, kok), rotors[i]);
 			}
 
-			float invAspectRatio = float(window.GetExtent().height) / window.GetExtent().width;
+			camera->TEMP_InvAspectRatio = 1.0f / renderer.GetAspectRatio();
 
-			glm::mat4 viewTransform = {
-				{ invAspectRatio, 0.0f, 0.0f, 0.0f},
-				{ 0.0f, 1.0f, 0.0f, 0.0f },
-				{ 0.0f, 0.0f, 1.0f, 0.0f },
-				{ 0.0f, 0.0f, 0.0f, 1.0f }
-			};
-
-			renderSystem.RenderObjects(commandBuffer, objects, viewTransform);
+			renderSystem.RenderObjects(commandBuffer, objects);
 
 			renderer.EndSwapChainRenderPass(commandBuffer);
 			renderer.EndFrame();

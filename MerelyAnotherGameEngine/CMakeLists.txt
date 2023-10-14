@@ -1,6 +1,7 @@
 ﻿
 add_executable(MerelyAnotherGameEngine
 	"MerelyAnotherGameEngine.cpp"
+    "MV/MV_Camera.cpp"
     "MV/MV_Device.cpp"
     "MV/MV_Model.cpp"
     "MV/MV_Object.cpp"
@@ -8,6 +9,7 @@ add_executable(MerelyAnotherGameEngine
     "MV/MV_Renderer.cpp"
     "MV/MV_Swapchain.cpp"
     "MV/MV_TestRenderSystem.cpp"
+    "MV/MV_TransformComponent.cpp"
     "MV/MV_Window.cpp"
 )
 

@@ -1,4 +1,6 @@
 #include "Core/Asserts.h"
+#include "MV/MV_Camera.h"
+#include "MV/MV_Pipeline.h"
 #include "MV/MV_TestRenderSystem.h"
 
 MV::TestRenderSystem::TestRenderSystem(Device& device, VkRenderPass renderPass) :
@@ -13,14 +15,23 @@ MV::TestRenderSystem::~TestRenderSystem()
 	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects, const glm::mat4& viewTransform)
+void MV::TestRenderSystem::SetCamera(const std::shared_ptr<Camera>& camera)
 {
+	mCamera = camera;
+}
+
+void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects)
+{
+	check(mCamera != nullptr);
+
 	mPipeline->Bind(commandBuffer);
+
+	const glm::mat4 viewTransform = mCamera->GetViewTransform();
 
 	for (const std::shared_ptr<Object>& object : objects)
 	{
 		PushConstantData push;
-		push.mTransform = viewTransform * object->mTransform.Matrix();
+		push.mTransform = viewTransform * object->mTransformComponent.mTransform.Matrix();
 		push.mColor = object->mColor;
 
 		vkCmdPushConstants(

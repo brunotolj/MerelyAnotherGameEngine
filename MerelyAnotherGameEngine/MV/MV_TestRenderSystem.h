@@ -2,10 +2,12 @@
 
 #include "MV/MV_Device.h"
 #include "MV/MV_Object.h"
-#include "MV/MV_Pipeline.h"
 
 namespace MV
 {
+	class Camera;
+	class Pipeline;
+
 	class TestRenderSystem : public NonCopyableClass
 	{
 		struct PushConstantData
@@ -19,12 +21,17 @@ namespace MV
 
 		~TestRenderSystem();
 
-		void RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects, const glm::mat4& viewTransform);
+		void SetCamera(const std::shared_ptr<Camera>& camera);
+
+		void RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects);
 
 	private:
-		MV::Device& mDevice;
+		Device& mDevice;
 
-		std::unique_ptr<MV::Pipeline> mPipeline;
+		std::unique_ptr<Pipeline> mPipeline;
+
+		std::shared_ptr<Camera> mCamera;
+
 		VkPipelineLayout mPipelineLayout;
 
 		void CreatePipelineLayout();
