@@ -12,6 +12,9 @@ namespace MV
 
 		glm::mat4 GetViewTransform() const;
 
-		float TEMP_InvAspectRatio = 1.0f;
+		void SetPerspectiveParams(float near, float far, float verticalFOV, float aspectRatio);
+
+	private:
+		glm::mat4 mPerspectiveTransform;
 	};
 }

@@ -6,8 +6,6 @@
 #include "MV/MV_TestRenderSystem.h"
 #include "MV/MV_Window.h"
 
-#include <glm/ext/scalar_constants.hpp>
-
 #include <array>
 #include <memory>
 
@@ -39,20 +37,18 @@ int main()
 		{ 1.0f, 1.0f, 0.0f },
 		{ 1.0f, 0.0f, 1.0f },
 		{ 0.0f, 1.0f, 1.0f }};
-	
-	constexpr float pi = glm::pi<float>();
 
 	mage::Rotor rotors[6] = {
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, 0.0f),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, 0.5f * pi),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, pi),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, -0.5f * pi),
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, 0.5f * pi),
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, -0.5f * pi)};
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(0.0f)),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(90.0f)),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(180.0f)),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(-90.0f)),
+		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, glm::radians(90.0f)),
+		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, glm::radians(-90.0f))};
 
 	mage::Rotor tilt = mage::Rotor::Combine(
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, -0.2f * pi),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, 0.25f * pi));
+		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, glm::radians(-36.0f)),
+		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(45.0f)));
 
 	for (int32_t i = 0; i < 6; i++)
 	{
@@ -60,7 +56,7 @@ int main()
 		
 		square->mModel = model;
 		square->mColor = colors[i];
-		square->mTransformComponent.mTransform.Position = { 0.0f, 0.0f, 0.5f };
+		square->mTransformComponent.mTransform.Position = { 0.0f, 0.0f, 1.5f };
 		
 		objects.push_back(std::move(square));
 
@@ -89,7 +85,7 @@ int main()
 				objects[i]->mTransformComponent.mTransform.Rotation = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, kok), rotors[i]);
 			}
 
-			camera->TEMP_InvAspectRatio = 1.0f / renderer.GetAspectRatio();
+			camera->SetPerspectiveParams(1.0f, 2.0f, glm::radians(90.0f), renderer.GetAspectRatio());
 
 			renderSystem.RenderObjects(commandBuffer, objects);
 
