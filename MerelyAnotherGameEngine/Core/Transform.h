@@ -15,7 +15,7 @@ namespace mage
 		mage::Rotor Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
-		glm::mat4 Matrix()
+		glm::mat4 Matrix() const
 		{
 			const float s = Rotation.S;
 			const float p = Rotation.XY;

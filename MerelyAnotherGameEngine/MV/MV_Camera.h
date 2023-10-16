@@ -12,6 +12,8 @@ namespace MV
 
 		glm::mat4 GetViewTransform() const;
 
+		const glm::mat4& GetProjectionTransform() const;
+
 		void SetPerspectiveParams(float near, float far, float verticalFOV, float aspectRatio);
 
 	private:

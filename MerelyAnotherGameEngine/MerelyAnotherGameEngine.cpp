@@ -56,7 +56,7 @@ int main()
 		
 		square->mModel = model;
 		square->mColor = colors[i];
-		square->mTransformComponent.mTransform.Position = { 0.0f, 0.0f, 1.5f };
+		square->mTransformComponent.mTransform.Position = { 0.0f, 0.0f, 2.0f };
 		
 		objects.push_back(std::move(square));
 
@@ -67,6 +67,8 @@ int main()
 
 	MV::TestRenderSystem renderSystem(device, renderer.GetSwapchainRenderPass());
 	renderSystem.SetCamera(camera);
+
+	camera->mTransformComponent.mTransform.Position = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	float kok = 0.0f;
 
@@ -85,7 +87,8 @@ int main()
 				objects[i]->mTransformComponent.mTransform.Rotation = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, kok), rotors[i]);
 			}
 
-			camera->SetPerspectiveParams(1.0f, 2.0f, glm::radians(90.0f), renderer.GetAspectRatio());
+			camera->mTransformComponent.mTransform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 0.0f, 1.0f), 2.0f * kok);
+			camera->SetPerspectiveParams(0.1f, 100.0f, glm::radians(90.0f), renderer.GetAspectRatio());
 
 			renderSystem.RenderObjects(commandBuffer, objects);
 

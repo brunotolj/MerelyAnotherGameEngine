@@ -3,6 +3,11 @@
 
 glm::mat4 MV::Camera::GetViewTransform() const
 {
+	return glm::inverse(mTransformComponent.mTransform.Matrix());
+}
+
+const glm::mat4& MV::Camera::GetProjectionTransform() const
+{
 	return mPerspectiveTransform;
 }
 
