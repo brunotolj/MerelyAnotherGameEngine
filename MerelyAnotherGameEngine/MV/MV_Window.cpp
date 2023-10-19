@@ -10,6 +10,11 @@ Window::Window(int width, int height, const std::string& name) :
 	mWindow = glfwCreateWindow(mWidth, mHeight, mName.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(mWindow, this);
 	glfwSetFramebufferSizeCallback(mWindow, FramebufferResizedCallback);
+	glfwSetKeyCallback(mWindow, KeyCallback);
+
+	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwGetCursorPos(mWindow, &mCursorPosX, &mCursorPosY);
+	glfwSetCursorPosCallback(mWindow, CursorPositionCallback);
 }
 
 Window::~Window()
@@ -79,4 +84,43 @@ void MV::Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t widt
 	window->mFramebufferResized = true;
 	window->mWidth = width;
 	window->mHeight = height;
+}
+
+void MV::Window::KeyCallback(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(glfwWindow, true);
+		return;
+	}
+
+	if (key == GLFW_KEY_LEFT_CONTROL)
+	{
+		if (action == GLFW_PRESS && glfwGetInputMode(glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+		{
+			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			return;
+		}
+
+		if (action == GLFW_RELEASE && glfwGetInputMode(glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
+		{
+			Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
+			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			glfwGetCursorPos(glfwWindow, &window->mCursorPosX, &window->mCursorPosY);
+			return;
+		}
+	}
+}
+
+void MV::Window::CursorPositionCallback(GLFWwindow* glfwWindow, double posX, double posY)
+{
+	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
+
+	if (glfwGetInputMode(glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+	{
+		window->mUnconsumedCursorMovement += glm::vec2(posX - window->mCursorPosX, posY - window->mCursorPosY);
+	}
+
+	window->mCursorPosX = posX;
+	window->mCursorPosY = posY;
 }

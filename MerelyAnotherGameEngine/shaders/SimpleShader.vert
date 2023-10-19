@@ -13,5 +13,5 @@ layout(push_constant) uniform Push
 void main()
 {
 	gl_Position = push.Transform * vec4(position, 1.0);
-	z = 1.0 - pow(gl_Position.z / gl_Position.w, 2.0);
+	z = 1.0 - pow(gl_Position.z / gl_Position.w, 4.0);
 }

@@ -20,13 +20,11 @@ void MV::Camera::SetPerspectiveParams(float nearPlane, float farPlane, float ver
 	const float fovFactor = 1.0f / glm::tan(verticalFOV / 2.0f);
 	const float planeDelta = farPlane - nearPlane;
 
-	mPerspectiveTransform = 
+	mPerspectiveTransform =
 	{
-		{ fovFactor / aspectRatio, 0.0f, 0.0f, 0.0f},
-		{ 0.0f, fovFactor, 0.0f, 0.0f },
+		{ fovFactor / aspectRatio, 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, farPlane / planeDelta, 1.0f },
-		{ 0.0f, 0.0f, -farPlane * nearPlane / planeDelta, 0.0f}
-		//{ 0.0f, 0.0f, farPlane / planeDelta, -farPlane * nearPlane / planeDelta },
-//		{ 0.0f, 0.0f, 1.0f, 0.0f}
+		{ 0.0f, -fovFactor, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, -farPlane * nearPlane / planeDelta, 0.0f }
 	};
 }
