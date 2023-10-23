@@ -49,43 +49,13 @@ int main()
 
 	std::vector<std::shared_ptr<MV::Object>> objects;
 
-	std::vector<MV::Model::Vertex> vertices {
-		{{ -0.25f, -0.25f, 0.25f }},
-		{{  0.25f, -0.25f, 0.25f }},
-		{{  0.25f,  0.25f, 0.25f }},
-		{{ -0.25f, -0.25f, 0.25f }},
-		{{  0.25f,  0.25f, 0.25f }},
-		{{ -0.25f,  0.25f, 0.25f }}};
+	// this model is not in source control, sorry
+	std::shared_ptr<MV::Model> model = MV::Model::CreateFromFile(device, "../models/heart.obj");
 
-	std::shared_ptr<MV::Model> model = std::make_shared<MV::Model>(device, vertices);
-
-	glm::vec3 colors[6] = {
-		{ 1.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f },
-		{ 0.0f, 0.0f, 1.0f },
-		{ 1.0f, 1.0f, 0.0f },
-		{ 1.0f, 0.0f, 1.0f },
-		{ 0.0f, 1.0f, 1.0f }};
-
-	mage::Rotor rotors[6] = {
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(0.0f)),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(90.0f)),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(180.0f)),
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 1.0f, 0.0f }, glm::radians(-90.0f)),
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, glm::radians(90.0f)),
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, glm::radians(-90.0f))};
-
-	for (int32_t i = 0; i < 6; i++)
-	{
-		std::shared_ptr<MV::Object> square = std::make_shared<MV::Object>();
-		
-		square->mModel = model;
-		square->mColor = colors[i];
-		
-		objects.push_back(std::move(square));
-
-		objects[i]->mTransformComponent.mTransform.Rotation = rotors[i];
-	}
+	std::shared_ptr<MV::Object> object = std::make_shared<MV::Object>();
+	object->mModel = model;
+	object->mColor = { 1.0f, 0.0f, 1.0f };
+	objects.push_back(std::move(object));
 
 	std::shared_ptr<MV::Camera> camera = std::make_shared<MV::Camera>();
 
@@ -96,9 +66,10 @@ int main()
 
 	glm::vec2 viewRotation = glm::vec2(0.0f);
 
-	float kok = 0.0f;
-
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
+
+	float accTime = 0.0f;
+	constexpr float period = 1.5f;
 
 	while (!window.ShouldClose())
 	{
@@ -108,16 +79,20 @@ int main()
 		const float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
-		kok += frameTime;
+		accTime += frameTime;
+		while (accTime >= period)
+		{
+			accTime -= period;
+		}
+
+		const float rotationFactor = 1.0f / (1.0f + glm::exp(-15.0f * (accTime / period - 0.5f)));
+		const float rotation = rotationFactor * glm::radians(180.0f);
 
 		if (VkCommandBuffer commandBuffer = renderer.BeginFrame())
 		{
 			renderer.BeginSwapChainRenderPass(commandBuffer);
 
-// 			for (int32_t i = 0; i < 6; i++)
-// 			{
-// 				objects[i]->mTransformComponent.mTransform.Rotation = mage::Rotor::Combine(mage::Rotor::FromAxisAndAngle({ 0.0f, 0.0f, 1.0f }, kok), rotors[i]);
-// 			}
+			objects[0]->mTransformComponent.mTransform.Rotation = mage::Rotor::FromAxisAndAngle({ 0.0f, 0.0f, 1.0f }, rotation);
 
 			RotateCameraByInput(window, viewRotation, frameTime, camera->mTransformComponent);
 			MoveByInput(window, frameTime, camera->mTransformComponent);

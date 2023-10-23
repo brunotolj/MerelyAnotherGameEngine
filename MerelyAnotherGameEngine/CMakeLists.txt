@@ -49,6 +49,7 @@ target_include_directories(MerelyAnotherGameEngine PRIVATE
     ${Vulkan_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/ThirdParty/glfw-3.3.8/include
     ${PROJECT_SOURCE_DIR}/ThirdParty/glm-master
+    ${PROJECT_SOURCE_DIR}/ThirdParty/tinyobjloader
 )
 
 target_link_libraries(MerelyAnotherGameEngine PRIVATE
