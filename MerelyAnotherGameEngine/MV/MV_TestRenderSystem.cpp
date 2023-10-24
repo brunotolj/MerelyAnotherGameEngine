@@ -26,13 +26,14 @@ void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const st
 
 	mPipeline->Bind(commandBuffer);
 
-	const glm::mat4 viewTransform = mCamera->GetProjectionTransform() * mCamera->GetViewTransform();
+	const glm::mat4 cameraTransform = mCamera->GetProjectionTransform() * mCamera->GetViewTransform();
 
 	for (const std::shared_ptr<Object>& object : objects)
 	{
 		PushConstantData push;
-		push.mTransform = viewTransform * object->mTransformComponent.mTransform.Matrix();
-		push.mColor = object->mColor;
+		push.mNormalMatrix = object->mTransformComponent.NormalMatrix();
+		push.mNormalMatrix[3] = glm::vec4(object->mColor, 1.0f);
+		push.mTransform = cameraTransform * object->mTransformComponent.mTransform.Matrix();
 
 		vkCmdPushConstants(
 			commandBuffer,

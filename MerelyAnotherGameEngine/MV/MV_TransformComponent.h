@@ -9,5 +9,7 @@ namespace MV
 	{
 	public:	
 		mage::Transform mTransform;
+
+		glm::mat4 NormalMatrix() const;
 	};
 }

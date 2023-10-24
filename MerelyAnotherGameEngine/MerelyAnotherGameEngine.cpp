@@ -54,7 +54,7 @@ int main()
 
 	std::shared_ptr<MV::Object> object = std::make_shared<MV::Object>();
 	object->mModel = model;
-	object->mColor = { 1.0f, 0.0f, 1.0f };
+	object->mColor = { 1.0f, 0.0f, 0.2f };
 	objects.push_back(std::move(object));
 
 	std::shared_ptr<MV::Camera> camera = std::make_shared<MV::Camera>();

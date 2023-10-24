@@ -13,7 +13,7 @@ namespace MV
 		struct PushConstantData
 		{
 			alignas(64) glm::mat4 mTransform{1.0f};
-			alignas(16) glm::vec3 mColor{0.0f};
+			alignas(64) glm::mat4 mNormalMatrix{1.0f};
 		};
 
 	public:
