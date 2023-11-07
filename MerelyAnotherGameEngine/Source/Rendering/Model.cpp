@@ -1,6 +1,6 @@
 #include "Core/Asserts.h"
 #include "Core/Utils.h"
-#include "Rendering/MV_Model.h"
+#include "Rendering/Model.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -15,9 +15,9 @@
 namespace std
 {
 	template<>
-	struct hash<MV::Model::Vertex>
+	struct hash<Model::Vertex>
 	{
-		size_t operator()(const MV::Model::Vertex& vertex) const
+		size_t operator()(const Model::Vertex& vertex) const
 		{
 			size_t seed = 0;
 			mage::HashCombine(seed, vertex.Position, vertex.Normal, vertex.UV);
@@ -26,7 +26,7 @@ namespace std
 	};
 }
 
-std::vector<VkVertexInputBindingDescription> MV::Model::Vertex::GetBindingDescriptions()
+std::vector<VkVertexInputBindingDescription> Model::Vertex::GetBindingDescriptions()
 {
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
 	bindingDescriptions[0].binding = 0;
@@ -35,7 +35,7 @@ std::vector<VkVertexInputBindingDescription> MV::Model::Vertex::GetBindingDescri
 	return bindingDescriptions;
 }
 
-std::vector<VkVertexInputAttributeDescription> MV::Model::Vertex::GetAttributeDescriptions()
+std::vector<VkVertexInputAttributeDescription> Model::Vertex::GetAttributeDescriptions()
 {
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 
@@ -46,7 +46,7 @@ std::vector<VkVertexInputAttributeDescription> MV::Model::Vertex::GetAttributeDe
 	return attributeDescriptions;
 }
 
-void MV::Model::Builder::LoadModel(const std::string& path)
+void Model::Builder::LoadModel(const std::string& path)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -100,14 +100,14 @@ void MV::Model::Builder::LoadModel(const std::string& path)
 	}
 }
  
-MV::Model::Model(Device& device, const Builder& builder) :
+Model::Model(Device& device, const Builder& builder) :
 	mDevice(device)
 {
 	CreateVertexBuffers(builder.Vertices);
 	CreateIndexBuffers(builder.Indices);
 }
 
-MV::Model::~Model()
+Model::~Model()
 {
 	vkDestroyBuffer(mDevice.GetDevice(), mVertexBuffer, nullptr);
 	vkFreeMemory(mDevice.GetDevice(), mVertexBufferMemory, nullptr);
@@ -119,7 +119,7 @@ MV::Model::~Model()
 	}
 }
 
-std::unique_ptr<MV::Model> MV::Model::CreateFromFile(Device& device, const std::string& path)
+std::unique_ptr<Model> Model::CreateFromFile(Device& device, const std::string& path)
 {
 	Builder builder;
 	builder.LoadModel(path);
@@ -127,7 +127,7 @@ std::unique_ptr<MV::Model> MV::Model::CreateFromFile(Device& device, const std::
 	return std::make_unique<Model>(device, builder);
 }
 
-void MV::Model::Bind(VkCommandBuffer commandBuffer)
+void Model::Bind(VkCommandBuffer commandBuffer)
 {
 	VkBuffer buffers[] = { mVertexBuffer };
 	VkDeviceSize offsets[] = { 0 };
@@ -139,7 +139,7 @@ void MV::Model::Bind(VkCommandBuffer commandBuffer)
 	}
 }
 
-void MV::Model::Draw(VkCommandBuffer commandBuffer)
+void Model::Draw(VkCommandBuffer commandBuffer)
 {
 	if (mIndexCount > 0)
 	{
@@ -151,7 +151,7 @@ void MV::Model::Draw(VkCommandBuffer commandBuffer)
 	}
 }
 
-void MV::Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
+void Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
 {
 	mVertexCount = static_cast<uint32_t>(vertices.size());
 	mage_ensure(mVertexCount >= 3);
@@ -185,7 +185,7 @@ void MV::Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
 	vkFreeMemory(mDevice.GetDevice(), stagingBufferMemory, nullptr);
 }
 
-void MV::Model::CreateIndexBuffers(const std::vector<uint32_t>& indices)
+void Model::CreateIndexBuffers(const std::vector<uint32_t>& indices)
 {
 	mIndexCount = static_cast<uint32_t>(indices.size());
 	if (mIndexCount == 0)

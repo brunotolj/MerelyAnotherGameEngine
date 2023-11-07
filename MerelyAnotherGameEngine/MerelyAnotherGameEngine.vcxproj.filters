@@ -22,40 +22,55 @@
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Game">
+      <UniqueIdentifier>{e4017cb5-3937-4616-b5ff-99bff706f675}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Camera.cpp">
+    <ClCompile Include="Source\Rendering\Camera.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Device.cpp">
+    <ClCompile Include="Source\Rendering\Device.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Model.cpp">
+    <ClCompile Include="Source\Rendering\Model.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Object.cpp">
+    <ClCompile Include="Source\Rendering\StaticMeshObjectComponent.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Pipeline.cpp">
+    <ClCompile Include="Source\Rendering\Pipeline.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Renderer.cpp">
+    <ClCompile Include="Source\Rendering\Renderer.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Swapchain.cpp">
+    <ClCompile Include="Source\Rendering\Swapchain.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_TestRenderSystem.cpp">
+    <ClCompile Include="Source\Rendering\RenderSystem.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_TransformComponent.cpp">
+    <ClCompile Include="Source\Rendering\Window.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\MV_Window.cpp">
-      <Filter>Source Files\Rendering</Filter>
+    <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Physics\RigidBodyObjectComponent.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\GameObject.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\GameObjectComponent.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\GameWorld.cpp">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,35 +89,50 @@
     <ClInclude Include="Source\Core\Utils.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Camera.h">
+    <ClInclude Include="Source\Rendering\Camera.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Device.h">
+    <ClInclude Include="Source\Rendering\Device.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Model.h">
+    <ClInclude Include="Source\Rendering\Model.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Object.h">
+    <ClInclude Include="Source\Rendering\StaticMeshObjectComponent.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Pipeline.h">
+    <ClInclude Include="Source\Rendering\Pipeline.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Renderer.h">
+    <ClInclude Include="Source\Rendering\Renderer.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Swapchain.h">
+    <ClInclude Include="Source\Rendering\Swapchain.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_TestRenderSystem.h">
+    <ClInclude Include="Source\Rendering\RenderSystem.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_TransformComponent.h">
+    <ClInclude Include="Source\Rendering\Window.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\MV_Window.h">
-      <Filter>Source Files\Rendering</Filter>
+    <ClInclude Include="Source\Physics\PhysicsSystem.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Physics\RigidBodyObjectComponent.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Physics\PhysicsCommon.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\GameObject.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\GameObjectComponent.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\GameWorld.h">
+      <Filter>Source Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

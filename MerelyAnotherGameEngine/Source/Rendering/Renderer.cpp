@@ -1,18 +1,18 @@
-#include "Rendering/MV_Renderer.h"
+#include "Rendering/Renderer.h"
 
-MV::Renderer::Renderer(Window& window, Device& device) :
+Renderer::Renderer(Window& window, Device& device) :
 	mWindow(window), mDevice(device)
 {
 	RecreateSwapchain();
 	CreateCommandBuffers();
 }
 
-MV::Renderer::~Renderer()
+Renderer::~Renderer()
 {
 	FreeCommandBuffers();
 }
 
-VkCommandBuffer MV::Renderer::BeginFrame()
+VkCommandBuffer Renderer::BeginFrame()
 {
 	mage_check(!mIsFrameInProgress);
 
@@ -37,7 +37,7 @@ VkCommandBuffer MV::Renderer::BeginFrame()
 	return commandBuffer;
 }
 
-void MV::Renderer::EndFrame()
+void Renderer::EndFrame()
 {
 	mage_check(mIsFrameInProgress);
 
@@ -61,7 +61,7 @@ void MV::Renderer::EndFrame()
 	mCurrentFrameIndex = (mCurrentFrameIndex + 1) % mCommandBuffers.size();
 }
 
-void MV::Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
+void Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
 	mage_check(mIsFrameInProgress);
 	mage_check(commandBuffer == GetCurrentCommandBuffer());
@@ -95,7 +95,7 @@ void MV::Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void MV::Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
+void Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
 	mage_check(mIsFrameInProgress);
 	mage_check(commandBuffer == GetCurrentCommandBuffer());
@@ -103,24 +103,24 @@ void MV::Renderer::EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	vkCmdEndRenderPass(commandBuffer);
 }
 
-VkCommandBuffer MV::Renderer::GetCurrentCommandBuffer() const
+VkCommandBuffer Renderer::GetCurrentCommandBuffer() const
 {
 	mage_check(mIsFrameInProgress);
 	return mCommandBuffers[mCurrentFrameIndex];
 }
 
-int32_t MV::Renderer::GetCurrentFrameIndex() const
+int32_t Renderer::GetCurrentFrameIndex() const
 {
 	mage_check(mIsFrameInProgress);
 	return mCurrentFrameIndex;
 }
 
-VkRenderPass MV::Renderer::GetSwapchainRenderPass() const
+VkRenderPass Renderer::GetSwapchainRenderPass() const
 {
 	return mSwapchain->GetRenderPass();
 }
 
-void MV::Renderer::CreateCommandBuffers()
+void Renderer::CreateCommandBuffers()
 {
 	mCommandBuffers.resize(Swapchain::gMaxFramesInFlight);
 
@@ -133,7 +133,7 @@ void MV::Renderer::CreateCommandBuffers()
 	mage_check(vkAllocateCommandBuffers(mDevice.GetDevice(), &allocInfo, mCommandBuffers.data()) == VK_SUCCESS);
 }
 
-void MV::Renderer::FreeCommandBuffers()
+void Renderer::FreeCommandBuffers()
 {
 	vkFreeCommandBuffers(
 		mDevice.GetDevice(),
@@ -142,7 +142,7 @@ void MV::Renderer::FreeCommandBuffers()
 		mCommandBuffers.data());
 }
 
-void MV::Renderer::RecreateSwapchain()
+void Renderer::RecreateSwapchain()
 {
 	VkExtent2D extent = mWindow.GetExtent();
 
@@ -158,12 +158,12 @@ void MV::Renderer::RecreateSwapchain()
 	{
 		std::shared_ptr<Swapchain> oldSwapchain = std::move(mSwapchain);
 
-		mSwapchain = std::make_unique<MV::Swapchain>(mDevice, extent, oldSwapchain);
+		mSwapchain = std::make_unique<Swapchain>(mDevice, extent, oldSwapchain);
 
 		mage_check(mSwapchain->CompareSwapFormats(*oldSwapchain));
 	}
 	else
 	{
-		mSwapchain = std::make_unique<MV::Swapchain>(mDevice, extent);
+		mSwapchain = std::make_unique<Swapchain>(mDevice, extent);
 	}
 }

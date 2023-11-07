@@ -1,7 +1,5 @@
 #include "Core/Asserts.h"
-#include "Rendering/MV_Window.h"
-
-using MV::Window;
+#include "Rendering/Window.h"
 
 Window::Window(int width, int height, const std::string& name) :
 	mWidth(width), mHeight(height), mName(name)
@@ -30,27 +28,27 @@ void Window::PollEvents()
 	glfwPollEvents();
 }
 
-bool MV::Window::ShouldClose() const
+bool Window::ShouldClose() const
 {
 	return glfwWindowShouldClose(mWindow);
 }
 
-VkExtent2D MV::Window::GetExtent() const
+VkExtent2D Window::GetExtent() const
 {
 	return { static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight) };
 }
 
-bool MV::Window::WasWindowResized() const
+bool Window::WasWindowResized() const
 {
 	return mFramebufferResized;
 }
 
-void MV::Window::ResetWindowResizedFlag()
+void Window::ResetWindowResizedFlag()
 {
 	mFramebufferResized = false;
 }
 
-void MV::Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
+void Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
 {
 	mage_check(glfwCreateWindowSurface(instance, mWindow, nullptr, surface) == VK_SUCCESS);
 }
@@ -78,7 +76,7 @@ void Window::DecrementWindowCount()
 	}
 }
 
-void MV::Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t width, int32_t height)
+void Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t width, int32_t height)
 {
 	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
 	window->mFramebufferResized = true;
@@ -86,7 +84,7 @@ void MV::Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t widt
 	window->mHeight = height;
 }
 
-void MV::Window::KeyCallback(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods)
+void Window::KeyCallback(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 	{
@@ -118,7 +116,7 @@ void MV::Window::KeyCallback(GLFWwindow* glfwWindow, int key, int scancode, int 
 	}
 }
 
-void MV::Window::CursorPositionCallback(GLFWwindow* glfwWindow, double posX, double posY)
+void Window::CursorPositionCallback(GLFWwindow* glfwWindow, double posX, double posY)
 {
 	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
 

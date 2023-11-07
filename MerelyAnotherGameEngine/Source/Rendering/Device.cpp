@@ -1,11 +1,9 @@
-#include "Rendering/MV_Device.h"
+#include "Rendering/Device.h"
 
 #include <cstring>
 #include <iostream>
 #include <set>
 #include <unordered_set>
-
-using MV::Device;
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -364,7 +362,7 @@ bool Device::CheckDeviceExtensionSupport(VkPhysicalDevice device)
 	return requiredExtensions.empty();
 }
 
-MV::QueueFamilyIndices Device::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices Device::FindQueueFamilies(VkPhysicalDevice device)
 {
 	QueueFamilyIndices indices;
 
@@ -400,7 +398,7 @@ MV::QueueFamilyIndices Device::FindQueueFamilies(VkPhysicalDevice device)
 	return indices;
 }
 
-MV::SwapChainSupportDetails Device::QuerySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails Device::QuerySwapChainSupport(VkPhysicalDevice device)
 {
 	SwapChainSupportDetails details;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, mSurface, &details.mCapabilities);

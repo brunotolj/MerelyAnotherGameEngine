@@ -129,17 +129,21 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Game\GameObject.cpp" />
+    <ClCompile Include="Source\Game\GameObjectComponent.cpp" />
+    <ClCompile Include="Source\Game\GameWorld.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Camera.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Device.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Model.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Object.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Pipeline.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Renderer.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Swapchain.cpp" />
-    <ClCompile Include="Source\Rendering\MV_TestRenderSystem.cpp" />
-    <ClCompile Include="Source\Rendering\MV_TransformComponent.cpp" />
-    <ClCompile Include="Source\Rendering\MV_Window.cpp" />
+    <ClCompile Include="Source\Physics\RigidBodyObjectComponent.cpp" />
+    <ClCompile Include="Source\Physics\PhysicsSystem.cpp" />
+    <ClCompile Include="Source\Rendering\Camera.cpp" />
+    <ClCompile Include="Source\Rendering\Device.cpp" />
+    <ClCompile Include="Source\Rendering\Model.cpp" />
+    <ClCompile Include="Source\Rendering\StaticMeshObjectComponent.cpp" />
+    <ClCompile Include="Source\Rendering\Pipeline.cpp" />
+    <ClCompile Include="Source\Rendering\Renderer.cpp" />
+    <ClCompile Include="Source\Rendering\Swapchain.cpp" />
+    <ClCompile Include="Source\Rendering\RenderSystem.cpp" />
+    <ClCompile Include="Source\Rendering\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h" />
@@ -147,16 +151,21 @@
     <ClInclude Include="Source\Core\Rotor.h" />
     <ClInclude Include="Source\Core\Transform.h" />
     <ClInclude Include="Source\Core\Utils.h" />
-    <ClInclude Include="Source\Rendering\MV_Camera.h" />
-    <ClInclude Include="Source\Rendering\MV_Device.h" />
-    <ClInclude Include="Source\Rendering\MV_Model.h" />
-    <ClInclude Include="Source\Rendering\MV_Object.h" />
-    <ClInclude Include="Source\Rendering\MV_Pipeline.h" />
-    <ClInclude Include="Source\Rendering\MV_Renderer.h" />
-    <ClInclude Include="Source\Rendering\MV_Swapchain.h" />
-    <ClInclude Include="Source\Rendering\MV_TestRenderSystem.h" />
-    <ClInclude Include="Source\Rendering\MV_TransformComponent.h" />
-    <ClInclude Include="Source\Rendering\MV_Window.h" />
+    <ClInclude Include="Source\Game\GameObject.h" />
+    <ClInclude Include="Source\Game\GameObjectComponent.h" />
+    <ClInclude Include="Source\Game\GameWorld.h" />
+    <ClInclude Include="Source\Physics\PhysicsCommon.h" />
+    <ClInclude Include="Source\Physics\RigidBodyObjectComponent.h" />
+    <ClInclude Include="Source\Physics\PhysicsSystem.h" />
+    <ClInclude Include="Source\Rendering\Camera.h" />
+    <ClInclude Include="Source\Rendering\Device.h" />
+    <ClInclude Include="Source\Rendering\Model.h" />
+    <ClInclude Include="Source\Rendering\StaticMeshObjectComponent.h" />
+    <ClInclude Include="Source\Rendering\Pipeline.h" />
+    <ClInclude Include="Source\Rendering\Renderer.h" />
+    <ClInclude Include="Source\Rendering\Swapchain.h" />
+    <ClInclude Include="Source\Rendering\RenderSystem.h" />
+    <ClInclude Include="Source\Rendering\Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

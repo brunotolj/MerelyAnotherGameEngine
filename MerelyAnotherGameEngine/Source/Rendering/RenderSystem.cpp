@@ -1,26 +1,28 @@
 #include "Core/Asserts.h"
-#include "Rendering/MV_Camera.h"
-#include "Rendering/MV_Pipeline.h"
-#include "Rendering/MV_TestRenderSystem.h"
+#include "Rendering/Camera.h"
+#include "Rendering/Model.h"
+#include "Rendering/Pipeline.h"
+#include "Rendering/RenderSystem.h"
+#include "Rendering/StaticMeshObjectComponent.h"
 
-MV::TestRenderSystem::TestRenderSystem(Device& device, VkRenderPass renderPass) :
+RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass) :
 	mDevice(device)
 {
 	CreatePipelineLayout();
 	CreatePipeline(renderPass);
 }
 
-MV::TestRenderSystem::~TestRenderSystem()
+RenderSystem::~RenderSystem()
 {
 	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-void MV::TestRenderSystem::SetCamera(const std::shared_ptr<Camera>& camera)
+void RenderSystem::SetCamera(const std::shared_ptr<Camera>& camera)
 {
 	mCamera = camera;
 }
 
-void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const std::vector<std::shared_ptr<Object>>& objects)
+void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 {
 	mage_check(mCamera != nullptr);
 
@@ -28,12 +30,12 @@ void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const st
 
 	const glm::mat4 cameraTransform = mCamera->GetProjectionTransform() * mCamera->GetViewTransform();
 
-	for (const std::shared_ptr<Object>& object : objects)
+	for (StaticMeshObjectComponent const* staticMesh : mStaticMeshes)
 	{
 		PushConstantData push;
-		push.mNormalMatrix = object->mTransformComponent.NormalMatrix();
-		push.mNormalMatrix[3] = glm::vec4(object->mColor, 1.0f);
-		push.mTransform = cameraTransform * object->mTransformComponent.mTransform.Matrix();
+		push.mNormalMatrix = staticMesh->GetNormalMatrix();
+		push.mNormalMatrix[3] = glm::vec4(staticMesh->mColor, 1.0f);
+		push.mTransform = cameraTransform * staticMesh->GetTransformMatrix();
 
 		vkCmdPushConstants(
 			commandBuffer,
@@ -43,14 +45,24 @@ void MV::TestRenderSystem::RenderObjects(VkCommandBuffer commandBuffer, const st
 			sizeof(PushConstantData),
 			&push);
 
-		mage_check(object->mModel != nullptr);
+		mage_check(staticMesh->mModel != nullptr);
 
-		object->mModel->Bind(commandBuffer);
-		object->mModel->Draw(commandBuffer);
+		staticMesh->mModel->Bind(commandBuffer);
+		staticMesh->mModel->Draw(commandBuffer);
 	}
 }
 
-void MV::TestRenderSystem::CreatePipelineLayout()
+void RenderSystem::AddStaticMesh(StaticMeshObjectComponent const* staticMesh)
+{
+	mStaticMeshes.insert(staticMesh);
+}
+
+void RenderSystem::RemoveStaticMesh(StaticMeshObjectComponent const* staticMesh)
+{
+	mStaticMeshes.erase(staticMesh);
+}
+
+void RenderSystem::CreatePipelineLayout()
 {
 	VkPushConstantRange pushConstantRange;
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -67,7 +79,7 @@ void MV::TestRenderSystem::CreatePipelineLayout()
 	mage_check(vkCreatePipelineLayout(mDevice.GetDevice(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) == VK_SUCCESS);
 }
 
-void MV::TestRenderSystem::CreatePipeline(VkRenderPass renderPass)
+void RenderSystem::CreatePipeline(VkRenderPass renderPass)
 {
 	mage_check(mPipelineLayout != nullptr);
 
@@ -76,7 +88,7 @@ void MV::TestRenderSystem::CreatePipeline(VkRenderPass renderPass)
 
 	pipelineConfig.mRenderPass = renderPass;
 	pipelineConfig.mPipelineLayout = mPipelineLayout;
-	mPipeline = std::make_unique<MV::Pipeline>(
+	mPipeline = std::make_unique<Pipeline>(
 		mDevice,
 		"Source/Shaders/SimpleShader.vert.spv",
 		"Source/Shaders/SimpleShader.frag.spv",

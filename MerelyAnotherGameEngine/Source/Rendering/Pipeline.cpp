@@ -1,10 +1,8 @@
 #include "Core/Asserts.h"
-#include "Rendering/MV_Pipeline.h"
-#include "Rendering/MV_Model.h"
+#include "Rendering/Pipeline.h"
+#include "Rendering/Model.h"
 
 #include <fstream>
-
-using MV::Pipeline;
 
 Pipeline::Pipeline(
 	Device& device,

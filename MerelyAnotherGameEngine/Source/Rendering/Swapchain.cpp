@@ -1,5 +1,5 @@
 #include "Core/Asserts.h"
-#include "Rendering/MV_Swapchain.h"
+#include "Rendering/Swapchain.h"
 
 #include <array>
 #include <cstdlib>
@@ -8,19 +8,19 @@
 #include <limits>
 #include <set>
 
-MV::Swapchain::Swapchain(MV::Device& device, VkExtent2D extent) :
+Swapchain::Swapchain(Device& device, VkExtent2D extent) :
 	mDevice(device), mWindowExtent(extent)
 {
 	Init();
 }
 
-MV::Swapchain::Swapchain(Device& device, VkExtent2D extent, std::shared_ptr<Swapchain> previous) :
+Swapchain::Swapchain(Device& device, VkExtent2D extent, std::shared_ptr<Swapchain> previous) :
 	mDevice(device), mWindowExtent(extent), mPreviousSwapchain(previous)
 {
 	Init();
 }
 
-MV::Swapchain::~Swapchain()
+Swapchain::~Swapchain()
 {
 	for (auto imageView : mImageViews)
 	{
@@ -57,7 +57,7 @@ MV::Swapchain::~Swapchain()
 	}
 }
 
-VkResult MV::Swapchain::AcquireNextImage(uint32_t* imageIndex)
+VkResult Swapchain::AcquireNextImage(uint32_t* imageIndex)
 {
 	vkWaitForFences(
 		mDevice.GetDevice(),
@@ -77,7 +77,7 @@ VkResult MV::Swapchain::AcquireNextImage(uint32_t* imageIndex)
 	return result;
 }
 
-VkResult MV::Swapchain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex)
+VkResult Swapchain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex)
 {
 	if (mImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
 	{
@@ -126,13 +126,13 @@ VkResult MV::Swapchain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uin
 	return result;
 }
 
-bool MV::Swapchain::CompareSwapFormats(const Swapchain& other) const
+bool Swapchain::CompareSwapFormats(const Swapchain& other) const
 {
 	return mImageFormat == other.mImageFormat
 		&& mDepthFormat == other.mDepthFormat;
 }
 
-void MV::Swapchain::Init()
+void Swapchain::Init()
 {
 	CreateSwapChain();
 	CreateImageViews();
@@ -142,7 +142,7 @@ void MV::Swapchain::Init()
 	CreateSyncObjects();
 }
 
-void MV::Swapchain::CreateSwapChain()
+void Swapchain::CreateSwapChain()
 {
 	SwapChainSupportDetails swapChainSupport = mDevice.GetSwapChainSupport();
 
@@ -209,7 +209,7 @@ void MV::Swapchain::CreateSwapChain()
 	mExtent = extent;
 }
 
-void MV::Swapchain::CreateImageViews()
+void Swapchain::CreateImageViews()
 {
 	mImageViews.resize(mSwapChainImages.size());
 	for (size_t i = 0; i < mSwapChainImages.size(); i++) {
@@ -231,7 +231,7 @@ void MV::Swapchain::CreateImageViews()
 	}
 }
 
-void MV::Swapchain::CreateRenderPass()
+void Swapchain::CreateRenderPass()
 {
 	VkAttachmentDescription depthAttachment{};
 	depthAttachment.format = FindDepthFormat();
@@ -294,7 +294,7 @@ void MV::Swapchain::CreateRenderPass()
 	}
 }
 
-void MV::Swapchain::CreateFramebuffers()
+void Swapchain::CreateFramebuffers()
 {
 	mFrameBuffers.resize(GetImageCount());
 	for (size_t i = 0; i < GetImageCount(); i++)
@@ -315,7 +315,7 @@ void MV::Swapchain::CreateFramebuffers()
 	}
 }
 
-void MV::Swapchain::CreateDepthResources()
+void Swapchain::CreateDepthResources()
 {
 	VkFormat depthFormat = FindDepthFormat();
 	mDepthFormat = depthFormat;
@@ -365,7 +365,7 @@ void MV::Swapchain::CreateDepthResources()
 	}
 }
 
-void MV::Swapchain::CreateSyncObjects()
+void Swapchain::CreateSyncObjects()
 {
 	mImageAvailableSemaphores.resize(gMaxFramesInFlight);
 	mRenderFinishedSemaphores.resize(gMaxFramesInFlight);
@@ -387,7 +387,7 @@ void MV::Swapchain::CreateSyncObjects()
 	}
 }
 
-VkSurfaceFormatKHR MV::Swapchain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR Swapchain::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	for (const auto& availableFormat : availableFormats)
 	{
@@ -401,7 +401,7 @@ VkSurfaceFormatKHR MV::Swapchain::ChooseSwapSurfaceFormat(const std::vector<VkSu
 	return availableFormats[0];
 }
 
-VkPresentModeKHR MV::Swapchain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+VkPresentModeKHR Swapchain::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
 	for (const auto& availablePresentMode : availablePresentModes)
 	{
@@ -414,7 +414,7 @@ VkPresentModeKHR MV::Swapchain::ChooseSwapPresentMode(const std::vector<VkPresen
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D MV::Swapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D Swapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
 	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 	{
@@ -434,7 +434,7 @@ VkExtent2D MV::Swapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capab
 	}
 }
 
-VkFormat MV::Swapchain::FindDepthFormat()
+VkFormat Swapchain::FindDepthFormat()
 {
 	return mDevice.FindSupportedFormat(
 		{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
