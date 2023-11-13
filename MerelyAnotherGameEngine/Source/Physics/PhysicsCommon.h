@@ -4,5 +4,6 @@
 enum class PhysicsSystemObjectType : uint8_t
 {
 	RigidStatic,
+	RigidKinematic,
 	RigidDynamic
 };

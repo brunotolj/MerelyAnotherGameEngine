@@ -25,15 +25,27 @@ void RigidBodyObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
 
 void RigidBodyObjectComponent::UpdatePrePhysics(float deltaTime)
 {
+	if (mType == PhysicsSystemObjectType::RigidKinematic)
+	{
+		mPose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.mTransform.Position);
+		mPose.q.w = mOwner.mTransform.Rotation.S;
+		mPose.q.x = -mOwner.mTransform.Rotation.ZX;
+		mPose.q.y = -mOwner.mTransform.Rotation.YZ;
+		mPose.q.z = -mOwner.mTransform.Rotation.XY;
+		reinterpret_cast<physx::PxRigidDynamic*>(mPhysicsActor)->setKinematicTarget(mPose);
+	}
 }
 
 void RigidBodyObjectComponent::UpdatePostPhysics(float deltaTime)
 {
-	mPose = mPhysicsActor->getGlobalPose();
+	if (mType == PhysicsSystemObjectType::RigidDynamic)
+	{
+		mPose = mPhysicsActor->getGlobalPose();
 
-	mOwner.mTransform.Position = reinterpret_cast<const glm::vec3&>(mPose.p);
-	mOwner.mTransform.Rotation.S = mPose.q.w;
-	mOwner.mTransform.Rotation.XY = -mPose.q.z;
-	mOwner.mTransform.Rotation.YZ = -mPose.q.y;
-	mOwner.mTransform.Rotation.ZX = -mPose.q.x;
+		mOwner.mTransform.Position = reinterpret_cast<const glm::vec3&>(mPose.p);
+		mOwner.mTransform.Rotation.S = mPose.q.w;
+		mOwner.mTransform.Rotation.XY = -mPose.q.z;
+		mOwner.mTransform.Rotation.YZ = -mPose.q.y;
+		mOwner.mTransform.Rotation.ZX = -mPose.q.x;
+	}
 }

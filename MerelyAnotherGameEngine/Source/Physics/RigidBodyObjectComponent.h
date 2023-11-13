@@ -6,7 +6,7 @@
 #include <memory>
 
 #include <Foundation/PxTransform.h>
-#include <Geometry/PxGeometry.h>
+#include <Geometry/PxCustomGeometry.h>
 
 namespace physx
 {
@@ -17,6 +17,8 @@ class RigidBodyObjectComponent : public GameObjectComponent
 {
 public:
 	std::unique_ptr<physx::PxGeometry> mGeometry = nullptr;
+
+	std::unique_ptr<physx::PxCustomGeometry::Callbacks> mCustomGeometryCallbacks = nullptr;
 
 	PhysicsSystemObjectType mType = PhysicsSystemObjectType::RigidStatic;
 

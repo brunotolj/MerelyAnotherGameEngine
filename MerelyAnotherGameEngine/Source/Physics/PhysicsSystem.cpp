@@ -72,6 +72,16 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(RigidBodyObjectComponent& objec
 			break;
 		}
 
+		case PhysicsSystemObjectType::RigidKinematic:
+		{
+			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(object.mPose);
+			rigidDynamic->attachShape(*shape);
+			rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+
+			actor = rigidDynamic;
+			break;
+		}
+
 		case PhysicsSystemObjectType::RigidDynamic:
 		{
 			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(object.mPose);
