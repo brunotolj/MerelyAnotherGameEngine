@@ -29,8 +29,8 @@ void RigidBodyObjectComponent::UpdatePrePhysics(float deltaTime)
 	{
 		mPose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.mTransform.Position);
 		mPose.q.w = mOwner.mTransform.Rotation.S;
-		mPose.q.x = -mOwner.mTransform.Rotation.ZX;
-		mPose.q.y = -mOwner.mTransform.Rotation.YZ;
+		mPose.q.x = -mOwner.mTransform.Rotation.YZ;
+		mPose.q.y = -mOwner.mTransform.Rotation.ZX;
 		mPose.q.z = -mOwner.mTransform.Rotation.XY;
 		reinterpret_cast<physx::PxRigidDynamic*>(mPhysicsActor)->setKinematicTarget(mPose);
 	}
@@ -45,7 +45,7 @@ void RigidBodyObjectComponent::UpdatePostPhysics(float deltaTime)
 		mOwner.mTransform.Position = reinterpret_cast<const glm::vec3&>(mPose.p);
 		mOwner.mTransform.Rotation.S = mPose.q.w;
 		mOwner.mTransform.Rotation.XY = -mPose.q.z;
-		mOwner.mTransform.Rotation.YZ = -mPose.q.y;
-		mOwner.mTransform.Rotation.ZX = -mPose.q.x;
+		mOwner.mTransform.Rotation.YZ = -mPose.q.x;
+		mOwner.mTransform.Rotation.ZX = -mPose.q.y;
 	}
 }

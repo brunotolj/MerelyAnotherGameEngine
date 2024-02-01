@@ -31,12 +31,28 @@ public:
 		std::vector<uint32_t> Indices{};
 
 		void LoadModel(const std::string& path);
+
+		void MakeCube(float halfExtentX, float halfExtentY, float halfExtentZ);
+
+		void MakeSphere(float radius);
+
+		void MakeCylinder(float radius, float halfHeight);
+
+		void MakeCapsule(float radius, float halfHeight);
 	};
 
 	Model(Device& device, const Builder& builder);
 	~Model();
 
 	static std::unique_ptr<Model> CreateFromFile(Device& device, const std::string& path);
+
+	static std::unique_ptr<Model> CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ);
+
+	static std::unique_ptr<Model> CreateSphere(Device& device, float radius);
+
+	static std::unique_ptr<Model> CreateCylinder(Device& device, float radius, float halfHeight);
+
+	static std::unique_ptr<Model> CreateCapsule(Device& device, float radius, float halfHeight);
 
 	void Bind(VkCommandBuffer commandBuffer);
 

@@ -13,6 +13,21 @@ namespace mage
 		float YZ;
 		float ZX;
 
+		glm::vec3 Rotate(glm::vec3 vector) const
+		{
+			const float x = S * vector.x + XY * vector.y - ZX * vector.z;
+			const float y = S * vector.y + YZ * vector.z - XY * vector.x;
+			const float z = S * vector.z + ZX * vector.x - YZ * vector.y;
+			const float xyz = XY * vector.z + YZ * vector.x + ZX * vector.y;
+
+			return
+			{
+				x * S + y * XY + xyz * YZ - z * ZX,
+				y * S - x * XY + z * YZ + xyz * ZX,
+				z * S + xyz * XY - y * YZ + x * ZX
+			};
+		}
+
 		static Rotor FromAxisAndAngle(glm::vec3 axis, float angleRad)
 		{
 			const float invSqrt = 1.0f / std::sqrtf(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);

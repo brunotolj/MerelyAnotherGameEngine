@@ -16,9 +16,9 @@ namespace physx
 class RigidBodyObjectComponent : public GameObjectComponent
 {
 public:
-	std::unique_ptr<physx::PxGeometry> mGeometry = nullptr;
+	std::shared_ptr<physx::PxGeometry> mGeometry = nullptr;
 
-	std::unique_ptr<physx::PxCustomGeometry::Callbacks> mCustomGeometryCallbacks = nullptr;
+	std::shared_ptr<physx::PxCustomGeometry::Callbacks> mCustomGeometryCallbacks = nullptr;
 
 	PhysicsSystemObjectType mType = PhysicsSystemObjectType::RigidStatic;
 
