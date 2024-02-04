@@ -19,8 +19,6 @@ PhysicsSystem::PhysicsSystem()
 	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
 	mScene = mPhysics->createScene(sceneDesc);
 
-	mDefaultMaterial = mPhysics->createMaterial(0.1f, 0.05f, 0.5f);
-
 	physx::PxPvdSceneClient* pvdClient = mScene->getScenePvdClient();
 	if (pvdClient)
 	{
@@ -32,8 +30,6 @@ PhysicsSystem::PhysicsSystem()
 
 PhysicsSystem::~PhysicsSystem()
 {
-	PX_RELEASE(mDefaultMaterial);
-
 	PX_RELEASE(mScene);
 	PX_RELEASE(mDispatcher);
 	PX_RELEASE(mPhysics);
@@ -58,7 +54,9 @@ void PhysicsSystem::Update(float deltaTime)
 physx::PxRigidActor* PhysicsSystem::AddRigidBody(RigidBodyObjectComponent& object)
 {
 	physx::PxRigidActor* actor = nullptr;
-	physx::PxShape* shape = mPhysics->createShape(*object.mGeometry, *mDefaultMaterial, true);
+	physx::PxMaterial* material = object.mMaterial.get() ? &object.mMaterial->Get() : nullptr;
+
+	physx::PxShape* shape = mPhysics->createShape(*object.mGeometry, &material, true);
 	mage_check(shape);
 
 	switch (object.mType)
@@ -97,15 +95,20 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(RigidBodyObjectComponent& objec
 
 	mage_check(actor);
 
-	if (actor == nullptr)
-	{
-		return 0;
-	}
-
 	mScene->addActor(*actor);
 	shape->release();
 
 	return actor;
+}
+
+PhysicsSystemMaterialPtr PhysicsSystem::CreateMaterial(const PhysicsSystemMaterialProperties& props)
+{
+	physx::PxMaterial* pxMat = mPhysics->createMaterial(
+		props.StaticFriction,
+		props.DynamicFriction,
+		props.Restitution);
+
+	return std::make_shared<PhysicsSystemMaterial>(*this, *pxMat);
 }
 
 void PhysicsSystem::RemoveActor(physx::PxRigidActor* actor)

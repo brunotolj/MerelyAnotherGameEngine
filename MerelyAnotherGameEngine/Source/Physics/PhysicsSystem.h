@@ -3,8 +3,6 @@
 #include "Core/NonCopyable.h"
 #include "Physics/PhysicsCommon.h"
 
-#include <map>
-
 #include <PxPhysicsAPI.h>
 
 class RigidBodyObjectComponent;
@@ -20,6 +18,8 @@ public:
 
 	physx::PxRigidActor* AddRigidBody(RigidBodyObjectComponent& object);
 
+	PhysicsSystemMaterialPtr CreateMaterial(const PhysicsSystemMaterialProperties& props);
+
 	void RemoveActor(physx::PxRigidActor* actor);
 
 private:
@@ -29,6 +29,19 @@ private:
 	physx::PxPhysics* mPhysics = nullptr;
 	physx::PxDefaultCpuDispatcher* mDispatcher = nullptr;
 	physx::PxScene* mScene = nullptr;
-	physx::PxMaterial* mDefaultMaterial = nullptr;
 	physx::PxPvd* mPvd = nullptr;
+};
+
+struct PhysicsSystemMaterial : public NonCopyableStruct
+{
+	PhysicsSystemMaterial(PhysicsSystem& system, physx::PxMaterial& material) :
+		mSystem(system), mMaterial(material) {}
+
+	~PhysicsSystemMaterial() { mMaterial.release(); }
+
+	physx::PxMaterial& Get() { return mMaterial; }
+
+private:
+	PhysicsSystem& mSystem;
+	physx::PxMaterial& mMaterial;
 };

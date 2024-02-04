@@ -12,7 +12,6 @@ namespace mage
 	{
 		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
 		mage::Rotor Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
-		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
 
 		glm::mat4 Matrix() const
 		{
@@ -32,9 +31,9 @@ namespace mage
 
 			return
 			{
-				Scale.x * glm::vec4{ (b + e) - 1.0f, (h + d) - 1.0f, (g + c) - 1.0f, 0.0f },
-				Scale.y * glm::vec4{ (h + a) - 1.0f, (c + f) - 1.0f, (i + e) - 1.0f, 0.0f },
-				Scale.z * glm::vec4{ (g + f) - 1.0f, (i + b) - 1.0f, (a + d) - 1.0f, 0.0f },
+				glm::vec4{ (b + e) - 1.0f, (h + d) - 1.0f, (g + c) - 1.0f, 0.0f },
+				glm::vec4{ (h + a) - 1.0f, (c + f) - 1.0f, (i + e) - 1.0f, 0.0f },
+				glm::vec4{ (g + f) - 1.0f, (i + b) - 1.0f, (a + d) - 1.0f, 0.0f },
 				glm::vec4{ Position, 1.0f }
 			};
 		}

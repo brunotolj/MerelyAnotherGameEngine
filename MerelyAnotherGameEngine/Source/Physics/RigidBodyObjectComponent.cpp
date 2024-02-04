@@ -8,8 +8,8 @@ RigidBodyObjectComponent::RigidBodyObjectComponent(GameObject& owner) :
 {
 	mPose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.mTransform.Position);
 	mPose.q.w = mOwner.mTransform.Rotation.S;
-	mPose.q.x = -mOwner.mTransform.Rotation.ZX;
-	mPose.q.y = -mOwner.mTransform.Rotation.YZ;
+	mPose.q.x = -mOwner.mTransform.Rotation.YZ;
+	mPose.q.y = -mOwner.mTransform.Rotation.ZX;
 	mPose.q.z = -mOwner.mTransform.Rotation.XY;
 }
 

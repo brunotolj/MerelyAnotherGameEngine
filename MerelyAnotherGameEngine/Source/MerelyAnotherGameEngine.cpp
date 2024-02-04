@@ -75,7 +75,11 @@ private:
 	float time = 0.0f;
 };
 
-void CreateCube(GameWorld& world, Device& device, const mage::Transform& transform, glm::vec3 halfExtent)
+void CreateCube(
+	GameWorld& world, Device& device,
+	const mage::Transform& transform,
+	const PhysicsSystemMaterialPtr& material,
+	glm::vec3 halfExtent)
 {
 	std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
 	gameObject->mTransform = transform;
@@ -83,6 +87,7 @@ void CreateCube(GameWorld& world, Device& device, const mage::Transform& transfo
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidStatic;
 	rigidBody->mGeometry = std::make_unique<physx::PxBoxGeometry>(halfExtent.x, halfExtent.y, halfExtent.z);
+	rigidBody->mMaterial = material;
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateCube(device, halfExtent.x, halfExtent.y, halfExtent.z);
@@ -91,10 +96,12 @@ void CreateCube(GameWorld& world, Device& device, const mage::Transform& transfo
 	world.AddObject(gameObject);
 }
 
-void CreateCapsule(GameWorld& world, Device& device, const mage::Transform& transform, float radius, float halfHeight)
+void CreateCapsule(
+	GameWorld& world, Device& device,
+	const mage::Transform& transform,
+	const PhysicsSystemMaterialPtr& material,
+	float radius, float halfHeight)
 {
-	mage_check(transform.Scale.x == transform.Scale.y && transform.Scale.x == transform.Scale.z);
-
 	const glm::mat4 matrix = transform.Matrix();
 	const glm::vec3 right = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -102,12 +109,13 @@ void CreateCapsule(GameWorld& world, Device& device, const mage::Transform& tran
 	gameObject->mTransform = transform;
 
  	OscillationComponent* const oscillation = gameObject->CreateComponent<OscillationComponent>();
- 	oscillation->mExtent = 3.5f * right;
+ 	oscillation->mExtent = 4.5f * right;
  	oscillation->mSpeed = 2.0f;
 
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidKinematic;
-	rigidBody->mGeometry = std::make_shared<physx::PxCapsuleGeometry>(transform.Scale.x, 0.75f * transform.Scale.x);
+	rigidBody->mGeometry = std::make_shared<physx::PxCapsuleGeometry>(radius, halfHeight);
+	rigidBody->mMaterial = material;
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateCapsule(device, radius, halfHeight);
@@ -116,17 +124,21 @@ void CreateCapsule(GameWorld& world, Device& device, const mage::Transform& tran
 	world.AddObject(gameObject);
 }
 
-void CreateCylinder(GameWorld& world, Device& device, const mage::Transform& transform, float radius, float halfHeight)
+void CreateCylinder(
+	GameWorld& world, Device& device,
+	const mage::Transform& transform,
+	const PhysicsSystemMaterialPtr& material,
+	float radius, float halfHeight)
 {
-	mage_check(transform.Scale.x == transform.Scale.y);
-
 	std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
 	gameObject->mTransform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidStatic;
-	rigidBody->mCustomGeometryCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * transform.Scale.z, transform.Scale.x, 2);
+	rigidBody->mCustomGeometryCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * halfHeight, radius);
 	rigidBody->mGeometry = std::make_shared<physx::PxCustomGeometry>(*rigidBody->mCustomGeometryCallbacks.get());
+	rigidBody->mMaterial = material;
+
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateCylinder(device, radius, halfHeight);
 	staticMesh->mColor = glm::vec3(0.8f, 0.3f, 0.3f);
@@ -134,10 +146,12 @@ void CreateCylinder(GameWorld& world, Device& device, const mage::Transform& tra
 	world.AddObject(gameObject);
 }
 
-void SpawnBall(GameWorld& world, Device& device, const mage::Transform& transform, float radius)
+void SpawnBall(
+	GameWorld& world, Device& device,
+	const mage::Transform& transform,
+	const PhysicsSystemMaterialPtr& material,
+	float radius)
 {
-	mage_check(transform.Scale.x == transform.Scale.y && transform.Scale.x == transform.Scale.z);
-
 	const glm::mat4 matrix = transform.Matrix();
 	const glm::vec3 forward = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -146,7 +160,8 @@ void SpawnBall(GameWorld& world, Device& device, const mage::Transform& transfor
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidDynamic;
-	rigidBody->mGeometry = std::make_shared<physx::PxSphereGeometry>(transform.Scale.x);
+	rigidBody->mGeometry = std::make_shared<physx::PxSphereGeometry>(radius);
+	rigidBody->mMaterial = material;
 	rigidBody->mLinearVelocity = 10.0f * reinterpret_cast<const physx::PxVec3&>(forward);
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
@@ -169,6 +184,9 @@ int main()
 	std::shared_ptr<physx::PxCustomGeometryExt::CylinderCallbacks> cylinderCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f, 1.0f, 2);
 	std::shared_ptr<physx::PxGeometry> cylinderCollision = std::make_shared<physx::PxCustomGeometry>(*cylinderCollisionCallbacks.get());
 
+	PhysicsSystemMaterialPtr material = world.mPhysicsSystem->CreateMaterial({ 0.1f, 0.05f, 0.9f });
+	PhysicsSystemMaterialPtr floorMaterial = world.mPhysicsSystem->CreateMaterial({ 0.1f, 0.05f, -0.5f });
+
 	{
 		mage::Transform transform;
 
@@ -178,43 +196,38 @@ int main()
 		constexpr float h = 2.0f;
 
 		constexpr float x = p + 1.0f;
-		constexpr float y = 5.0f;
-		constexpr float s = 2.0f;
+		constexpr float y = 2.0f;
+		constexpr float s = 3.0f;
 
-		transform.Position = glm::vec3(0.0f, 0.0f, 0.0f);
-		transform.Scale = glm::vec3(1.0f, 1.0f, 1.0f);
-		CreateCube(world, device, transform, glm::vec3(b, b, 1.0f));
-
-		transform.Position = glm::vec3(p, p, h);
-		transform.Scale = glm::vec3(r, r, h);
-		CreateCylinder(world, device, transform, 1.0f, 1.0f);
-		
-		transform.Position = glm::vec3(-p, p, h);
-		transform.Scale = glm::vec3(r, r, h);
-		CreateCylinder(world, device, transform, 1.0f, 1.0f);
-		
-		transform.Position = glm::vec3(-p, -p, h);
-		transform.Scale = glm::vec3(r, r, h);
-		CreateCylinder(world, device, transform, 1.0f, 1.0f);
-
-		transform.Position = glm::vec3(p, -p, h);
-		transform.Scale = glm::vec3(r, r, h);
-		CreateCylinder(world, device, transform, 1.0f, 1.0f);
+		CreateCube(world, device, transform, floorMaterial, glm::vec3(b, b, 1.0f));
 
 		transform.Position = glm::vec3(-x, 0.0f, y);
-		transform.Scale = glm::vec3(s, s, s);
-		CreateCapsule(world, device, transform, 1.0f, 0.75f);
+		CreateCapsule(world, device, transform, material, s, 0.75f * s);
+
 		transform.Position = glm::vec3(x, 0.0f, y);
-		transform.Scale = glm::vec3(s, s, s);
-		CreateCapsule(world, device, transform, 1.0f, 0.75f);
+		CreateCapsule(world, device, transform, material, s, 0.75f * s);
+
+		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
+
+		transform.Position = glm::vec3(p, p, h);
+		CreateCylinder(world, device, transform, material, r, h);
+		
+		transform.Position = glm::vec3(-p, p, h);
+		CreateCylinder(world, device, transform, material, r, h);
+		
+		transform.Position = glm::vec3(-p, -p, h);
+		CreateCylinder(world, device, transform, material, r, h);
+
+		transform.Position = glm::vec3(p, -p, h);
+		CreateCylinder(world, device, transform, material, r, h);
 
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
+
 		transform.Position = glm::vec3(0.0f, -x, y);
-		transform.Scale = glm::vec3(s, s, s);
-		CreateCapsule(world, device, transform, 1.0f, 0.75f);
+		CreateCapsule(world, device, transform, material, s, 0.75f * s);
+
 		transform.Position = glm::vec3(0.0f, x, y);
-		transform.Scale = glm::vec3(s, s, s);
-		CreateCapsule(world, device, transform, 1.0f, 0.75f);
+		CreateCapsule(world, device, transform, material, s, 0.75f * s);
 	}
 
 	std::shared_ptr<Camera> camera = std::make_shared<Camera>();
@@ -240,7 +253,7 @@ int main()
 
 		if (window.TEMP_mPendingFire)
 		{
-			SpawnBall(world, device, camera->mTransform, 1.0f);
+			SpawnBall(world, device, camera->mTransform, material, 1.0f);
 			window.TEMP_mPendingFire = false;
 		}
 

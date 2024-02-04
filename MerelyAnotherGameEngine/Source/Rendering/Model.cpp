@@ -220,7 +220,7 @@ void Model::Builder::MakeSphere(float radius)
 
 	std::sort(edges.begin(), edges.end());
 
-	for (int32_t subdiv = 0; subdiv < 4; subdiv++)
+	for (int32_t subdiv = 0; subdiv < 3; subdiv++)
 	{
 		std::vector<std::pair<uint32_t, uint32_t>> oldEdges = edges;
 		edges.clear();
@@ -279,14 +279,17 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 {
 	std::vector<std::pair<uint32_t, uint32_t>> edges;
 
+	const glm::vec3 halfHeightVec = glm::vec3(halfHeight, 0.0f, 0.0f);
+	const glm::vec3 normalVec = glm::vec3(1.0f, 0.0f, 0.0f);
+
 	for (int32_t i = 0; i < 80; i++)
 	{
 		const float c = glm::cos(glm::radians(4.5f * i));
 		const float s = glm::sin(glm::radians(4.5f * i));
-		const glm::vec3 base = glm::vec3(c, s, 0.0f);
+		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
-		Vertices.emplace_back(radius * base + glm::vec3(0.0f, 0.0f, halfHeight), base, glm::vec2(0.0f));
-		Vertices.emplace_back(radius * base - glm::vec3(0.0f, 0.0f, halfHeight), base, glm::vec2(0.0f));
+		Vertices.emplace_back(radius * base + halfHeightVec, base, glm::vec2(0.0f));
+		Vertices.emplace_back(radius * base - halfHeightVec, base, glm::vec2(0.0f));
 
 		edges.emplace_back(2 * i, 2 * i + 1);
 		edges.emplace_back(i ? 2 * i - 1 : 0, i ? 2 * i : 159);
@@ -299,10 +302,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 	{
 		const float c = glm::cos(glm::radians(4.5f * i));
 		const float s = glm::sin(glm::radians(4.5f * i));
-		const glm::vec3 base = glm::vec3(c, s, 0.0f);
+		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
-		Vertices.emplace_back(radius * base + glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f));
-		Vertices.emplace_back(radius * base - glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f));
+		Vertices.emplace_back(radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
+		Vertices.emplace_back(radius * base - halfHeightVec, -normalVec, glm::vec2(0.0f));
 
 		edges.emplace_back(160 + (i ? 2 * i - 2 : 0), 160 + (i ? 2 * i : 158));
 		edges.emplace_back(161 + (i ? 2 * i - 2 : 0), 161 + (i ? 2 * i : 158));
@@ -312,10 +315,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 	{
 		const float c = glm::cos(glm::radians(9.0f * i));
 		const float s = glm::sin(glm::radians(9.0f * i));
-		const glm::vec3 base = glm::vec3(c, s, 0.0f);
+		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
-		Vertices.emplace_back(0.9f * radius * base + glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f));
-		Vertices.emplace_back(0.9f * radius * base - glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f));
+		Vertices.emplace_back(0.9f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
+		Vertices.emplace_back(0.9f * radius * base - halfHeightVec, -normalVec, glm::vec2(0.0f));
 
 		edges.emplace_back(320 + (i ? 2 * i - 2 : 0), 320 + (i ? 2 * i : 78));
 		edges.emplace_back(160 + (i ? 4 * i - 2 : 158), 320 + 2 * i);
@@ -332,10 +335,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 	{
 		const float c = glm::cos(glm::radians(18.0f * i));
 		const float s = glm::sin(glm::radians(18.0f * i));
-		const glm::vec3 base = glm::vec3(c, s, 0.0f);
+		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
-		Vertices.emplace_back(0.75f * radius * base + glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f));
-		Vertices.emplace_back(0.75f * radius * base - glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f));
+		Vertices.emplace_back(0.75f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
+		Vertices.emplace_back(0.75f * radius * base - halfHeightVec, -normalVec, glm::vec2(0.0f));
 
 		edges.emplace_back(400 + (i ? 2 * i - 2 : 0), 400 + (i ? 2 * i : 38));
 		edges.emplace_back(320 + (i ? 4 * i - 2 : 78), 400 + 2 * i);
@@ -352,10 +355,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 	{
 		const float c = glm::cos(glm::radians(36.0f * i));
 		const float s = glm::sin(glm::radians(36.0f * i));
-		const glm::vec3 base = glm::vec3(c, s, 0.0f);
+		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
-		Vertices.emplace_back(0.55f * radius * base + glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f));
-		Vertices.emplace_back(0.55f * radius * base - glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f));
+		Vertices.emplace_back(0.55f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
+		Vertices.emplace_back(0.55f * radius * base - halfHeightVec, -normalVec, glm::vec2(0.0f));
 
 		edges.emplace_back(440 + (i ? 2 * i - 2 : 0), 440 + (i ? 2 * i : 18));
 		edges.emplace_back(400 + (i ? 4 * i - 2 : 38), 440 + 2 * i);
@@ -372,10 +375,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 	{
 		const float c = glm::cos(glm::radians(72.0f * i));
 		const float s = glm::sin(glm::radians(72.0f * i));
-		const glm::vec3 base = glm::vec3(c, s, 0.0f);
+		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
-		Vertices.emplace_back(0.3f * radius * base + glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f));
-		Vertices.emplace_back(0.3f * radius * base - glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f));
+		Vertices.emplace_back(0.3f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
+		Vertices.emplace_back(0.3f * radius * base - halfHeightVec, -normalVec, glm::vec2(0.0f));
 
 		edges.emplace_back(460 + (i ? 2 * i - 2 : 0), 460 + (i ? 2 * i : 8));
 		edges.emplace_back(440 + (i ? 4 * i - 2 : 18), 460 + 2 * i);
@@ -390,8 +393,8 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 		edges.emplace_back(461 + 2 * i, 471);
 	}
 
-	Vertices.emplace_back(glm::vec3(0.0f, 0.0f, halfHeight), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec2(0.0f));
-	Vertices.emplace_back(glm::vec3(0.0f, 0.0f, -halfHeight), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec2(0.0f));
+	Vertices.emplace_back(halfHeightVec, normalVec, glm::vec2(0.0f));
+	Vertices.emplace_back(-halfHeightVec, -normalVec, glm::vec2(0.0f));
 
 	std::sort(edges.begin(), edges.end());
 
@@ -464,10 +467,10 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 		const glm::vec3 pos = Vertices[11 + i].Normal;
 
 		const glm::vec3 pos1 = reflect(Vertices[1 + j].Position, pos);
-		Vertices.emplace_back(radius * pos1, pos1, glm::vec2(0.0f));
+		Vertices.emplace_back(pos1, pos1, glm::vec2(0.0f));
 
 		const glm::vec3 pos2 = reflect(Vertices[1 + i].Position, pos);
-		Vertices.emplace_back(radius * pos2, pos2, glm::vec2(0.0f));
+		Vertices.emplace_back(pos2, pos2, glm::vec2(0.0f));
 
 		edges.emplace_back(11 + i, 16 + 2 * i);
 		edges.emplace_back(11 + i, 17 + 2 * i);
@@ -587,32 +590,73 @@ std::unique_ptr<Model> Model::CreateFromFile(Device& device, const std::string& 
 
 std::unique_ptr<Model> Model::CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ)
 {
-	Builder builder;
-	builder.MakeCube(halfExtentX, halfExtentY, halfExtentZ);
+	static Builder defaultBuilder;
+	static bool madeDefault = false;
+	if (!madeDefault)
+	{
+		defaultBuilder.MakeCube(1.0f, 1.0f, 1.0f);
+		madeDefault = true;
+	}
+
+	Builder builder = defaultBuilder;
+	for (Model::Vertex& vertex : builder.Vertices)
+		vertex.Position *= glm::vec3(halfExtentX, halfExtentY, halfExtentZ);
 
 	return std::make_unique<Model>(device, builder);
 }
 
 std::unique_ptr<Model> Model::CreateSphere(Device& device, float radius)
 {
-	Builder builder;
-	builder.MakeSphere(radius);
+	static Builder defaultBuilder;
+	static bool madeDefault = false;
+	if (!madeDefault)
+	{
+		defaultBuilder.MakeSphere(1.0f);
+		madeDefault = true;
+	}
+
+	Builder builder = defaultBuilder;
+	for (Model::Vertex& vertex : builder.Vertices)
+		vertex.Position *= radius;
 
 	return std::make_unique<Model>(device, builder);
 }
 
 std::unique_ptr<Model> Model::CreateCylinder(Device& device, float radius, float halfHeight)
 {
-	Builder builder;
-	builder.MakeCylinder(radius, halfHeight);
+	static Builder defaultBuilder;
+	static bool madeDefault = false;
+	if (!madeDefault)
+	{
+		defaultBuilder.MakeCylinder(1.0f, 1.0f);
+		madeDefault = true;
+	}
+
+	Builder builder = defaultBuilder;
+	for (Model::Vertex& vertex : builder.Vertices)
+		vertex.Position *= glm::vec3(halfHeight, radius, radius);
 
 	return std::make_unique<Model>(device, builder);
 }
 
 std::unique_ptr<Model> Model::CreateCapsule(Device& device, float radius, float halfHeight)
 {
-	Builder builder;
-	builder.MakeCapsule(radius, halfHeight);
+	static Builder defaultBuilder;
+	static bool madeDefault = false;
+	if (!madeDefault)
+	{
+		defaultBuilder.MakeCapsule(1.0f, 1.0f);
+		madeDefault = true;
+	}
+
+	Builder builder = defaultBuilder;
+	for (Model::Vertex& vertex : builder.Vertices)
+	{
+		const float hemisphereSign = float(vertex.Position.x > 0.0f) - float(vertex.Position.x < 0.0f);
+		vertex.Position.x -= hemisphereSign;
+		vertex.Position *= radius;
+		vertex.Position.x += hemisphereSign * halfHeight;
+	}
 
 	return std::make_unique<Model>(device, builder);
 }

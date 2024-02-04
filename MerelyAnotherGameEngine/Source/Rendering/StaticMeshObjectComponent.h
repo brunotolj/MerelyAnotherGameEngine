@@ -19,8 +19,6 @@ public:
 
 	glm::mat4 GetTransformMatrix() const;
 
-	glm::mat4 GetNormalMatrix() const;
-
 protected:
 	virtual void OnOwnerAddedToWorld(GameWorld& world) override;
 

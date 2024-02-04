@@ -33,7 +33,7 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 	for (StaticMeshObjectComponent const* staticMesh : mStaticMeshes)
 	{
 		PushConstantData push;
-		push.mNormalMatrix = staticMesh->GetNormalMatrix();
+		push.mNormalMatrix = staticMesh->GetTransformMatrix();
 		push.mNormalMatrix[3] = glm::vec4(staticMesh->mColor, 1.0f);
 		push.mTransform = cameraTransform * staticMesh->GetTransformMatrix();
 

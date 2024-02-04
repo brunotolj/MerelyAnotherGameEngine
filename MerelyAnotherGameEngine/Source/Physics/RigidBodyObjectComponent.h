@@ -3,10 +3,11 @@
 #include "Game/GameObjectComponent.h"
 #include "Physics/PhysicsCommon.h"
 
-#include <memory>
-
 #include <Foundation/PxTransform.h>
 #include <Geometry/PxCustomGeometry.h>
+#include <PxMaterial.h>
+
+struct PhysicsSystemMaterial;
 
 namespace physx
 {
@@ -19,6 +20,8 @@ public:
 	std::shared_ptr<physx::PxGeometry> mGeometry = nullptr;
 
 	std::shared_ptr<physx::PxCustomGeometry::Callbacks> mCustomGeometryCallbacks = nullptr;
+
+	PhysicsSystemMaterialPtr mMaterial = nullptr;
 
 	PhysicsSystemObjectType mType = PhysicsSystemObjectType::RigidStatic;
 
