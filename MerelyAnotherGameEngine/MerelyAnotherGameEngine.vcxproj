@@ -130,7 +130,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Game\GameObject.cpp" />
-    <ClCompile Include="Source\Game\GameObjectComponent.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
     <ClCompile Include="Source\Physics\RigidBodyObjectComponent.cpp" />

@@ -3,22 +3,22 @@
 #include "Game/GameWorld.h"
 #include "Rendering/RenderSystem.h"
 
-StaticMeshObjectComponent::StaticMeshObjectComponent(GameObject& owner) :
+StaticMeshObjectComponent::StaticMeshObjectComponent(TransformableObject& owner) :
 	GameObjectComponent(owner)
 {
 }
 
 glm::mat4 StaticMeshObjectComponent::GetTransformMatrix() const
 {
-	return mOwner.mTransform.Matrix();
+	return mOwner.Transform.Matrix();
 }
 
 void StaticMeshObjectComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	world.mRenderSystem->AddStaticMesh(this);
+	world.GetRenderSystem().AddStaticMesh(this);
 }
 
 void StaticMeshObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
 {
-	world.mRenderSystem->RemoveStaticMesh(this);
+	world.GetRenderSystem().RemoveStaticMesh(this);
 }

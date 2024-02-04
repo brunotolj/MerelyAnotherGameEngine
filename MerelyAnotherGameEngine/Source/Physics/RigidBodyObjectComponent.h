@@ -7,6 +7,7 @@
 #include <Geometry/PxCustomGeometry.h>
 #include <PxMaterial.h>
 
+class TransformableObject;
 struct PhysicsSystemMaterial;
 
 namespace physx
@@ -14,7 +15,7 @@ namespace physx
 	class PxRigidActor;
 }
 
-class RigidBodyObjectComponent : public GameObjectComponent
+class RigidBodyObjectComponent : public GameObjectComponent<TransformableObject>
 {
 public:
 	std::shared_ptr<physx::PxGeometry> mGeometry = nullptr;
@@ -31,7 +32,7 @@ public:
 
 	physx::PxVec3 mAngularVelocity = physx::PxVec3(physx::PxZero);
 
-	RigidBodyObjectComponent(GameObject& owner);
+	RigidBodyObjectComponent(TransformableObject& owner);
 
 protected:
 	virtual void OnOwnerAddedToWorld(GameWorld& world) override;

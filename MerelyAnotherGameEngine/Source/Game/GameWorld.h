@@ -12,9 +12,9 @@ class RenderSystem;
 class GameWorld : public NonCopyableClass
 {
 public:
-	std::unique_ptr<RenderSystem> mRenderSystem;
-
-	std::unique_ptr<PhysicsSystem> mPhysicsSystem;
+	GameWorld(
+		std::unique_ptr<RenderSystem>&& renderSystem,
+		std::unique_ptr<PhysicsSystem>&& physicsSystem);
 
 	void Update(float deltaTime);
 
@@ -22,6 +22,14 @@ public:
 
 	void RemoveObject(const std::shared_ptr<GameObject>& object);
 
-//private:
+	RenderSystem& GetRenderSystem() const { return *mRenderSystem; }
+
+	PhysicsSystem& GetPhysicsSystem() const { return *mPhysicsSystem; }
+
+private:
 	std::vector<std::shared_ptr<GameObject>> mObjects;
+
+	std::unique_ptr<RenderSystem> mRenderSystem;
+
+	std::unique_ptr<PhysicsSystem> mPhysicsSystem;
 };

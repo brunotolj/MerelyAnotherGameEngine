@@ -5,21 +5,28 @@
 class GameObject;
 class GameWorld;
 
-class GameObjectComponent : public NonCopyableClass
+class GameObjectComponentBase : public NonCopyableClass
+{
+	friend GameObject;
+
+protected:
+	virtual void OnOwnerAddedToWorld(GameWorld& world) {}
+
+	virtual void OnOwnerRemovedFromWorld(GameWorld& world) {}
+
+	virtual void UpdatePrePhysics(float deltaTime) {}
+
+	virtual void UpdatePostPhysics(float deltaTime) {}
+};
+
+template <typename T>
+class GameObjectComponent : public GameObjectComponentBase
 {
 	friend GameObject;
 
 public:
-	GameObjectComponent(GameObject& owner);
+	GameObjectComponent(T& owner) : mOwner(owner) {}
 
 protected:
-	GameObject& mOwner;
-
-	virtual void OnOwnerAddedToWorld(GameWorld& world);
-
-	virtual void OnOwnerRemovedFromWorld(GameWorld& world);
-
-	virtual void UpdatePrePhysics(float deltaTime);
-
-	virtual void UpdatePostPhysics(float deltaTime);
+	T& mOwner;
 };

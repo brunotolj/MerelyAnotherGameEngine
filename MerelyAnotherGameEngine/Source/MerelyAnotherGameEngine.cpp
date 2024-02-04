@@ -46,33 +46,48 @@ void RotateCameraByInput(Window& window, glm::vec2& accumulatedRotation, float d
 		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, accumulatedRotation.y));
 }
 
-class OscillationComponent : public GameObjectComponent
+class OscillationComponent : public GameObjectComponent<TransformableObject>
 {
 public:
-	mage::Transform mOriginalTransform;
+	mage::Transform OriginalTransform;
 
-	glm::vec3 mExtent = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 Extent = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	float mSpeed = 1.0f;
+	float Speed = 1.0f;
 
-	OscillationComponent(GameObject& owner) : GameObjectComponent(owner) {}
+	OscillationComponent(TransformableObject& owner) : GameObjectComponent(owner) {}
 
 	virtual void OnOwnerAddedToWorld(GameWorld& world)
 	{
-		mOriginalTransform = mOwner.mTransform;
+		OriginalTransform = mOwner.Transform;
 	}
 
-	virtual void UpdatePostPhysics(float deltatime) override
+	virtual void UpdatePrePhysics(float deltaTime) override
 	{
-		time += mSpeed * deltatime;
-		const float factor = glm::sin(time);
+		mTime += Speed * deltaTime;
+		const float factor = glm::sin(mTime);
 
-		mOwner.mTransform = mOriginalTransform;
-		mOwner.mTransform.Position += factor * mExtent;
+		mOwner.Transform.Position = OriginalTransform.Position + factor * Extent;
 	}
 
 private:
-	float time = 0.0f;
+	float mTime = 0.0f;
+};
+
+class KillZComponent : public GameObjectComponent<TransformableObject>
+{
+public:
+	float KillZ = 0.0f;
+
+	KillZComponent(TransformableObject& owner) : GameObjectComponent(owner) {}
+
+	virtual void UpdatePostPhysics(float deltatime) override
+	{
+		if (mOwner.Transform.Position.z < KillZ)
+		{
+			mOwner.MarkDestroyed();
+		}
+	}
 };
 
 void CreateCube(
@@ -81,8 +96,8 @@ void CreateCube(
 	const PhysicsSystemMaterialPtr& material,
 	glm::vec3 halfExtent)
 {
-	std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
-	gameObject->mTransform = transform;
+	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
+	gameObject->Transform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidStatic;
@@ -105,12 +120,12 @@ void CreateCapsule(
 	const glm::mat4 matrix = transform.Matrix();
 	const glm::vec3 right = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
-	std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
-	gameObject->mTransform = transform;
+	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
+	gameObject->Transform = transform;
 
  	OscillationComponent* const oscillation = gameObject->CreateComponent<OscillationComponent>();
- 	oscillation->mExtent = 4.5f * right;
- 	oscillation->mSpeed = 2.0f;
+ 	oscillation->Extent = 4.5f * right;
+ 	oscillation->Speed = 2.0f;
 
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidKinematic;
@@ -130,8 +145,8 @@ void CreateCylinder(
 	const PhysicsSystemMaterialPtr& material,
 	float radius, float halfHeight)
 {
-	std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
-	gameObject->mTransform = transform;
+	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
+	gameObject->Transform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidStatic;
@@ -155,8 +170,8 @@ void SpawnBall(
 	const glm::mat4 matrix = transform.Matrix();
 	const glm::vec3 forward = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
-	std::shared_ptr<GameObject> gameObject = std::make_shared<GameObject>();
-	gameObject->mTransform = transform;
+	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
+	gameObject->Transform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
 	rigidBody->mType = PhysicsSystemObjectType::RigidDynamic;
@@ -168,6 +183,9 @@ void SpawnBall(
 	staticMesh->mModel = Model::CreateSphere(device, radius);
 	staticMesh->mColor = glm::vec3(0.3f, 0.3f, 1.0f);
 
+	KillZComponent* const killZComponent = gameObject->CreateComponent<KillZComponent>();
+	killZComponent->KillZ = -10.0f;
+
 	world.AddObject(gameObject);
 }
 
@@ -177,15 +195,15 @@ int main()
 	Device device{ window };
 	Renderer renderer{ window, device };
 
-	GameWorld world;
-	world.mPhysicsSystem = std::make_unique<PhysicsSystem>();
-	world.mRenderSystem = std::make_unique<RenderSystem>(device, renderer.GetSwapchainRenderPass());
+	GameWorld world(
+		std::make_unique<RenderSystem>(device, renderer.GetSwapchainRenderPass()),
+		std::make_unique<PhysicsSystem>());
 
 	std::shared_ptr<physx::PxCustomGeometryExt::CylinderCallbacks> cylinderCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f, 1.0f, 2);
 	std::shared_ptr<physx::PxGeometry> cylinderCollision = std::make_shared<physx::PxCustomGeometry>(*cylinderCollisionCallbacks.get());
 
-	PhysicsSystemMaterialPtr material = world.mPhysicsSystem->CreateMaterial({ 0.1f, 0.05f, 0.9f });
-	PhysicsSystemMaterialPtr floorMaterial = world.mPhysicsSystem->CreateMaterial({ 0.1f, 0.05f, -0.5f });
+	PhysicsSystemMaterialPtr material = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.9f });
+	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, -0.5f });
 
 	{
 		mage::Transform transform;
@@ -231,7 +249,7 @@ int main()
 	}
 
 	std::shared_ptr<Camera> camera = std::make_shared<Camera>();
-	world.mRenderSystem->SetCamera(camera);
+	world.GetRenderSystem().SetCamera(camera);
 
 	camera->mTransform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
 
@@ -259,31 +277,11 @@ int main()
 
 		world.Update(frameTime);
 
-		size_t currentObject = 0;
-		size_t destroyedObjectCount = 0;
-		size_t objectCount = world.mObjects.size();
-		while (currentObject + destroyedObjectCount < objectCount)
-		{
-			if (world.mObjects[currentObject]->mTransform.Position.z < -20.0f)
-			{
-				std::swap(world.mObjects[currentObject], world.mObjects[objectCount - destroyedObjectCount - 1]);
-				destroyedObjectCount++;
-
-				world.RemoveObject(world.mObjects[objectCount - destroyedObjectCount]);
-			}
-			else
-			{
-				currentObject++;
-			}
-		}
-
-		world.mObjects.resize(objectCount - destroyedObjectCount);
-
 		if (VkCommandBuffer commandBuffer = renderer.BeginFrame())
 		{
 			renderer.BeginSwapChainRenderPass(commandBuffer);
 
-			world.mRenderSystem->RenderScene(commandBuffer);
+			world.GetRenderSystem().RenderScene(commandBuffer);
 
 			renderer.EndSwapChainRenderPass(commandBuffer);
 			renderer.EndFrame();
