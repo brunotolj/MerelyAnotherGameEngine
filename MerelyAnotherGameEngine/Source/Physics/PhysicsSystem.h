@@ -16,7 +16,11 @@ public:
 
 	void Update(float deltaTime);
 
-	physx::PxRigidActor* AddRigidBody(RigidBodyObjectComponent& object);
+	physx::PxRigidActor* AddRigidBody(
+		const PhysicsRigidBodyParams& params,
+		const physx::PxTransform& pose,
+		physx::PxVec3 linearVelocity,
+		physx::PxVec3 angularVelocity);
 
 	PhysicsSystemMaterialPtr CreateMaterial(const PhysicsSystemMaterialProperties& props);
 

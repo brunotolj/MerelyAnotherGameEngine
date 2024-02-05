@@ -1,9 +1,8 @@
+#include "Rendering/RenderSystem.h"
 #include "Core/Asserts.h"
 #include "Rendering/Camera.h"
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
-#include "Rendering/RenderSystem.h"
-#include "Rendering/StaticMeshObjectComponent.h"
 
 RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass) :
 	mDevice(device)
@@ -30,12 +29,15 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 
 	const glm::mat4 cameraTransform = mCamera->GetProjectionTransform() * mCamera->GetViewTransform();
 
-	for (StaticMeshObjectComponent const* staticMesh : mStaticMeshes)
+	for (Renderable const* renderable : mRenderables)
 	{
+		const glm::mat4 transform = renderable->GetTransform().Matrix();
+		const glm::vec4 color = glm::vec4(renderable->GetColor(), 1.0f);
+
 		PushConstantData push;
-		push.mNormalMatrix = staticMesh->GetTransformMatrix();
-		push.mNormalMatrix[3] = glm::vec4(staticMesh->mColor, 1.0f);
-		push.mTransform = cameraTransform * staticMesh->GetTransformMatrix();
+		push.NormalMatrix = transform;
+		push.NormalMatrix[3] = color;
+		push.Transform = cameraTransform * transform;
 
 		vkCmdPushConstants(
 			commandBuffer,
@@ -45,21 +47,19 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 			sizeof(PushConstantData),
 			&push);
 
-		mage_check(staticMesh->mModel != nullptr);
-
-		staticMesh->mModel->Bind(commandBuffer);
-		staticMesh->mModel->Draw(commandBuffer);
+		renderable->Bind(commandBuffer);
+		renderable->Draw(commandBuffer);
 	}
 }
 
-void RenderSystem::AddStaticMesh(StaticMeshObjectComponent const* staticMesh)
+void RenderSystem::AddRenderable(Renderable const* renderable)
 {
-	mStaticMeshes.insert(staticMesh);
+	mRenderables.insert(renderable);
 }
 
-void RenderSystem::RemoveStaticMesh(StaticMeshObjectComponent const* staticMesh)
+void RenderSystem::RemoveRenderable(Renderable const* renderable)
 {
-	mStaticMeshes.erase(staticMesh);
+	mRenderables.erase(renderable);
 }
 
 void RenderSystem::CreatePipelineLayout()

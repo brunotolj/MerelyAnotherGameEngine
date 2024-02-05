@@ -1,15 +1,15 @@
 #include "Core/Asserts.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
+#include "Game/RigidBodyObjectComponent.h"
+#include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
-#include "Physics/RigidBodyObjectComponent.h"
 #include "Rendering/Camera.h"
 #include "Rendering/Device.h"
 #include "Rendering/Model.h"
 #include "Rendering/Renderer.h"
 #include "Rendering/Window.h"
 #include "Rendering/RenderSystem.h"
-#include "Rendering/StaticMeshObjectComponent.h"
 
 #include <array>
 #include <chrono>
@@ -100,9 +100,9 @@ void CreateCube(
 	gameObject->Transform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->mType = PhysicsSystemObjectType::RigidStatic;
-	rigidBody->mGeometry = std::make_unique<physx::PxBoxGeometry>(halfExtent.x, halfExtent.y, halfExtent.z);
-	rigidBody->mMaterial = material;
+	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidStatic;
+	rigidBody->RigidBodyParams.Geometry = std::make_unique<physx::PxBoxGeometry>(halfExtent.x, halfExtent.y, halfExtent.z);
+	rigidBody->RigidBodyParams.Material = material;
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateCube(device, halfExtent.x, halfExtent.y, halfExtent.z);
@@ -128,9 +128,9 @@ void CreateCapsule(
  	oscillation->Speed = 2.0f;
 
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->mType = PhysicsSystemObjectType::RigidKinematic;
-	rigidBody->mGeometry = std::make_shared<physx::PxCapsuleGeometry>(radius, halfHeight);
-	rigidBody->mMaterial = material;
+	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidKinematic;
+	rigidBody->RigidBodyParams.Geometry = std::make_shared<physx::PxCapsuleGeometry>(radius, halfHeight);
+	rigidBody->RigidBodyParams.Material = material;
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateCapsule(device, radius, halfHeight);
@@ -149,10 +149,10 @@ void CreateCylinder(
 	gameObject->Transform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->mType = PhysicsSystemObjectType::RigidStatic;
-	rigidBody->mCustomGeometryCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * halfHeight, radius);
-	rigidBody->mGeometry = std::make_shared<physx::PxCustomGeometry>(*rigidBody->mCustomGeometryCallbacks.get());
-	rigidBody->mMaterial = material;
+	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidStatic;
+	rigidBody->RigidBodyParams.CustomGeometryCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * halfHeight, radius);
+	rigidBody->RigidBodyParams.Geometry = std::make_shared<physx::PxCustomGeometry>(*rigidBody->RigidBodyParams.CustomGeometryCallbacks.get());
+	rigidBody->RigidBodyParams.Material = material;
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateCylinder(device, radius, halfHeight);
@@ -174,10 +174,10 @@ void SpawnBall(
 	gameObject->Transform = transform;
 	
 	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->mType = PhysicsSystemObjectType::RigidDynamic;
-	rigidBody->mGeometry = std::make_shared<physx::PxSphereGeometry>(radius);
-	rigidBody->mMaterial = material;
-	rigidBody->mLinearVelocity = 10.0f * reinterpret_cast<const physx::PxVec3&>(forward);
+	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidDynamic;
+	rigidBody->RigidBodyParams.Geometry = std::make_shared<physx::PxSphereGeometry>(radius);
+	rigidBody->RigidBodyParams.Material = material;
+	rigidBody->LinearVelocity = 10.0f * reinterpret_cast<const physx::PxVec3&>(forward);
 
 	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
 	staticMesh->mModel = Model::CreateSphere(device, radius);

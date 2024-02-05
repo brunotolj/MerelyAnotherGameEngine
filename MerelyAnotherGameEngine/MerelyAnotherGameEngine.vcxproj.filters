@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{e4017cb5-3937-4616-b5ff-99bff706f675}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{30da2de5-abc3-4d58-b202-3926c7d422ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -37,9 +40,6 @@
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Rendering\Model.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\StaticMeshObjectComponent.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Rendering\Pipeline.cpp">
@@ -60,13 +60,16 @@
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Physics\RigidBodyObjectComponent.cpp">
-      <Filter>Source Files\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Game\GameObject.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\GameWorld.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\RigidBodyObjectComponent.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,9 +98,6 @@
     <ClInclude Include="Source\Rendering\Model.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\StaticMeshObjectComponent.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Rendering\Pipeline.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
@@ -116,9 +116,6 @@
     <ClInclude Include="Source\Physics\PhysicsSystem.h">
       <Filter>Source Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Physics\RigidBodyObjectComponent.h">
-      <Filter>Source Files\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsCommon.h">
       <Filter>Source Files\Physics</Filter>
     </ClInclude>
@@ -131,5 +128,22 @@
     <ClInclude Include="Source\Game\GameWorld.h">
       <Filter>Source Files\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Game\RigidBodyObjectComponent.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\StaticMeshObjectComponent.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rendering\RenderCommon.h">
+      <Filter>Source Files\Rendering</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Source\Shaders\SimpleShader.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\SimpleShader.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

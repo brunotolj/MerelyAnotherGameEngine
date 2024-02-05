@@ -1,6 +1,5 @@
-#include "Core/Asserts.h"
 #include "Physics/PhysicsSystem.h"
-#include "Physics/RigidBodyObjectComponent.h"
+#include "Core/Asserts.h"
 
 PhysicsSystem::PhysicsSystem()
 {
@@ -51,19 +50,23 @@ void PhysicsSystem::Update(float deltaTime)
 	mScene->fetchResults(true);
 }
 
-physx::PxRigidActor* PhysicsSystem::AddRigidBody(RigidBodyObjectComponent& object)
+physx::PxRigidActor* PhysicsSystem::AddRigidBody(
+	const PhysicsRigidBodyParams& params,
+	const physx::PxTransform& pose,
+	physx::PxVec3 linearVelocity,
+	physx::PxVec3 angularVelocity)
 {
 	physx::PxRigidActor* actor = nullptr;
-	physx::PxMaterial* material = object.mMaterial.get() ? &object.mMaterial->Get() : nullptr;
+	physx::PxMaterial* material = params.Material.get() ? &params.Material->Get() : nullptr;
 
-	physx::PxShape* shape = mPhysics->createShape(*object.mGeometry, &material, true);
+	physx::PxShape* shape = mPhysics->createShape(*params.Geometry, &material, true);
 	mage_check(shape);
 
-	switch (object.mType)
+	switch (params.Type)
 	{
 		case PhysicsSystemObjectType::RigidStatic:
 		{
-			physx::PxRigidStatic* rigidStatic = mPhysics->createRigidStatic(object.mPose);
+			physx::PxRigidStatic* rigidStatic = mPhysics->createRigidStatic(pose);
 			rigidStatic->attachShape(*shape);
 
 			actor = rigidStatic;
@@ -72,7 +75,7 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(RigidBodyObjectComponent& objec
 
 		case PhysicsSystemObjectType::RigidKinematic:
 		{
-			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(object.mPose);
+			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(pose);
 			rigidDynamic->attachShape(*shape);
 			rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 
@@ -82,11 +85,11 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(RigidBodyObjectComponent& objec
 
 		case PhysicsSystemObjectType::RigidDynamic:
 		{
-			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(object.mPose);
+			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(pose);
 			rigidDynamic->attachShape(*shape);
 
-			rigidDynamic->setLinearVelocity(object.mLinearVelocity, false);
-			rigidDynamic->setAngularVelocity(object.mAngularVelocity, false);
+			rigidDynamic->setLinearVelocity(linearVelocity, false);
+			rigidDynamic->setAngularVelocity(angularVelocity, false);
 
 			actor = rigidDynamic;
 			break;

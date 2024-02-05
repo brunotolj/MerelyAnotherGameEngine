@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/NonCopyable.h"
+#include "Rendering/RenderCommon.h"
 
 #include <memory>
 #include <set>
@@ -11,14 +12,13 @@
 class Camera;
 class Device;
 class Pipeline;
-class StaticMeshObjectComponent;
 
 class RenderSystem : public NonCopyableClass
 {
 	struct PushConstantData
 	{
-		alignas(64) glm::mat4 mTransform{ 1.0f };
-		alignas(64) glm::mat4 mNormalMatrix{ 1.0f };
+		alignas(64) glm::mat4 Transform{ 1.0f };
+		alignas(64) glm::mat4 NormalMatrix{ 1.0f };
 	};
 
 public:
@@ -30,9 +30,9 @@ public:
 
 	void RenderScene(VkCommandBuffer commandBuffer);
 
-	void AddStaticMesh(StaticMeshObjectComponent const* staticMesh);
+	void AddRenderable(Renderable const* renderable);
 
-	void RemoveStaticMesh(StaticMeshObjectComponent const* staticMesh);
+	void RemoveRenderable(Renderable const* renderable);
 
 private:
 	Device& mDevice;
@@ -43,7 +43,7 @@ private:
 
 	VkPipelineLayout mPipelineLayout;
 
-	std::set<StaticMeshObjectComponent const*> mStaticMeshes;
+	std::set<Renderable const*> mRenderables;
 
 	void CreatePipelineLayout();
 

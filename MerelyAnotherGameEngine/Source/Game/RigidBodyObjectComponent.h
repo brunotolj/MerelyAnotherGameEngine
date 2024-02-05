@@ -3,10 +3,6 @@
 #include "Game/GameObjectComponent.h"
 #include "Physics/PhysicsCommon.h"
 
-#include <Foundation/PxTransform.h>
-#include <Geometry/PxCustomGeometry.h>
-#include <PxMaterial.h>
-
 class TransformableObject;
 struct PhysicsSystemMaterial;
 
@@ -18,19 +14,11 @@ namespace physx
 class RigidBodyObjectComponent : public GameObjectComponent<TransformableObject>
 {
 public:
-	std::shared_ptr<physx::PxGeometry> mGeometry = nullptr;
+	PhysicsRigidBodyParams RigidBodyParams;
 
-	std::shared_ptr<physx::PxCustomGeometry::Callbacks> mCustomGeometryCallbacks = nullptr;
+	physx::PxVec3 LinearVelocity = physx::PxVec3(physx::PxZero);
 
-	PhysicsSystemMaterialPtr mMaterial = nullptr;
-
-	PhysicsSystemObjectType mType = PhysicsSystemObjectType::RigidStatic;
-
-	physx::PxTransform mPose = physx::PxTransform(physx::PxIdentity);
-	
-	physx::PxVec3 mLinearVelocity = physx::PxVec3(physx::PxZero);
-
-	physx::PxVec3 mAngularVelocity = physx::PxVec3(physx::PxZero);
+	physx::PxVec3 AngularVelocity = physx::PxVec3(physx::PxZero);
 
 	RigidBodyObjectComponent(TransformableObject& owner);
 
