@@ -55,14 +55,14 @@ public:
 
 	float Speed = 1.0f;
 
-	OscillationComponent(TransformableObject& owner) : GameObjectComponent(owner) {}
+	OscillationComponent(TransformableObject& owner, const ComponentTemplate<OscillationComponent>& creationTemplate) : GameObjectComponent(owner) {}
 
 	virtual void OnOwnerAddedToWorld(GameWorld& world)
 	{
 		OriginalTransform = mOwner.Transform;
 	}
 
-	virtual void UpdatePrePhysics(float deltaTime) override
+	virtual void UpdatePrePhysics(float deltaTime) override final
 	{
 		mTime += Speed * deltaTime;
 		const float factor = glm::sin(mTime);
@@ -79,9 +79,9 @@ class KillZComponent : public GameObjectComponent<TransformableObject>
 public:
 	float KillZ = 0.0f;
 
-	KillZComponent(TransformableObject& owner) : GameObjectComponent(owner) {}
+	KillZComponent(TransformableObject& owner, const ComponentTemplate<KillZComponent>& creationTemplate) : GameObjectComponent(owner) {}
 
-	virtual void UpdatePostPhysics(float deltatime) override
+	virtual void UpdatePostPhysics(float deltatime) override final
 	{
 		if (mOwner.Transform.Position.z < KillZ)
 		{
@@ -96,19 +96,22 @@ void CreateCube(
 	const PhysicsSystemMaterialPtr& material,
 	glm::vec3 halfExtent)
 {
-	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
-	gameObject->Transform = transform;
+	std::shared_ptr<TransformableObject> cube = std::make_shared<TransformableObject>();
+	TransformableObject& cubeRef = *cube.get();
+	cube->Transform = transform;
 	
-	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidStatic;
-	rigidBody->RigidBodyParams.Geometry = std::make_unique<physx::PxBoxGeometry>(halfExtent.x, halfExtent.y, halfExtent.z);
-	rigidBody->RigidBodyParams.Material = material;
+	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
+	rigidBodyTemplate.RigidBodyParams.Type = PhysicsSystemObjectType::RigidStatic;
+	rigidBodyTemplate.RigidBodyParams.Geometry = std::make_unique<physx::PxBoxGeometry>(halfExtent.x, halfExtent.y, halfExtent.z);
+	rigidBodyTemplate.RigidBodyParams.Material = material;
+	GameObject::CreateComponent(cubeRef, rigidBodyTemplate);
 
-	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
-	staticMesh->mModel = Model::CreateCube(device, halfExtent.x, halfExtent.y, halfExtent.z);
-	staticMesh->mColor = glm::vec3(0.5f, 0.5f, 0.5f);
+	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
+	staticMeshTemplate.Model = Model::CreateCube(device, halfExtent.x, halfExtent.y, halfExtent.z);
+	staticMeshTemplate.Color = glm::vec3(0.5f, 0.5f, 0.5f);
+	GameObject::CreateComponent(cubeRef, staticMeshTemplate);
 
-	world.AddObject(gameObject);
+	world.AddObject(cube);
 }
 
 void CreateCapsule(
@@ -120,23 +123,26 @@ void CreateCapsule(
 	const glm::mat4 matrix = transform.Matrix();
 	const glm::vec3 right = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
 
-	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
-	gameObject->Transform = transform;
+	std::shared_ptr<TransformableObject> capsule = std::make_shared<TransformableObject>();
+	TransformableObject& capsuleRef = *capsule.get();
+	capsule->Transform = transform;
 
- 	OscillationComponent* const oscillation = gameObject->CreateComponent<OscillationComponent>();
- 	oscillation->Extent = 4.5f * right;
- 	oscillation->Speed = 2.0f;
+ 	OscillationComponent& oscillation = GameObject::CreateComponent(capsuleRef, ComponentTemplate<OscillationComponent>());
+ 	oscillation.Extent = 4.5f * right;
+ 	oscillation.Speed = 2.0f;
 
-	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidKinematic;
-	rigidBody->RigidBodyParams.Geometry = std::make_shared<physx::PxCapsuleGeometry>(radius, halfHeight);
-	rigidBody->RigidBodyParams.Material = material;
+	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
+	rigidBodyTemplate.RigidBodyParams.Type = PhysicsSystemObjectType::RigidKinematic;
+	rigidBodyTemplate.RigidBodyParams.Geometry = std::make_unique<physx::PxCapsuleGeometry>(radius, halfHeight);
+	rigidBodyTemplate.RigidBodyParams.Material = material;
+	GameObject::CreateComponent(capsuleRef, rigidBodyTemplate);
 
-	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
-	staticMesh->mModel = Model::CreateCapsule(device, radius, halfHeight);
-	staticMesh->mColor = glm::vec3(0.3f, 0.7f, 0.3f);
+	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
+	staticMeshTemplate.Model = Model::CreateCapsule(device, radius, halfHeight);
+	staticMeshTemplate.Color = glm::vec3(0.3f, 0.7f, 0.3f);
+	GameObject::CreateComponent(capsuleRef, staticMeshTemplate);
 
-	world.AddObject(gameObject);
+	world.AddObject(capsule);
 }
 
 void CreateCylinder(
@@ -145,20 +151,23 @@ void CreateCylinder(
 	const PhysicsSystemMaterialPtr& material,
 	float radius, float halfHeight)
 {
-	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
-	gameObject->Transform = transform;
-	
-	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidStatic;
-	rigidBody->RigidBodyParams.CustomGeometryCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * halfHeight, radius);
-	rigidBody->RigidBodyParams.Geometry = std::make_shared<physx::PxCustomGeometry>(*rigidBody->RigidBodyParams.CustomGeometryCallbacks.get());
-	rigidBody->RigidBodyParams.Material = material;
+	std::shared_ptr<TransformableObject> cylinder = std::make_shared<TransformableObject>();
+	TransformableObject& cylinderRef = *cylinder.get();
+	cylinder->Transform = transform;
 
-	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
-	staticMesh->mModel = Model::CreateCylinder(device, radius, halfHeight);
-	staticMesh->mColor = glm::vec3(0.8f, 0.3f, 0.3f);
+	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
+	rigidBodyTemplate.RigidBodyParams.Type = PhysicsSystemObjectType::RigidStatic;
+	rigidBodyTemplate.RigidBodyParams.CustomGeometryCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * halfHeight, radius);
+	rigidBodyTemplate.RigidBodyParams.Geometry = std::make_shared<physx::PxCustomGeometry>(*rigidBodyTemplate.RigidBodyParams.CustomGeometryCallbacks.get());
+	rigidBodyTemplate.RigidBodyParams.Material = material;
+	GameObject::CreateComponent(cylinderRef, rigidBodyTemplate);
 
-	world.AddObject(gameObject);
+	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
+	staticMeshTemplate.Model = Model::CreateCylinder(device, radius, halfHeight);
+	staticMeshTemplate.Color = glm::vec3(0.8f, 0.3f, 0.3f);
+	GameObject::CreateComponent(cylinderRef, staticMeshTemplate);
+
+	world.AddObject(cylinder);
 }
 
 void SpawnBall(
@@ -168,25 +177,28 @@ void SpawnBall(
 	float radius)
 {
 	const glm::mat4 matrix = transform.Matrix();
-	const glm::vec3 forward = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+	const glm::vec3 forward = transform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
 
-	std::shared_ptr<TransformableObject> gameObject = std::make_shared<TransformableObject>();
-	gameObject->Transform = transform;
+	std::shared_ptr<TransformableObject> ball = std::make_shared<TransformableObject>();
+	TransformableObject& ballRef = *ball.get();
+	ball->Transform = transform;
 	
-	RigidBodyObjectComponent* const rigidBody = gameObject->CreateComponent<RigidBodyObjectComponent>();
-	rigidBody->RigidBodyParams.Type = PhysicsSystemObjectType::RigidDynamic;
-	rigidBody->RigidBodyParams.Geometry = std::make_shared<physx::PxSphereGeometry>(radius);
-	rigidBody->RigidBodyParams.Material = material;
-	rigidBody->LinearVelocity = 10.0f * reinterpret_cast<const physx::PxVec3&>(forward);
+	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
+	rigidBodyTemplate.RigidBodyParams.Type = PhysicsSystemObjectType::RigidDynamic;
+	rigidBodyTemplate.RigidBodyParams.Geometry = std::make_shared<physx::PxSphereGeometry>(radius);
+	rigidBodyTemplate.RigidBodyParams.Material = material;
+	rigidBodyTemplate.InitialLinearVelocity = 10.0f * reinterpret_cast<const physx::PxVec3&>(forward);
+	GameObject::CreateComponent(ballRef, rigidBodyTemplate);
 
-	StaticMeshObjectComponent* const staticMesh = gameObject->CreateComponent<StaticMeshObjectComponent>();
-	staticMesh->mModel = Model::CreateSphere(device, radius);
-	staticMesh->mColor = glm::vec3(0.3f, 0.3f, 1.0f);
+	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
+	staticMeshTemplate.Model = Model::CreateSphere(device, radius);
+	staticMeshTemplate.Color = glm::vec3(0.3f, 0.3f, 1.0f);
+	GameObject::CreateComponent(ballRef, staticMeshTemplate);
 
-	KillZComponent* const killZComponent = gameObject->CreateComponent<KillZComponent>();
-	killZComponent->KillZ = -10.0f;
+	KillZComponent& killZComponent = GameObject::CreateComponent(ballRef, ComponentTemplate<KillZComponent>());
+	killZComponent.KillZ = -10.0f;
 
-	world.AddObject(gameObject);
+	world.AddObject(ball);
 }
 
 int main()

@@ -580,15 +580,15 @@ Model::~Model()
 	}
 }
 
-std::unique_ptr<Model> Model::CreateFromFile(Device& device, const std::string& path)
+std::shared_ptr<Model> Model::CreateFromFile(Device& device, const std::string& path)
 {
 	Builder builder;
 	builder.LoadModel(path);
 
-	return std::make_unique<Model>(device, builder);
+	return std::make_shared<Model>(device, builder);
 }
 
-std::unique_ptr<Model> Model::CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ)
+std::shared_ptr<Model> Model::CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -602,10 +602,10 @@ std::unique_ptr<Model> Model::CreateCube(Device& device, float halfExtentX, floa
 	for (Model::Vertex& vertex : builder.Vertices)
 		vertex.Position *= glm::vec3(halfExtentX, halfExtentY, halfExtentZ);
 
-	return std::make_unique<Model>(device, builder);
+	return std::make_shared<Model>(device, builder);
 }
 
-std::unique_ptr<Model> Model::CreateSphere(Device& device, float radius)
+std::shared_ptr<Model> Model::CreateSphere(Device& device, float radius)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -619,10 +619,10 @@ std::unique_ptr<Model> Model::CreateSphere(Device& device, float radius)
 	for (Model::Vertex& vertex : builder.Vertices)
 		vertex.Position *= radius;
 
-	return std::make_unique<Model>(device, builder);
+	return std::make_shared<Model>(device, builder);
 }
 
-std::unique_ptr<Model> Model::CreateCylinder(Device& device, float radius, float halfHeight)
+std::shared_ptr<Model> Model::CreateCylinder(Device& device, float radius, float halfHeight)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -636,10 +636,10 @@ std::unique_ptr<Model> Model::CreateCylinder(Device& device, float radius, float
 	for (Model::Vertex& vertex : builder.Vertices)
 		vertex.Position *= glm::vec3(halfHeight, radius, radius);
 
-	return std::make_unique<Model>(device, builder);
+	return std::make_shared<Model>(device, builder);
 }
 
-std::unique_ptr<Model> Model::CreateCapsule(Device& device, float radius, float halfHeight)
+std::shared_ptr<Model> Model::CreateCapsule(Device& device, float radius, float halfHeight)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -658,7 +658,7 @@ std::unique_ptr<Model> Model::CreateCapsule(Device& device, float radius, float 
 		vertex.Position.x += hemisphereSign * halfHeight;
 	}
 
-	return std::make_unique<Model>(device, builder);
+	return std::make_shared<Model>(device, builder);
 }
 
 void Model::Bind(VkCommandBuffer commandBuffer)

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Game/GameObject.h"
 #include "Game/GameObjectComponent.h"
 #include "Physics/PhysicsCommon.h"
 
-class TransformableObject;
 struct PhysicsSystemMaterial;
 
 namespace physx
@@ -11,26 +11,36 @@ namespace physx
 	class PxRigidActor;
 }
 
+template<>
+struct ComponentTemplate<class RigidBodyObjectComponent>
+{
+	PhysicsRigidBodyParams RigidBodyParams;
+
+	physx::PxVec3 InitialLinearVelocity = physx::PxVec3(physx::PxZero);
+
+	physx::PxVec3 InitialAngularVelocity = physx::PxVec3(physx::PxZero);
+};
+
 class RigidBodyObjectComponent : public GameObjectComponent<TransformableObject>
 {
 public:
-	PhysicsRigidBodyParams RigidBodyParams;
-
-	physx::PxVec3 LinearVelocity = physx::PxVec3(physx::PxZero);
-
-	physx::PxVec3 AngularVelocity = physx::PxVec3(physx::PxZero);
-
-	RigidBodyObjectComponent(TransformableObject& owner);
+	RigidBodyObjectComponent(TransformableObject& owner, const ComponentTemplate<RigidBodyObjectComponent>& creationTemplate);
 
 protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) override;
+	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
 
-	virtual void OnOwnerRemovedFromWorld(GameWorld& world) override;
+	virtual void OnOwnerRemovedFromWorld(GameWorld& world) override final;
 
-	virtual void UpdatePrePhysics(float deltaTime) override;
+	virtual void UpdatePrePhysics(float deltaTime) override final;
 
-	virtual void UpdatePostPhysics(float deltaTime) override;
+	virtual void UpdatePostPhysics(float deltaTime) override final;
 
 private:
+	PhysicsRigidBodyParams mRigidBodyParams;
+
+	physx::PxVec3 mLinearVelocity = physx::PxVec3(physx::PxZero);
+
+	physx::PxVec3 mAngularVelocity = physx::PxVec3(physx::PxZero);
+
 	physx::PxRigidActor* mPhysicsActor = nullptr;
 };

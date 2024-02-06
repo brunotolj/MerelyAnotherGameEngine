@@ -44,15 +44,15 @@ public:
 	Model(Device& device, const Builder& builder);
 	~Model();
 
-	static std::unique_ptr<Model> CreateFromFile(Device& device, const std::string& path);
-
-	static std::unique_ptr<Model> CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ);
-
-	static std::unique_ptr<Model> CreateSphere(Device& device, float radius);
-
-	static std::unique_ptr<Model> CreateCylinder(Device& device, float radius, float halfHeight);
-
-	static std::unique_ptr<Model> CreateCapsule(Device& device, float radius, float halfHeight);
+	static std::shared_ptr<Model> CreateFromFile(Device& device, const std::string& path);
+	
+	static std::shared_ptr<Model> CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ);
+	
+	static std::shared_ptr<Model> CreateSphere(Device& device, float radius);
+	
+	static std::shared_ptr<Model> CreateCylinder(Device& device, float radius, float halfHeight);
+	
+	static std::shared_ptr<Model> CreateCapsule(Device& device, float radius, float halfHeight);
 
 	void Bind(VkCommandBuffer commandBuffer);
 

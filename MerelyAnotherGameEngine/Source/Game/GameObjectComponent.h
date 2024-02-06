@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/NonCopyable.h"
+#include "Game/GameObjectCommon.h"
 
 class GameObject;
 class GameWorld;
@@ -19,14 +20,14 @@ protected:
 	virtual void UpdatePostPhysics(float deltaTime) {}
 };
 
-template <typename T>
+template<GameObjectClass OwnerClass>
 class GameObjectComponent : public GameObjectComponentBase
 {
 	friend GameObject;
 
 public:
-	GameObjectComponent(T& owner) : mOwner(owner) {}
+	GameObjectComponent(OwnerClass& owner) : mOwner(owner) {}
 
 protected:
-	T& mOwner;
+	OwnerClass& mOwner;
 };

@@ -2,6 +2,7 @@
 
 #include "Core/NonCopyable.h"
 #include "Core/Transform.h"
+#include "Game/GameObjectCommon.h"
 
 #include <memory>
 #include <vector>
@@ -14,20 +15,18 @@ class GameObject : public NonCopyableClass
 	friend GameWorld;
 
 public:
-	template<typename ComponentClass, typename... Args>
-	ComponentClass* const CreateComponent()
+	template<GameObjectClass ObjectClass, GameObjectComponentClass ComponentClass>
+	static ComponentClass& CreateComponent(ObjectClass& owner, const ComponentTemplate<ComponentClass>& creationTemplate)
 	{
-		static_assert(std::is_base_of<GameObjectComponentBase, ComponentClass>::value, "ComponentClass must be derived from GameObjectComponent");
+		std::unique_ptr<ComponentClass> component = std::make_unique<ComponentClass>(owner, creationTemplate);
+		ComponentClass& componentRef = *component.get();
+		owner.mComponents.push_back(std::move(component));
 
-		auto& ownerRef = reinterpret_cast<decltype(std::declval<ComponentClass>().mOwner)&>(*this);
-		std::unique_ptr<ComponentClass> component = std::make_unique<ComponentClass>(ownerRef, Args...);
-		ComponentClass* const componentPtr = component.get();
-		mComponents.push_back(std::move(component));
-
-		return componentPtr;
+		return componentRef;
 	}
 
 	bool IsDestroyed() const { return mIsDestoryed; }
+
 	void MarkDestroyed() { mIsDestoryed = true; }
 
 protected:

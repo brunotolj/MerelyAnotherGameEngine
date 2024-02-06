@@ -4,8 +4,8 @@
 #include "Rendering/Model.h"
 #include "Rendering/RenderSystem.h"
 
-StaticMeshObjectComponent::StaticMeshObjectComponent(TransformableObject& owner) :
-	GameObjectComponent(owner)
+StaticMeshObjectComponent::StaticMeshObjectComponent(TransformableObject& owner, const ComponentTemplate<StaticMeshObjectComponent>& creationTemplate) :
+	GameObjectComponent(owner), mModel(creationTemplate.Model), mColor(creationTemplate.Color)
 {
 }
 

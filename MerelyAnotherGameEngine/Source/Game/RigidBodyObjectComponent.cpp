@@ -3,8 +3,11 @@
 #include "Game/GameWorld.h"
 #include "Physics/PhysicsSystem.h"
 
-RigidBodyObjectComponent::RigidBodyObjectComponent(TransformableObject& owner) :
-	GameObjectComponent(owner)
+RigidBodyObjectComponent::RigidBodyObjectComponent(TransformableObject& owner, const ComponentTemplate<RigidBodyObjectComponent>& creationTemplate) :
+	GameObjectComponent(owner),
+	mRigidBodyParams(creationTemplate.RigidBodyParams),
+	mLinearVelocity(creationTemplate.InitialLinearVelocity),
+	mAngularVelocity(creationTemplate.InitialAngularVelocity)
 {
 }
 
@@ -17,7 +20,7 @@ void RigidBodyObjectComponent::OnOwnerAddedToWorld(GameWorld& world)
 	pose.q.y = -mOwner.Transform.Rotation.ZX;
 	pose.q.z = -mOwner.Transform.Rotation.XY;
 
-	mPhysicsActor = world.GetPhysicsSystem().AddRigidBody(RigidBodyParams, pose, LinearVelocity, AngularVelocity);
+	mPhysicsActor = world.GetPhysicsSystem().AddRigidBody(mRigidBodyParams, pose, mLinearVelocity, mAngularVelocity);
 }
 
 void RigidBodyObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
@@ -27,7 +30,7 @@ void RigidBodyObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
 
 void RigidBodyObjectComponent::UpdatePrePhysics(float deltaTime)
 {
-	if (RigidBodyParams.Type == PhysicsSystemObjectType::RigidKinematic)
+	if (mRigidBodyParams.Type == PhysicsSystemObjectType::RigidKinematic)
 	{
 		physx::PxTransform pose;
 		pose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.Transform.Position);
@@ -42,7 +45,7 @@ void RigidBodyObjectComponent::UpdatePrePhysics(float deltaTime)
 
 void RigidBodyObjectComponent::UpdatePostPhysics(float deltaTime)
 {
-	if (RigidBodyParams.Type == PhysicsSystemObjectType::RigidDynamic)
+	if (mRigidBodyParams.Type == PhysicsSystemObjectType::RigidDynamic)
 	{
 		const physx::PxTransform pose = mPhysicsActor->getGlobalPose();
 		mOwner.Transform.Position = reinterpret_cast<const glm::vec3&>(pose.p);
@@ -50,5 +53,11 @@ void RigidBodyObjectComponent::UpdatePostPhysics(float deltaTime)
 		mOwner.Transform.Rotation.XY = -pose.q.z;
 		mOwner.Transform.Rotation.YZ = -pose.q.x;
 		mOwner.Transform.Rotation.ZX = -pose.q.y;
+	}
+
+	if (mRigidBodyParams.Type != PhysicsSystemObjectType::RigidStatic)
+	{
+		mLinearVelocity = reinterpret_cast<physx::PxRigidDynamic*>(mPhysicsActor)->getLinearVelocity();
+		mAngularVelocity = reinterpret_cast<physx::PxRigidDynamic*>(mPhysicsActor)->getAngularVelocity();
 	}
 }
