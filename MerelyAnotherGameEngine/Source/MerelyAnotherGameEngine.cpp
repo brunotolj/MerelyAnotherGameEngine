@@ -1,6 +1,7 @@
 #include "Core/Asserts.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
+#include "Game/InputSystem.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
@@ -18,27 +19,27 @@
 static constexpr int gWindowWidth = 1280;
 static constexpr int gWindowHeight = 720;
 
-void MoveByInput(Window& window, float deltaTime, mage::Transform& transform)
+void MoveByInput(InputSystem& inputSystem, float deltaTime, mage::Transform& transform)
 {
 	glm::vec3 movement(0.0f);
 
-	if (window.GetKeyState(GLFW_KEY_D) == GLFW_PRESS) movement.x += 1.0f;
-	if (window.GetKeyState(GLFW_KEY_A) == GLFW_PRESS) movement.x -= 1.0f;
+	if (inputSystem.GetKeyState(GLFW_KEY_D) == GLFW_PRESS) movement.x += 1.0f;
+	if (inputSystem.GetKeyState(GLFW_KEY_A) == GLFW_PRESS) movement.x -= 1.0f;
 
-	if (window.GetKeyState(GLFW_KEY_W) == GLFW_PRESS) movement.y += 1.0f;
-	if (window.GetKeyState(GLFW_KEY_S) == GLFW_PRESS) movement.y -= 1.0f;
+	if (inputSystem.GetKeyState(GLFW_KEY_W) == GLFW_PRESS) movement.y += 1.0f;
+	if (inputSystem.GetKeyState(GLFW_KEY_S) == GLFW_PRESS) movement.y -= 1.0f;
 
 	movement = transform.Matrix() * glm::vec4(movement, 0.0f);
 
-	if (window.GetKeyState(GLFW_KEY_E) == GLFW_PRESS) movement.z += 1.0f;
-	if (window.GetKeyState(GLFW_KEY_Q) == GLFW_PRESS) movement.z -= 1.0f;
+	if (inputSystem.GetKeyState(GLFW_KEY_E) == GLFW_PRESS) movement.z += 1.0f;
+	if (inputSystem.GetKeyState(GLFW_KEY_Q) == GLFW_PRESS) movement.z -= 1.0f;
 
 	transform.Position += 5.0f * deltaTime * movement;
 }
 
-void RotateCameraByInput(Window& window, glm::vec2& accumulatedRotation, float deltaTime, mage::Transform& transform)
+void RotateCameraByInput(glm::dvec2 cursorMovement, glm::vec2& accumulatedRotation, float deltaTime, mage::Transform& transform)
 {
-	accumulatedRotation += 0.01f * window.ConsumeMovement();
+	accumulatedRotation += 0.01f * glm::vec2(cursorMovement);
 	accumulatedRotation.y = glm::clamp(accumulatedRotation.y, -glm::radians(80.0f), glm::radians(80.0f));
 
 	transform.Rotation = mage::Rotor::Combine(
@@ -208,6 +209,7 @@ int main()
 	Renderer renderer{ window, device };
 
 	GameWorld world(
+		std::make_unique<InputSystem>(window),
 		std::make_unique<RenderSystem>(device, renderer.GetSwapchainRenderPass()),
 		std::make_unique<PhysicsSystem>());
 
@@ -269,6 +271,17 @@ int main()
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
 
+	bool pendingFire = false;
+	glm::dvec2 cursorMovement = glm::dvec2(0.0);
+
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_NORMAL); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_DISABLED); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&window]() { window.Close(); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_F, GLFW_PRESS, [&pendingFire]() { pendingFire = true; });
+
+	world.GetInputSystem().BindCursorMovementHandler([&cursorMovement](glm::dvec2 movement, int cursorMode)
+		{ if (cursorMode == GLFW_CURSOR_DISABLED) cursorMovement += movement; });
+
 	while (!window.ShouldClose())
 	{
 		Window::PollEvents();
@@ -277,14 +290,16 @@ int main()
 		const float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
-		RotateCameraByInput(window, viewRotation, frameTime, camera->mTransform);
-		MoveByInput(window, frameTime, camera->mTransform);
+		RotateCameraByInput(cursorMovement, viewRotation, frameTime, camera->mTransform);
+		cursorMovement = glm::dvec2(0.0);
+
+		MoveByInput(world.GetInputSystem(), frameTime, camera->mTransform);
 		camera->SetPerspectiveParams(0.1f, 1000.0f, glm::radians(90.0f), renderer.GetAspectRatio());
 
-		if (window.TEMP_mPendingFire)
+		if (pendingFire)
 		{
 			SpawnBall(world, device, camera->mTransform, material, 1.0f);
-			window.TEMP_mPendingFire = false;
+			pendingFire = false;
 		}
 
 		world.Update(frameTime);

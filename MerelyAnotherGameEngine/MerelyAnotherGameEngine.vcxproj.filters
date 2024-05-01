@@ -19,14 +19,14 @@
     <Filter Include="Source Files\Rendering">
       <UniqueIdentifier>{5d2d507c-ae16-48d8-9467-941ccf36837c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Physics">
-      <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{e4017cb5-3937-4616-b5ff-99bff706f675}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{30da2de5-abc3-4d58-b202-3926c7d422ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rendering\Physics">
+      <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -58,7 +58,7 @@
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
-      <Filter>Source Files\Physics</Filter>
+      <Filter>Source Files\Rendering\Physics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\GameObject.cpp">
       <Filter>Source Files\Game</Filter>
@@ -70,6 +70,9 @@
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\InputSystem.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -114,10 +117,10 @@
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsSystem.h">
-      <Filter>Source Files\Physics</Filter>
+      <Filter>Source Files\Rendering\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsCommon.h">
-      <Filter>Source Files\Physics</Filter>
+      <Filter>Source Files\Rendering\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\GameObject.h">
       <Filter>Source Files\Game</Filter>
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="Source\Rendering\RenderCommon.h">
       <Filter>Source Files\Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\InputSystem.h">
+      <Filter>Source Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

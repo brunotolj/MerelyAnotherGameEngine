@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Game\GameObject.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />
+    <ClCompile Include="Source\Game\InputSystem.cpp" />
     <ClCompile Include="Source\Game\RigidBodyObjectComponent.cpp" />
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="Source\Game\GameObject.h" />
     <ClInclude Include="Source\Game\GameObjectComponent.h" />
     <ClInclude Include="Source\Game\GameWorld.h" />
+    <ClInclude Include="Source\Game\InputSystem.h" />
     <ClInclude Include="Source\Game\RigidBodyObjectComponent.h" />
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h" />
     <ClInclude Include="Source\Physics\PhysicsCommon.h" />

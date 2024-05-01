@@ -1,11 +1,14 @@
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
+#include "Game/InputSystem.h"
 #include "Physics/PhysicsSystem.h"
 #include "Rendering/RenderSystem.h"
 
 GameWorld::GameWorld(
+	std::unique_ptr<InputSystem>&& inputSystem,
 	std::unique_ptr<RenderSystem>&& renderSystem,
 	std::unique_ptr<PhysicsSystem>&& physicsSystem) :
+	mInputSystem(std::move(inputSystem)),
 	mRenderSystem(std::move(renderSystem)),
 	mPhysicsSystem(std::move(physicsSystem))
 {

@@ -7,11 +7,11 @@ Window::Window(int width, int height, const std::string& name) :
 	IncrementWindowCount();
 	mWindow = glfwCreateWindow(mWidth, mHeight, mName.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(mWindow, this);
-	glfwSetFramebufferSizeCallback(mWindow, FramebufferResizedCallback);
-	glfwSetKeyCallback(mWindow, KeyCallback);
 
 	glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwGetCursorPos(mWindow, &mCursorPosX, &mCursorPosY);
+
+	glfwSetFramebufferSizeCallback(mWindow, FramebufferResizedCallback);
+	glfwSetKeyCallback(mWindow, KeyCallback);
 	glfwSetCursorPosCallback(mWindow, CursorPositionCallback);
 }
 
@@ -23,29 +23,9 @@ Window::~Window()
 
 uint32_t Window::sWindowCount = 0;
 
-void Window::PollEvents()
-{
-	glfwPollEvents();
-}
-
-bool Window::ShouldClose() const
-{
-	return glfwWindowShouldClose(mWindow);
-}
-
 VkExtent2D Window::GetExtent() const
 {
 	return { static_cast<uint32_t>(mWidth), static_cast<uint32_t>(mHeight) };
-}
-
-bool Window::WasWindowResized() const
-{
-	return mFramebufferResized;
-}
-
-void Window::ResetWindowResizedFlag()
-{
-	mFramebufferResized = false;
 }
 
 void Window::CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
@@ -86,45 +66,12 @@ void Window::FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t width, i
 
 void Window::KeyCallback(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(glfwWindow, true);
-		return;
-	}
-
-	if (key == GLFW_KEY_LEFT_CONTROL)
-	{
-		if (action == GLFW_PRESS && glfwGetInputMode(glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
-		{
-			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-			return;
-		}
-
-		if (action == GLFW_RELEASE && glfwGetInputMode(glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
-		{
-			Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-			glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-			glfwGetCursorPos(glfwWindow, &window->mCursorPosX, &window->mCursorPosY);
-			return;
-		}
-	}
-
-	if (key == GLFW_KEY_F && action == GLFW_PRESS)
-	{
-		Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-		window->TEMP_mPendingFire = true;
-	}
+	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
+	if (window->mKeyCallback != nullptr) window->mKeyCallback(key, scancode, action, mods);
 }
 
 void Window::CursorPositionCallback(GLFWwindow* glfwWindow, double posX, double posY)
 {
 	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-
-	if (glfwGetInputMode(glfwWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
-	{
-		window->mUnconsumedCursorMovement += glm::vec2(posX - window->mCursorPosX, posY - window->mCursorPosY);
-	}
-
-	window->mCursorPosX = posX;
-	window->mCursorPosY = posY;
+	if (window->mCursorPositionCallback != nullptr) window->mCursorPositionCallback(glm::dvec2(posX, posY));
 }
