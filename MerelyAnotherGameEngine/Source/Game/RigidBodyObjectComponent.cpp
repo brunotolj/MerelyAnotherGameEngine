@@ -1,5 +1,4 @@
 #include "Game/RigidBodyObjectComponent.h"
-#include "Game/GameObject.h"
 #include "Game/GameWorld.h"
 #include "Physics/PhysicsSystem.h"
 

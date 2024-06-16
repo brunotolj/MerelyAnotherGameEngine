@@ -1,5 +1,4 @@
 #include "Game/StaticMeshObjectComponent.h"
-#include "Game/GameObject.h"
 #include "Game/GameWorld.h"
 #include "Rendering/Model.h"
 #include "Rendering/RenderSystem.h"

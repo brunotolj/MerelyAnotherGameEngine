@@ -144,6 +144,8 @@
     <ClCompile Include="Source\Rendering\Swapchain.cpp" />
     <ClCompile Include="Source\Rendering\RenderSystem.cpp" />
     <ClCompile Include="Source\Rendering\Window.cpp" />
+    <ClCompile Include="Source\Utility\BoundedLineMovementComponent.cpp" />
+    <ClCompile Include="Source\Utility\KillZObjectComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h" />
@@ -168,6 +170,8 @@
     <ClInclude Include="Source\Rendering\Swapchain.h" />
     <ClInclude Include="Source\Rendering\RenderSystem.h" />
     <ClInclude Include="Source\Rendering\Window.h" />
+    <ClInclude Include="Source\Utility\BoundedLineMovementComponent.h" />
+    <ClInclude Include="Source\Utility\KillZObjectComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\SimpleShader.frag" />

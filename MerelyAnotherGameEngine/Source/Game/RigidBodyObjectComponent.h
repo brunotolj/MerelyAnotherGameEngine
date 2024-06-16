@@ -38,9 +38,9 @@ protected:
 private:
 	PhysicsRigidBodyParams mRigidBodyParams;
 
-	physx::PxVec3 mLinearVelocity = physx::PxVec3(physx::PxZero);
+	physx::PxVec3 mLinearVelocity;
 
-	physx::PxVec3 mAngularVelocity = physx::PxVec3(physx::PxZero);
+	physx::PxVec3 mAngularVelocity;
 
-	physx::PxRigidActor* mPhysicsActor = nullptr;
+	physx::PxRigidActor* mPhysicsActor;
 };

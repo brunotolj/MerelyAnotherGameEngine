@@ -28,6 +28,11 @@ namespace mage
 			};
 		}
 
+		static Rotor Identity()
+		{
+			return { 1.0f, 0.0f, 0.0f, 0.0f };
+		}
+
 		static Rotor FromAxisAndAngle(glm::vec3 axis, float angleRad)
 		{
 			const float invSqrt = 1.0f / std::sqrtf(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);

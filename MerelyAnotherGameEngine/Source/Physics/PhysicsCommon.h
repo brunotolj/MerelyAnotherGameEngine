@@ -25,11 +25,11 @@ using PhysicsSystemMaterialPtr = std::shared_ptr<PhysicsSystemMaterial>;
 
 struct PhysicsRigidBodyParams
 {
-	std::shared_ptr<physx::PxGeometry> Geometry = nullptr;
+	PhysicsSystemObjectType Type = PhysicsSystemObjectType::RigidStatic;
 
 	std::shared_ptr<physx::PxCustomGeometry::Callbacks> CustomGeometryCallbacks = nullptr;
+	
+	std::shared_ptr<physx::PxGeometry> Geometry = nullptr;
 
 	PhysicsSystemMaterialPtr Material = nullptr;
-
-	PhysicsSystemObjectType Type = PhysicsSystemObjectType::RigidStatic;
 };

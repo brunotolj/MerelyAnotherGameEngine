@@ -25,7 +25,10 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{30da2de5-abc3-4d58-b202-3926c7d422ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Rendering\Physics">
+    <Filter Include="Source Files\Utility">
+      <UniqueIdentifier>{b387ea45-02c5-4683-97e3-ad4a88894c77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -58,7 +61,7 @@
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
-      <Filter>Source Files\Rendering\Physics</Filter>
+      <Filter>Source Files\Physics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Game\GameObject.cpp">
       <Filter>Source Files\Game</Filter>
@@ -74,6 +77,12 @@
     </ClCompile>
     <ClCompile Include="Source\Game\InputSystem.cpp">
       <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utility\BoundedLineMovementComponent.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utility\KillZObjectComponent.cpp">
+      <Filter>Source Files\Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -117,10 +126,10 @@
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsSystem.h">
-      <Filter>Source Files\Rendering\Physics</Filter>
+      <Filter>Source Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsCommon.h">
-      <Filter>Source Files\Rendering\Physics</Filter>
+      <Filter>Source Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\GameObject.h">
       <Filter>Source Files\Game</Filter>
@@ -142,6 +151,12 @@
     </ClInclude>
     <ClInclude Include="Source\Game\InputSystem.h">
       <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utility\BoundedLineMovementComponent.h">
+      <Filter>Source Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utility\KillZObjectComponent.h">
+      <Filter>Source Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

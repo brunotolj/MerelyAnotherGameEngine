@@ -4,7 +4,9 @@
 #include "Core/Transform.h"
 #include "Game/GameObjectCommon.h"
 
+#include <map>
 #include <memory>
+#include <typeindex>
 #include <vector>
 
 class GameObjectComponentBase;
@@ -25,9 +27,26 @@ public:
 		return componentRef;
 	}
 
-	bool IsDestroyed() const { return mIsDestoryed; }
+	template<GameObjectComponentClass ComponentClass>
+	std::vector<std::shared_ptr<ComponentClass>> GetComponentsOfClass()
+	{
+		std::vector<std::shared_ptr<ComponentClass>> result;
 
-	void MarkDestroyed() { mIsDestoryed = true; }
+		auto componentArray = mComponentsByClass.find(typeid(ComponentClass));
+
+		if (componentArray == mComponentsByClass.end())
+			return result;
+
+		for (size_t index : componentArray->second)
+			result.push_back(std::reinterpret_pointer_cast<ComponentClass>(mComponents[index]));
+
+		return result;
+	}
+
+	bool IsDestroyed() const { return mIsDestoryed; }
+	void Destroy() { mIsDestoryed = true; }
+
+	GameWorld* GetWorld() const { return mWorld; }
 
 protected:
 	void OnAddedToWorld(GameWorld& world);
@@ -41,7 +60,9 @@ protected:
 private:
 	GameWorld* mWorld = nullptr;
 
-	std::vector<std::unique_ptr<GameObjectComponentBase>> mComponents;
+	std::vector<std::shared_ptr<GameObjectComponentBase>> mComponents;
+
+	std::map<std::type_index, std::vector<size_t>> mComponentsByClass;
 
 	bool mIsDestoryed = false;
 };

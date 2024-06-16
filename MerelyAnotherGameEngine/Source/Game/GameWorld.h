@@ -31,11 +31,11 @@ public:
 	PhysicsSystem& GetPhysicsSystem() const { return *mPhysicsSystem; }
 
 private:
-	std::vector<std::shared_ptr<GameObject>> mObjects;
-
 	std::unique_ptr<InputSystem> mInputSystem;
 
 	std::unique_ptr<RenderSystem> mRenderSystem;
 
 	std::unique_ptr<PhysicsSystem> mPhysicsSystem;
+
+	std::vector<std::shared_ptr<GameObject>> mObjects;
 };
