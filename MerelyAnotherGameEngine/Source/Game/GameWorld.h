@@ -38,4 +38,8 @@ private:
 	std::unique_ptr<PhysicsSystem> mPhysicsSystem;
 
 	std::vector<std::shared_ptr<GameObject>> mObjects;
+
+	std::vector<std::shared_ptr<GameObject>> mNewObjects;
+
+	bool mIsCurrentlyUpdatingObjects = false;
 };

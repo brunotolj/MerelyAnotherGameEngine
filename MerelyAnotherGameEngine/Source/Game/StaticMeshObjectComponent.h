@@ -18,7 +18,7 @@ struct ComponentTemplate<class StaticMeshObjectComponent>
 	glm::vec3 Color = glm::vec3(1.0f);
 };
 
-class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject>, public Renderable
+class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject>, public IRenderable
 {
 public:
 	StaticMeshObjectComponent(TransformableObject& owner, const ComponentTemplate<StaticMeshObjectComponent>& creationTemplate);

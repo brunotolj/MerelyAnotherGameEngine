@@ -36,9 +36,6 @@
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\Camera.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Rendering\Device.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
@@ -84,6 +81,15 @@
     <ClCompile Include="Source\Utility\KillZObjectComponent.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Utility\DefaultMovementComponent.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\CameraComponent.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp">
+      <Filter>Source Files\Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -100,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="Source\Core\Utils.h">
       <Filter>Source Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Camera.h">
-      <Filter>Source Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Source\Rendering\Device.h">
       <Filter>Source Files\Rendering</Filter>
@@ -156,6 +159,15 @@
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Source\Utility\KillZObjectComponent.h">
+      <Filter>Source Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utility\DefaultMovementComponent.h">
+      <Filter>Source Files\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\CameraComponent.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Utility\BallSpawnerComponent.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>

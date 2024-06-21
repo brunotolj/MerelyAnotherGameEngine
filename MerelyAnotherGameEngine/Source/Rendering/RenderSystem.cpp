@@ -1,14 +1,14 @@
 #include "Rendering/RenderSystem.h"
 #include "Core/Asserts.h"
-#include "Rendering/Camera.h"
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
+#include "Rendering/Renderer.h"
 
-RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass) :
-	mDevice(device)
+RenderSystem::RenderSystem(Device& device, Renderer& renderer) :
+	mDevice(device), mRenderer(renderer)
 {
 	CreatePipelineLayout();
-	CreatePipeline(renderPass);
+	CreatePipeline(renderer.GetSwapchainRenderPass());
 }
 
 RenderSystem::~RenderSystem()
@@ -16,20 +16,23 @@ RenderSystem::~RenderSystem()
 	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-void RenderSystem::SetCamera(const std::shared_ptr<Camera>& camera)
+float RenderSystem::GetAspectRatio() const
+{
+	return mRenderer.GetAspectRatio();
+}
+
+void RenderSystem::SetCamera(ICamera const* camera)
 {
 	mCamera = camera;
 }
 
 void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 {
-	mage_check(mCamera != nullptr);
-
 	mPipeline->Bind(commandBuffer);
 
-	const glm::mat4 cameraTransform = mCamera->GetProjectionTransform() * mCamera->GetViewTransform();
+	const glm::mat4 cameraTransform = mCamera ? mCamera->GetProjectionTransform() * mCamera->GetViewTransform() : glm::mat4(1.0f);
 
-	for (Renderable const* renderable : mRenderables)
+	for (IRenderable const* renderable : mRenderables)
 	{
 		const glm::mat4 transform = renderable->GetTransform().Matrix();
 		const glm::vec4 color = glm::vec4(renderable->GetColor(), 1.0f);
@@ -52,12 +55,12 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 	}
 }
 
-void RenderSystem::AddRenderable(Renderable const* renderable)
+void RenderSystem::AddRenderable(IRenderable const* renderable)
 {
 	mRenderables.insert(renderable);
 }
 
-void RenderSystem::RemoveRenderable(Renderable const* renderable)
+void RenderSystem::RemoveRenderable(IRenderable const* renderable)
 {
 	mRenderables.erase(renderable);
 }

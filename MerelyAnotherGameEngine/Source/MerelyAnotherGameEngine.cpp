@@ -2,16 +2,18 @@
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
 #include "Game/InputSystem.h"
+#include "Game/CameraComponent.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
-#include "Rendering/Camera.h"
 #include "Rendering/Device.h"
 #include "Rendering/Model.h"
 #include "Rendering/Renderer.h"
 #include "Rendering/Window.h"
 #include "Rendering/RenderSystem.h"
+#include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
+#include "Utility/DefaultMovementComponent.h"
 #include "Utility/KillZObjectComponent.h"
 
 #include <array>
@@ -21,32 +23,41 @@
 static constexpr int gWindowWidth = 1280;
 static constexpr int gWindowHeight = 720;
 
-void MoveByInput(InputSystem& inputSystem, float deltaTime, mage::Transform& transform)
+std::shared_ptr<TransformableObject> CreateControllableCamera(
+	const mage::Transform& transform,
+	float nearPlane,
+	float farPlane,
+	float horizontalFOV,
+	float speed,
+	PhysicsRigidBodyParams ballRigidBodyParams,
+	std::shared_ptr<Model> ballModel,
+	glm::vec3 ballColor,
+	float ballSpeed,
+	int inputSpawnBall)
 {
-	glm::vec3 movement(0.0f);
+	std::shared_ptr<TransformableObject> objectPtr = std::make_shared<TransformableObject>();
+	TransformableObject& object = *objectPtr.get();
+	object.Transform = transform;
 
-	if (inputSystem.GetKeyState(GLFW_KEY_D) == GLFW_PRESS) movement.x += 1.0f;
-	if (inputSystem.GetKeyState(GLFW_KEY_A) == GLFW_PRESS) movement.x -= 1.0f;
+	ComponentTemplate<DefaultMovementComponent> movementTemplate;
+	movementTemplate.Speed = speed;
+	GameObject::CreateComponent(object, movementTemplate);
 
-	if (inputSystem.GetKeyState(GLFW_KEY_W) == GLFW_PRESS) movement.y += 1.0f;
-	if (inputSystem.GetKeyState(GLFW_KEY_S) == GLFW_PRESS) movement.y -= 1.0f;
+	ComponentTemplate<CameraComponent> cameraTemplate;
+	cameraTemplate.NearPlane = nearPlane;
+	cameraTemplate.FarPlane = farPlane;
+	cameraTemplate.HorizontalFOV = horizontalFOV;
+	GameObject::CreateComponent(object, cameraTemplate);
 
-	movement = transform.Matrix() * glm::vec4(movement, 0.0f);
+	ComponentTemplate<BallSpawnerComponent> ballSpawnerTemplate;
+	ballSpawnerTemplate.RigidBodyParams = ballRigidBodyParams;
+	ballSpawnerTemplate.Model = ballModel;
+	ballSpawnerTemplate.Color = ballColor;
+	ballSpawnerTemplate.Speed = ballSpeed;
+	ballSpawnerTemplate.InputSpawn = inputSpawnBall;
+	GameObject::CreateComponent(object, ballSpawnerTemplate);
 
-	if (inputSystem.GetKeyState(GLFW_KEY_E) == GLFW_PRESS) movement.z += 1.0f;
-	if (inputSystem.GetKeyState(GLFW_KEY_Q) == GLFW_PRESS) movement.z -= 1.0f;
-
-	transform.Position += 5.0f * deltaTime * movement;
-}
-
-void RotateCameraByInput(glm::dvec2 cursorMovement, glm::vec2& accumulatedRotation, float deltaTime, mage::Transform& transform)
-{
-	accumulatedRotation += 0.01f * glm::vec2(cursorMovement);
-	accumulatedRotation.y = glm::clamp(accumulatedRotation.y, -glm::radians(80.0f), glm::radians(80.0f));
-
-	transform.Rotation = mage::Rotor::Combine(
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 0.0f, 1.0f }, accumulatedRotation.x),
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, accumulatedRotation.y));
+	return objectPtr;
 }
 
 std::shared_ptr<TransformableObject> CreateLevelObject(
@@ -107,36 +118,6 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 	return capsulePtr;
 }
 
-std::shared_ptr<TransformableObject> SpawnBall(
-	const mage::Transform& transform,
-	PhysicsRigidBodyParams rigidBodyParams,
-	std::shared_ptr<Model> model,
-	glm::vec3 color)
-{
-	const glm::mat4 matrix = transform.Matrix();
-	const glm::vec3 forward = transform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
-
-	std::shared_ptr<TransformableObject> ballPtr = std::make_shared<TransformableObject>();
-	TransformableObject& ball = *ballPtr.get();
-	ballPtr->Transform = transform;
-	
-	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
-	rigidBodyTemplate.RigidBodyParams = rigidBodyParams;
-	rigidBodyTemplate.InitialLinearVelocity = 10.0f * reinterpret_cast<const physx::PxVec3&>(forward);
-	GameObject::CreateComponent(ball, rigidBodyTemplate);
-
-	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Model = model;
-	staticMeshTemplate.Color = color;
-	GameObject::CreateComponent(ball, staticMeshTemplate);
-
-	ComponentTemplate<KillZObjectComponent> killZTemplate;
-	killZTemplate.KillZ = -10.0f;
-	GameObject::CreateComponent(ball, killZTemplate);
-
-	return ballPtr;
-}
-
 int main()
 {
 	Window window{ gWindowWidth, gWindowHeight, "Window" };
@@ -145,7 +126,7 @@ int main()
 
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
-		std::make_unique<RenderSystem>(device, renderer.GetSwapchainRenderPass()),
+		std::make_unique<RenderSystem>(device, renderer),
 		std::make_unique<PhysicsSystem>());
 
 	constexpr float boardSize = 20.0f;
@@ -190,6 +171,10 @@ int main()
 
 		world.AddObject(CreateLevelObject(transform, floorRigidBodyParams, floorModel, floorColor));
 
+		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
+		world.AddObject(CreateControllableCamera(transform, 0.1f, 1000.0f, glm::radians(90.0f), 5.0f,
+			ballRigidBodyParams, ballModel, ballColor, 10.0f, GLFW_KEY_F));
+
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
 
 		transform.Position = glm::vec3(cornerPosition, cornerPosition, cornerHalfHeight);
@@ -222,22 +207,10 @@ int main()
 	}
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
-	
-	std::shared_ptr<Camera> camera = std::make_shared<Camera>();
-	camera->mTransform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
-	world.GetRenderSystem().SetCamera(camera);
-
-	bool pendingFire = false;
-	glm::dvec2 cursorMovement = glm::dvec2(0.0);
-	glm::vec2 viewRotation = glm::vec2(0.0f);
 
 	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_NORMAL); });
 	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_DISABLED); });
 	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&window]() { window.Close(); });
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_F, GLFW_PRESS, [&pendingFire]() { pendingFire = true; });
-
-	world.GetInputSystem().BindCursorMovementHandler([&cursorMovement](glm::dvec2 movement, int cursorMode)
-		{ if (cursorMode == GLFW_CURSOR_DISABLED) cursorMovement += movement; });
 
 	while (!window.ShouldClose())
 	{
@@ -246,18 +219,6 @@ int main()
 		const std::chrono::steady_clock::time_point newTime = std::chrono::high_resolution_clock::now();
 		const float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
-
-		RotateCameraByInput(cursorMovement, viewRotation, frameTime, camera->mTransform);
-		cursorMovement = glm::dvec2(0.0);
-
-		MoveByInput(world.GetInputSystem(), frameTime, camera->mTransform);
-		camera->SetPerspectiveParams(0.1f, 1000.0f, glm::radians(90.0f), renderer.GetAspectRatio());
-
-		if (pendingFire)
-		{
-			world.AddObject(SpawnBall(camera->mTransform, ballRigidBodyParams, ballModel, ballColor));
-			pendingFire = false;
-		}
 
 		world.Update(frameTime);
 

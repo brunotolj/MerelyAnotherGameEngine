@@ -16,6 +16,7 @@ GameWorld::GameWorld(
 
 void GameWorld::Update(float deltaTime)
 {
+	mIsCurrentlyUpdatingObjects = true;
 	for (const std::shared_ptr<GameObject>& object : mObjects)
 	{
 		if (object->mIsDestoryed)
@@ -24,8 +25,17 @@ void GameWorld::Update(float deltaTime)
 		object->UpdatePrePhysics(deltaTime);
 	}
 
+	mIsCurrentlyUpdatingObjects = false;
+	for (std::shared_ptr<GameObject>& newObject : mNewObjects)
+	{
+		newObject->UpdatePrePhysics(deltaTime);
+		mObjects.push_back(std::move(newObject));
+	}
+	mNewObjects.clear();
+
 	mPhysicsSystem->Update(deltaTime);
 
+	mIsCurrentlyUpdatingObjects = true;
 	for (const std::shared_ptr<GameObject>& object : mObjects)
 	{
 		if (object->mIsDestoryed)
@@ -33,6 +43,14 @@ void GameWorld::Update(float deltaTime)
 
 		object->UpdatePostPhysics(deltaTime);
 	}
+
+	mIsCurrentlyUpdatingObjects = false;
+	for (std::shared_ptr<GameObject>& newObject : mNewObjects)
+	{
+		newObject->UpdatePostPhysics(deltaTime);
+		mObjects.push_back(std::move(newObject));
+	}
+	mNewObjects.clear();
 
 	size_t currentObject = 0;
 	size_t destroyedObjectCount = 0;
@@ -58,7 +76,11 @@ void GameWorld::Update(float deltaTime)
 
 void GameWorld::AddObject(const std::shared_ptr<GameObject>& object)
 {
-	mObjects.push_back(object);
+	if (mIsCurrentlyUpdatingObjects)
+		mNewObjects.push_back(object);
+	else
+		mObjects.push_back(object);
+
 	object->OnAddedToWorld(*this);
 }
 

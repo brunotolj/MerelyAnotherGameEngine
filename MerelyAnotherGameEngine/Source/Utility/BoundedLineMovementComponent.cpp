@@ -21,8 +21,9 @@ void BoundedLineMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 
 void BoundedLineMovementComponent::UpdatePrePhysics(float deltaTime)
 {
-	float input = 0.0f;
 	InputSystem& inputSystem = mOwner.GetWorld()->GetInputSystem();
+
+	float input = 0.0f;
 	if (inputSystem.GetKeyState(mInputNeg) == GLFW_PRESS) input -= 1.0f;
 	if (inputSystem.GetKeyState(mInputPos) == GLFW_PRESS) input += 1.0f;
 

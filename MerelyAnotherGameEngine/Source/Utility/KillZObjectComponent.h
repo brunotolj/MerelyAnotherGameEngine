@@ -18,5 +18,5 @@ protected:
 	virtual void UpdatePostPhysics(float deltaTime) override final;
 
 private:
-	float mKillZ = 0.0f;
+	float mKillZ;
 };

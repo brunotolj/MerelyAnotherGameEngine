@@ -9,9 +9,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-class Camera;
 class Device;
 class Pipeline;
+class Renderer;
 
 class RenderSystem : public NonCopyableClass
 {
@@ -22,28 +22,32 @@ class RenderSystem : public NonCopyableClass
 	};
 
 public:
-	RenderSystem(Device& device, VkRenderPass renderPass);
+	RenderSystem(Device& device, Renderer& renderPass);
 
 	~RenderSystem();
 
-	void SetCamera(const std::shared_ptr<Camera>& camera);
+	float GetAspectRatio() const;
+
+	void SetCamera(ICamera const* camera);
 
 	void RenderScene(VkCommandBuffer commandBuffer);
 
-	void AddRenderable(Renderable const* renderable);
+	void AddRenderable(IRenderable const* renderable);
 
-	void RemoveRenderable(Renderable const* renderable);
+	void RemoveRenderable(IRenderable const* renderable);
 
 private:
 	Device& mDevice;
 
+	Renderer& mRenderer;
+
 	std::unique_ptr<Pipeline> mPipeline;
 
-	std::shared_ptr<Camera> mCamera;
+	ICamera const* mCamera;
 
 	VkPipelineLayout mPipelineLayout;
 
-	std::set<Renderable const*> mRenderables;
+	std::set<IRenderable const*> mRenderables;
 
 	void CreatePipelineLayout();
 
