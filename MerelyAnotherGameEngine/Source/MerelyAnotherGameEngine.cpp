@@ -20,6 +20,9 @@
 #include <chrono>
 #include <memory>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 static constexpr int gWindowWidth = 1280;
 static constexpr int gWindowHeight = 720;
 
@@ -120,6 +123,9 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 
 int main()
 {
+	FT_Library library;
+	mage_check(FT_Init_FreeType(&library) == 0);
+
 	Window window{ gWindowWidth, gWindowHeight, "Window" };
 	Device device{ window };
 	Renderer renderer{ window, device };
