@@ -256,9 +256,7 @@ void Device::PopulateDebugMessengerCreateInfo(
 void Device::SetupDebugMessenger()
 {
 	if (!gEnableValidationLayers)
-	{
 		return;
-	}
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo;
 	PopulateDebugMessengerCreateInfo(createInfo);

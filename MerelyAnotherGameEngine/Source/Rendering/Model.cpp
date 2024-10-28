@@ -1,6 +1,7 @@
 #include "Core/Asserts.h"
 #include "Core/Rotor.h"
 #include "Core/Utils.h"
+#include "Rendering/Buffer.h"
 #include "Rendering/Model.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -570,14 +571,6 @@ Model::Model(Device& device, const Builder& builder) :
 
 Model::~Model()
 {
-	vkDestroyBuffer(mDevice.GetDevice(), mVertexBuffer, nullptr);
-	vkFreeMemory(mDevice.GetDevice(), mVertexBufferMemory, nullptr);
-
-	if (mIndexCount > 0)
-	{
-		vkDestroyBuffer(mDevice.GetDevice(), mIndexBuffer, nullptr);
-		vkFreeMemory(mDevice.GetDevice(), mIndexBufferMemory, nullptr);
-	}
 }
 
 std::shared_ptr<Model> Model::CreateFromFile(Device& device, const std::string& path)
@@ -663,13 +656,13 @@ std::shared_ptr<Model> Model::CreateCapsule(Device& device, float radius, float 
 
 void Model::Bind(VkCommandBuffer commandBuffer)
 {
-	VkBuffer buffers[] = { mVertexBuffer };
+	VkBuffer buffers[] = { mVertexBuffer->GetBuffer() };
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
 	if (mIndexCount > 0)
 	{
-		vkCmdBindIndexBuffer(commandBuffer, mIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer, mIndexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 	}
 }
 
@@ -690,70 +683,58 @@ void Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
 	mVertexCount = static_cast<uint32_t>(vertices.size());
 	mage_ensure(mVertexCount >= 3);
 
-	VkDeviceSize bufferSize = sizeof(Vertex) * mVertexCount;
+	VkDeviceSize vertexSize = sizeof(Vertex);
 
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
-	mDevice.CreateBuffer(
-		bufferSize,
+	Buffer stagingBuffer(
+		mDevice,
+		vertexSize,
+		mVertexCount,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer,
-		stagingBufferMemory);
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
 
-	void* data;
-	vkMapMemory(mDevice.GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, vertices.data(), bufferSize);
-	vkUnmapMemory(mDevice.GetDevice(), stagingBufferMemory);
+	stagingBuffer.Map();
+	stagingBuffer.WriteToBuffer((void*)vertices.data());
 
-	mDevice.CreateBuffer(
-		bufferSize,
+	mVertexBuffer = std::make_unique<Buffer>(
+		mDevice,
+		vertexSize,
+		mVertexCount,
 		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		mVertexBuffer,
-		mVertexBufferMemory);
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
 
-	mDevice.CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
-
-	vkDestroyBuffer(mDevice.GetDevice(), stagingBuffer, nullptr);
-	vkFreeMemory(mDevice.GetDevice(), stagingBufferMemory, nullptr);
+	mDevice.CopyBuffer(stagingBuffer.GetBuffer(), mVertexBuffer->GetBuffer(), stagingBuffer.GetBufferSize());
 }
 
 void Model::CreateIndexBuffers(const std::vector<uint32_t>& indices)
 {
 	mIndexCount = static_cast<uint32_t>(indices.size());
 	if (mIndexCount == 0)
-	{
 		return;
-	}
 
 	mage_ensure(mIndexCount >= 3);
 
-	VkDeviceSize bufferSize = sizeof(uint32_t) * mIndexCount;
+	VkDeviceSize indexSize = sizeof(uint32_t);
 
-	VkBuffer stagingBuffer;
-	VkDeviceMemory stagingBufferMemory;
-	mDevice.CreateBuffer(
-		bufferSize,
+	Buffer stagingBuffer(
+		mDevice,
+		indexSize,
+		mIndexCount,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer,
-		stagingBufferMemory);
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
 
-	void* data;
-	vkMapMemory(mDevice.GetDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-	memcpy(data, indices.data(), bufferSize);
-	vkUnmapMemory(mDevice.GetDevice(), stagingBufferMemory);
+	stagingBuffer.Map();
+	stagingBuffer.WriteToBuffer((void*)indices.data());
 
-	mDevice.CreateBuffer(
-		bufferSize,
-		VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-		mIndexBuffer,
-		mIndexBufferMemory);
+	mIndexBuffer = std::make_unique<Buffer>(
+		mDevice,
+		indexSize,
+		mIndexCount,
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
 
-	mDevice.CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
-
-	vkDestroyBuffer(mDevice.GetDevice(), stagingBuffer, nullptr);
-	vkFreeMemory(mDevice.GetDevice(), stagingBufferMemory, nullptr);
+	mDevice.CopyBuffer(stagingBuffer.GetBuffer(), mIndexBuffer->GetBuffer(), stagingBuffer.GetBufferSize());
 }

@@ -140,6 +140,8 @@
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp" />
+    <ClCompile Include="Source\Rendering\Buffer.cpp" />
+    <ClCompile Include="Source\Rendering\Descriptor.cpp" />
     <ClCompile Include="Source\Rendering\Device.cpp" />
     <ClCompile Include="Source\Rendering\Model.cpp" />
     <ClCompile Include="Source\Rendering\Pipeline.cpp" />
@@ -167,6 +169,8 @@
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h" />
     <ClInclude Include="Source\Physics\PhysicsCommon.h" />
     <ClInclude Include="Source\Physics\PhysicsSystem.h" />
+    <ClInclude Include="Source\Rendering\Buffer.h" />
+    <ClInclude Include="Source\Rendering\Descriptor.h" />
     <ClInclude Include="Source\Rendering\Device.h" />
     <ClInclude Include="Source\Rendering\Model.h" />
     <ClInclude Include="Source\Rendering\Pipeline.h" />

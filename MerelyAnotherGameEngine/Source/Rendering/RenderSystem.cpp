@@ -1,13 +1,47 @@
-#include "Rendering/RenderSystem.h"
 #include "Core/Asserts.h"
+#include "Rendering/Descriptor.h"
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
 #include "Rendering/Renderer.h"
+#include "Rendering/RenderSystem.h"
 
 RenderSystem::RenderSystem(Device& device, Renderer& renderer) :
 	mDevice(device), mRenderer(renderer)
 {
-	CreatePipelineLayout();
+	mDescriptorPool = DescriptorPool::Builder(mDevice)
+		.SetMaxSets(Swapchain::gMaxFramesInFlight)
+		.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Swapchain::gMaxFramesInFlight)
+		.Build();
+
+	mUniformBuffers.resize(Swapchain::gMaxFramesInFlight);
+	for (size_t i = 0; i < mUniformBuffers.size(); ++i)
+	{
+		std::unique_ptr<Buffer>& buffer = mUniformBuffers[i];
+		buffer = std::make_unique<Buffer>(
+			device,
+			sizeof(GlobalUBO),
+			1,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			device.properties.limits.minUniformBufferOffsetAlignment);
+
+		buffer->Map();
+	}
+
+	mDescriptorSetLayout = DescriptorSetLayout::Builder(mDevice)
+		.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.Build();
+
+	mDescriptorSets.resize(Swapchain::gMaxFramesInFlight);
+	for (size_t i = 0; i < mDescriptorSets.size(); ++i)
+	{
+		VkDescriptorBufferInfo bufferInfo = mUniformBuffers[i]->DescriptorInfo();
+		DescriptorWriter(*mDescriptorSetLayout, *mDescriptorPool)
+			.WriteBuffer(0, &bufferInfo)
+			.Build(mDescriptorSets[i]);
+	}
+
+	CreatePipelineLayout(mDescriptorSetLayout->GetDescriptorSetLayout());
 	CreatePipeline(renderer.GetSwapchainRenderPass());
 }
 
@@ -30,7 +64,25 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 {
 	mPipeline->Bind(commandBuffer);
 
-	const glm::mat4 cameraTransform = mCamera ? mCamera->GetProjectionTransform() * mCamera->GetViewTransform() : glm::mat4(1.0f);
+	GlobalUBO ubo;
+	ubo.CameraTransform = mCamera ? mCamera->GetProjectionTransform() * mCamera->GetViewTransform() : glm::mat4(1.0f);
+	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(3.0, 2.0, -2.5, 0.0));
+	ubo.LightDirectionAndAmbient.w = 0.05f;
+
+	int frameIndex = mRenderer.GetCurrentFrameIndex();
+	std::unique_ptr<Buffer>& uniformBuffer = mUniformBuffers[frameIndex];
+	uniformBuffer->WriteToBuffer(&ubo);
+	uniformBuffer->Flush();
+
+	vkCmdBindDescriptorSets(
+		commandBuffer,
+		VK_PIPELINE_BIND_POINT_GRAPHICS,
+		mPipelineLayout,
+		0,
+		1,
+		&mDescriptorSets[frameIndex],
+		0,
+		nullptr);
 
 	for (IRenderable const* renderable : mRenderables)
 	{
@@ -38,9 +90,8 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 		const glm::vec4 color = glm::vec4(renderable->GetColor(), 1.0f);
 
 		PushConstantData push;
-		push.NormalMatrix = transform;
-		push.NormalMatrix[3] = color;
-		push.Transform = cameraTransform * transform;
+		push.Transform = transform;
+		push.Color = color;
 
 		vkCmdPushConstants(
 			commandBuffer,
@@ -65,17 +116,19 @@ void RenderSystem::RemoveRenderable(IRenderable const* renderable)
 	mRenderables.erase(renderable);
 }
 
-void RenderSystem::CreatePipelineLayout()
+void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout descriptorSetLayout)
 {
 	VkPushConstantRange pushConstantRange;
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(PushConstantData);
 
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ descriptorSetLayout };
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0;
-	pipelineLayoutInfo.pSetLayouts = nullptr;
+	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 

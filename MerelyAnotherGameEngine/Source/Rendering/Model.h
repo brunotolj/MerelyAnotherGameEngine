@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+class Buffer;
+
 class Model : public NonCopyableClass
 {
 public:
@@ -61,12 +63,10 @@ public:
 private:
 	Device& mDevice;
 
-	VkBuffer mVertexBuffer;
-	VkDeviceMemory mVertexBufferMemory;
+	std::unique_ptr<Buffer> mVertexBuffer;
 	uint32_t mVertexCount;
 
-	VkBuffer mIndexBuffer;
-	VkDeviceMemory mIndexBufferMemory;
+	std::unique_ptr<Buffer> mIndexBuffer;
 	uint32_t mIndexCount;
 
 	void CreateVertexBuffers(const std::vector<Vertex>& vertices);

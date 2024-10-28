@@ -1,6 +1,6 @@
 #include "Core/Asserts.h"
-#include "Rendering/Pipeline.h"
 #include "Rendering/Model.h"
+#include "Rendering/Pipeline.h"
 
 #include <fstream>
 
