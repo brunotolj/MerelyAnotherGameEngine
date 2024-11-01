@@ -1,20 +1,22 @@
 #pragma once
 
 #include "Core/NonCopyable.h"
-#include "Rendering/Buffer.h"
 #include "Rendering/RenderCommon.h"
 
 #include <memory>
 #include <set>
+#include <string>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+class Buffer;
 class Device;
 class DescriptorPool;
 class DescriptorSetLayout;
 class Pipeline;
 class Renderer;
+class Texture;
 
 struct GlobalUBO
 {
@@ -31,7 +33,7 @@ class RenderSystem : public NonCopyableClass
 	};
 
 public:
-	RenderSystem(Device& device, Renderer& renderPass);
+	RenderSystem(Device& device, Renderer& renderPass, const std::vector<std::string>& texturePaths);
 
 	~RenderSystem();
 
@@ -56,7 +58,11 @@ private:
 
 	std::vector<std::unique_ptr<Buffer>> mUniformBuffers;
 
-	std::unique_ptr<DescriptorSetLayout> mDescriptorSetLayout;
+	std::vector<std::unique_ptr<Texture>> mTextures;
+
+	std::unique_ptr<DescriptorSetLayout> mUniformBufferDescriptorSetLayout;
+
+	std::unique_ptr<DescriptorSetLayout> mTextureDescriptorSetLayout;
 
 	std::vector<VkDescriptorSet> mDescriptorSets;
 
@@ -66,7 +72,7 @@ private:
 
 	std::set<IRenderable const*> mRenderables;
 
-	void CreatePipelineLayout(VkDescriptorSetLayout descriptorSetLayout);
+	void CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout);
 
 	void CreatePipeline(VkRenderPass renderPass);
 };

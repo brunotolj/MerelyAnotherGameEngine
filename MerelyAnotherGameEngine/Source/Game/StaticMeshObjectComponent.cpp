@@ -18,6 +18,11 @@ glm::vec3 StaticMeshObjectComponent::GetColor() const
 	return mColor;
 }
 
+uint32_t StaticMeshObjectComponent::GetTextureIndex() const
+{
+	return 0;
+}
+
 void StaticMeshObjectComponent::Bind(VkCommandBuffer_T* commandBuffer) const
 {
 	mModel->Bind(commandBuffer);

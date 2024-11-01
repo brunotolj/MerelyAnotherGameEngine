@@ -12,6 +12,8 @@ public:
 	virtual mage::Transform GetTransform() const = 0;
 	
 	virtual glm::vec3 GetColor() const = 0;
+
+	virtual uint32_t GetTextureIndex() const = 0;
 	
 	virtual void Bind(VkCommandBuffer_T* commandBuffer) const = 0;
 	

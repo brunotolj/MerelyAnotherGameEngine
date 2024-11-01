@@ -1,20 +1,29 @@
 #include "Core/Asserts.h"
+#include "Rendering/Buffer.h"
 #include "Rendering/Descriptor.h"
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
 #include "Rendering/Renderer.h"
 #include "Rendering/RenderSystem.h"
+#include "Rendering/Texture.h"
 
-RenderSystem::RenderSystem(Device& device, Renderer& renderer) :
+RenderSystem::RenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths) :
 	mDevice(device), mRenderer(renderer)
 {
+	uint32_t uniformBufferCount = Swapchain::gMaxFramesInFlight;
+	uint32_t textureCount = static_cast<uint32_t>(texturePaths.size());
+	mage_check(textureCount > 0);
+
 	mDescriptorPool = DescriptorPool::Builder(mDevice)
-		.SetMaxSets(Swapchain::gMaxFramesInFlight)
-		.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Swapchain::gMaxFramesInFlight)
+		.SetMaxSets(uniformBufferCount + textureCount)
+		.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniformBufferCount)
+		.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textureCount)
 		.Build();
 
-	mUniformBuffers.resize(Swapchain::gMaxFramesInFlight);
-	for (size_t i = 0; i < mUniformBuffers.size(); ++i)
+	mDescriptorSets.resize(uniformBufferCount + textureCount);
+
+	mUniformBuffers.resize(uniformBufferCount);
+	for (size_t i = 0; i < uniformBufferCount; ++i)
 	{
 		std::unique_ptr<Buffer>& buffer = mUniformBuffers[i];
 		buffer = std::make_unique<Buffer>(
@@ -28,20 +37,40 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer) :
 		buffer->Map();
 	}
 
-	mDescriptorSetLayout = DescriptorSetLayout::Builder(mDevice)
+	mUniformBufferDescriptorSetLayout = DescriptorSetLayout::Builder(mDevice)
 		.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.Build();
 
-	mDescriptorSets.resize(Swapchain::gMaxFramesInFlight);
-	for (size_t i = 0; i < mDescriptorSets.size(); ++i)
+	for (size_t i = 0; i < uniformBufferCount; ++i)
 	{
 		VkDescriptorBufferInfo bufferInfo = mUniformBuffers[i]->DescriptorInfo();
-		DescriptorWriter(*mDescriptorSetLayout, *mDescriptorPool)
+		DescriptorWriter(*mUniformBufferDescriptorSetLayout, *mDescriptorPool)
 			.WriteBuffer(0, &bufferInfo)
 			.Build(mDescriptorSets[i]);
 	}
 
-	CreatePipelineLayout(mDescriptorSetLayout->GetDescriptorSetLayout());
+	mTextures.resize(textureCount);
+	for (size_t i = 0; i < textureCount; ++i)
+	{
+		std::unique_ptr<Texture>& texture = mTextures[i];
+		texture = std::make_unique<Texture>(
+			device,
+			texturePaths[i]);
+	}
+
+	mTextureDescriptorSetLayout = DescriptorSetLayout::Builder(mDevice)
+		.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.Build();
+
+	for (size_t i = 0; i < textureCount; ++i)
+	{
+		VkDescriptorImageInfo imageInfo = mTextures[i]->DescriptorInfo();
+		DescriptorWriter(*mTextureDescriptorSetLayout, *mDescriptorPool)
+			.WriteImage(0, &imageInfo)
+			.Build(mDescriptorSets[uniformBufferCount + i]);
+	}
+
+	CreatePipelineLayout(mUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(), mTextureDescriptorSetLayout->GetDescriptorSetLayout());
 	CreatePipeline(renderer.GetSwapchainRenderPass());
 }
 
@@ -93,6 +122,18 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 		push.Transform = transform;
 		push.Color = color;
 
+		mage_check(renderable->GetTextureIndex() >= 0 && renderable->GetTextureIndex() < mTextures.size());
+
+		vkCmdBindDescriptorSets(
+			commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			mPipelineLayout,
+			1,
+			1,
+			&mDescriptorSets[Swapchain::gMaxFramesInFlight + renderable->GetTextureIndex()],
+			0,
+			nullptr);
+
 		vkCmdPushConstants(
 			commandBuffer,
 			mPipelineLayout,
@@ -116,14 +157,14 @@ void RenderSystem::RemoveRenderable(IRenderable const* renderable)
 	mRenderables.erase(renderable);
 }
 
-void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout descriptorSetLayout)
+void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout)
 {
 	VkPushConstantRange pushConstantRange;
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(PushConstantData);
 
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ descriptorSetLayout };
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ uniformBufferDescriptorSetLayout, textureDescriptorSetLayout };
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

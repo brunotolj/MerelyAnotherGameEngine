@@ -27,6 +27,8 @@ public:
 
 	virtual glm::vec3 GetColor() const override final;
 
+	virtual uint32_t GetTextureIndex() const override final;
+
 	virtual void Bind(VkCommandBuffer_T* commandBuffer) const override final;
 
 	virtual void Draw(VkCommandBuffer_T* commandBuffer) const override final;

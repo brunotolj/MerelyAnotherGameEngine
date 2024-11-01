@@ -130,9 +130,12 @@ int main()
 	Device device{ window };
 	Renderer renderer{ window, device };
 
+	std::vector<std::string> texturePaths;
+	texturePaths.push_back("Textures/default.png");
+
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
-		std::make_unique<RenderSystem>(device, renderer),
+		std::make_unique<RenderSystem>(device, renderer, texturePaths),
 		std::make_unique<PhysicsSystem>());
 
 	constexpr float boardSize = 20.0f;
