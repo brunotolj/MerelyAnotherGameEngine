@@ -3,6 +3,8 @@
 #include "Core/NonCopyable.h"
 #include "Rendering/Device.h"
 
+#include "glslang/Include/glslang_c_shader_types.h"
+
 #include <string>
 #include <vector>
 
@@ -26,6 +28,12 @@ struct PipelineConfigInfo : public NonCopyableStruct
 
 class Pipeline : public NonMovableClass
 {
+	struct SpirVBinary
+	{
+		uint32_t* Words = nullptr;
+		size_t Size = 0;
+	};
+
 public:
 	Pipeline(
 		Device& device,
@@ -52,5 +60,7 @@ private:
 		const std::string& fragFilePath,
 		const PipelineConfigInfo& configInfo);
 
-	void CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule);
+	void CreateShaderModule(SpirVBinary code, VkShaderModule* shaderModule);
+
+	SpirVBinary CompileShaderToSPIRV(glslang_stage_t stage, const char* shaderSource, const char* fileName) const;
 };

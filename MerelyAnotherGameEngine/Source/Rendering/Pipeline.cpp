@@ -2,6 +2,9 @@
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
 
+#include "glslang/Include/glslang_c_interface.h"
+#include "glslang/Public/resource_limits_c.h"
+
 #include <fstream>
 
 Pipeline::Pipeline(
@@ -85,10 +88,11 @@ std::vector<char> Pipeline::ReadFile(const std::string& path)
 	mage_ensure(file.is_open());
 
 	size_t fileSize = static_cast<size_t>(file.tellg());
-	std::vector<char> buffer(fileSize);
+	std::vector<char> buffer(fileSize + 1);
 
 	file.seekg(0);
 	file.read(buffer.data(), fileSize);
+	*buffer.rbegin() = '\0';
 
 	return buffer;
 }
@@ -104,8 +108,14 @@ void Pipeline::CreateGraphicsPipeline(
 	std::vector<char> vertCode = ReadFile(vertFilePath);
 	std::vector<char> fragCode = ReadFile(fragFilePath);
 
-	CreateShaderModule(vertCode, &mVertShaderModule);
-	CreateShaderModule(fragCode, &mFragShaderModule);
+	SpirVBinary vertBin = CompileShaderToSPIRV(glslang_stage_t::GLSLANG_STAGE_VERTEX, vertCode.data(), vertFilePath.data());
+	SpirVBinary fragBin = CompileShaderToSPIRV(glslang_stage_t::GLSLANG_STAGE_FRAGMENT, fragCode.data(), fragFilePath.data());
+
+	CreateShaderModule(vertBin, &mVertShaderModule);
+	CreateShaderModule(fragBin, &mFragShaderModule);
+
+	free(vertBin.Words);
+	free(fragBin.Words);
 
 	VkPipelineShaderStageCreateInfo shaderStages[2];
 
@@ -158,12 +168,83 @@ void Pipeline::CreateGraphicsPipeline(
 	mage_check(vkCreateGraphicsPipelines(mDevice.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) == VK_SUCCESS);
 }
 
-void Pipeline::CreateShaderModule(const std::vector<char>& code, VkShaderModule* shaderModule)
+void Pipeline::CreateShaderModule(SpirVBinary code, VkShaderModule* shaderModule)
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = code.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+	createInfo.codeSize = sizeof(uint32_t) * code.Size;
+	createInfo.pCode = code.Words;
 
 	mage_check(vkCreateShaderModule(mDevice.GetDevice(), &createInfo, nullptr, shaderModule) == VK_SUCCESS);
+}
+
+Pipeline::SpirVBinary Pipeline::CompileShaderToSPIRV(glslang_stage_t stage, const char* shaderSource, const char* fileName) const
+{
+	const glslang_input_t input = {
+		.language = GLSLANG_SOURCE_GLSL,
+		.stage = stage,
+		.client = GLSLANG_CLIENT_VULKAN,
+		.client_version = GLSLANG_TARGET_VULKAN_1_2,
+		.target_language = GLSLANG_TARGET_SPV,
+		.target_language_version = GLSLANG_TARGET_SPV_1_5,
+		.code = shaderSource,
+		.default_version = 100,
+		.default_profile = GLSLANG_NO_PROFILE,
+		.force_default_version_and_profile = false,
+		.forward_compatible = false,
+		.messages = GLSLANG_MSG_DEFAULT_BIT,
+		.resource = glslang_default_resource(),
+	};
+
+	glslang_shader_t* shader = glslang_shader_create(&input);
+
+	SpirVBinary bin;
+
+	if (!glslang_shader_preprocess(shader, &input))
+	{
+		printf("GLSL preprocessing failed %s\n", fileName);
+		printf("%s\n", glslang_shader_get_info_log(shader));
+		printf("%s\n", glslang_shader_get_info_debug_log(shader));
+		printf("%s\n", input.code);
+		glslang_shader_delete(shader);
+		return bin;
+	}
+
+	if (!glslang_shader_parse(shader, &input))
+	{
+		printf("GLSL parsing failed %s\n", fileName);
+		printf("%s\n", glslang_shader_get_info_log(shader));
+		printf("%s\n", glslang_shader_get_info_debug_log(shader));
+		printf("%s\n", glslang_shader_get_preprocessed_code(shader));
+		glslang_shader_delete(shader);
+		return bin;
+	}
+
+	glslang_program_t* program = glslang_program_create();
+	glslang_program_add_shader(program, shader);
+
+	if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT))
+	{
+		printf("GLSL linking failed %s\n", fileName);
+		printf("%s\n", glslang_program_get_info_log(program));
+		printf("%s\n", glslang_program_get_info_debug_log(program));
+		glslang_program_delete(program);
+		glslang_shader_delete(shader);
+		return bin;
+	}
+
+	glslang_program_SPIRV_generate(program, stage);
+
+	bin.Size = glslang_program_SPIRV_get_size(program);
+	bin.Words = (uint32_t*)malloc(bin.Size * sizeof(uint32_t));
+	glslang_program_SPIRV_get(program, bin.Words);
+
+	const char* spirv_messages = glslang_program_SPIRV_get_messages(program);
+	if (spirv_messages)
+		printf("(%s) %s\b", fileName, spirv_messages);
+
+	glslang_program_delete(program);
+	glslang_shader_delete(shader);
+
+	return bin;
 }

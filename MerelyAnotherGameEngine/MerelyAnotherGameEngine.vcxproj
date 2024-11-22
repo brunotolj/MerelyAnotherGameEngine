@@ -66,7 +66,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -74,7 +74,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)\ThirdParty\glfw-3.3.8\Bin;$(SolutionDir)\ThirdParty\physx\Bin\checked;$(SolutionDir)\ThirdParty\freetype-2.13.2\Bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3_mt.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;freetype.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glslang.lib;glslang-default-resource-limits.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;freetype.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command> xcopy /d /y "$(SolutionDir)\ThirdParty\physx\Bin\checked\*.dll" "$(OutDir)"
@@ -88,7 +88,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
@@ -98,7 +98,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)\ThirdParty\glfw-3.3.8\Bin;$(SolutionDir)\ThirdParty\physx\Bin\profile;$(SolutionDir)\ThirdParty\freetype-2.13.2\Bin\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3_mt.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;freetype.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glslang.lib;glslang-default-resource-limits.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;freetype.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command> xcopy /d /y "$(SolutionDir)ThirdParty\physx\Bin\profile\*.dll" "$(OutDir)"
@@ -114,7 +114,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -124,7 +124,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)\ThirdParty\glfw-3.3.8\Bin;$(SolutionDir)\ThirdParty\physx\Bin\release;$(SolutionDir)\ThirdParty\freetype-2.13.2\Bin\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3_mt.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;freetype.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;glslang.lib;glslang-default-resource-limits.lib;SPIRV-Tools.lib;SPIRV-Tools-opt.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;freetype.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command> xcopy /d /y "$(SolutionDir)\ThirdParty\physx\Bin\release\*.dll" "$(OutDir)"

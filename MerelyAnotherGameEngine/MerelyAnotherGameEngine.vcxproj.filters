@@ -90,14 +90,14 @@
     <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\Buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Rendering\Descriptor.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Rendering\Buffer.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Rendering\Texture.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -179,14 +179,14 @@
     <ClInclude Include="Source\Utility\BallSpawnerComponent.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\Buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Rendering\Descriptor.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Rendering\Buffer.h">
+      <Filter>Source Files\Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Rendering\Texture.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Rendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
