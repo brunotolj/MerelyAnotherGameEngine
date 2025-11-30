@@ -2,7 +2,6 @@
 
 #include "Game/GameObject.h"
 #include "Game/GameObjectComponent.h"
-#include "Rendering/RenderCommon.h"
 
 #include <memory>
 
@@ -18,25 +17,16 @@ struct ComponentTemplate<class StaticMeshObjectComponent>
 	glm::vec3 Color = glm::vec3(1.0f);
 };
 
-class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject>, public IRenderable
+class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject>
 {
 public:
 	StaticMeshObjectComponent(TransformableObject& owner, const ComponentTemplate<StaticMeshObjectComponent>& creationTemplate);
 
-	virtual mage::Transform GetTransform() const override final;
+	std::shared_ptr<Model> const& GetModel() const { return mModel; }
 
-	virtual glm::vec3 GetColor() const override final;
+	mage::Transform const& GetTransform() const { return mOwner.Transform; }
 
-	virtual uint32_t GetTextureIndex() const override final;
-
-	virtual void Bind(VkCommandBuffer_T* commandBuffer) const override final;
-
-	virtual void Draw(VkCommandBuffer_T* commandBuffer) const override final;
-
-protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
-
-	virtual void OnOwnerRemovedFromWorld(GameWorld& world) override final;
+	glm::vec3 GetColor() const { return mColor; }
 
 private:
 	std::shared_ptr<Model> mModel;

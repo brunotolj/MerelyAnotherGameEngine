@@ -41,6 +41,8 @@ public:
 		void MakeCylinder(float radius, float halfHeight);
 
 		void MakeCapsule(float radius, float halfHeight);
+
+		void FixWindingOrders();
 	};
 
 	Model(Device& device, const Builder& builder);
@@ -56,9 +58,9 @@ public:
 	
 	static std::shared_ptr<Model> CreateCapsule(Device& device, float radius, float halfHeight);
 
-	void Bind(VkCommandBuffer commandBuffer);
+	void Bind(VkCommandBuffer commandBuffer) const;
 
-	void Draw(VkCommandBuffer commandBuffer);
+	void Draw(VkCommandBuffer commandBuffer) const;
 
 private:
 	Device& mDevice;
@@ -69,6 +71,6 @@ private:
 	std::unique_ptr<Buffer> mIndexBuffer;
 	uint32_t mIndexCount;
 
-	void CreateVertexBuffers(const std::vector<Vertex>& vertices);
-	void CreateIndexBuffers(const std::vector<uint32_t>& indices);
+	void CreateVertexBuffer(const std::vector<Vertex>& vertices);
+	void CreateIndexBuffer(const std::vector<uint32_t>& indices);
 };

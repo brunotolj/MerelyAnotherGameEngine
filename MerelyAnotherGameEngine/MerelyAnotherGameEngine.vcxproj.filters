@@ -31,6 +31,9 @@
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Rendering\Systems">
+      <UniqueIdentifier>{65bda673-7838-4360-875e-5dc75fa7ed67}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -49,9 +52,6 @@
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Rendering\Swapchain.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\RenderSystem.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Rendering\Window.cpp">
@@ -99,6 +99,12 @@
     <ClCompile Include="Source\Rendering\Texture.cpp">
       <Filter>Source Files\Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Rendering\Systems\MeshRenderSystem.cpp">
+      <Filter>Source Files\Rendering\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp">
+      <Filter>Source Files\Rendering\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -131,9 +137,6 @@
     <ClInclude Include="Source\Rendering\Swapchain.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\RenderSystem.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Rendering\Window.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
@@ -157,9 +160,6 @@
     </ClInclude>
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h">
       <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\RenderCommon.h">
-      <Filter>Source Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Source\Game\InputSystem.h">
       <Filter>Source Files\Game</Filter>
@@ -188,12 +188,24 @@
     <ClInclude Include="Source\Rendering\Texture.h">
       <Filter>Source Files\Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Rendering\Systems\MeshRenderSystem.h">
+      <Filter>Source Files\Rendering\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rendering\Systems\SpriteRenderSystem.h">
+      <Filter>Source Files\Rendering\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Shaders\SimpleShader.frag">
+    <None Include="Source\Shaders\MeshShader.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="Source\Shaders\SimpleShader.vert">
+    <None Include="Source\Shaders\MeshShader.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\SpriteShader.vert">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\SpriteShader.frag">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

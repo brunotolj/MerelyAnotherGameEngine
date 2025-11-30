@@ -24,6 +24,9 @@ struct PipelineConfigInfo : public NonCopyableStruct
 	VkPipelineLayout mPipelineLayout = nullptr;
 	VkRenderPass mRenderPass = nullptr;
 	uint32_t mSubpass = 0;
+
+	std::vector<VkVertexInputBindingDescription> BindingDescriptions;
+	std::vector<VkVertexInputAttributeDescription> AttributeDescriptions;
 };
 
 class Pipeline : public NonMovableClass

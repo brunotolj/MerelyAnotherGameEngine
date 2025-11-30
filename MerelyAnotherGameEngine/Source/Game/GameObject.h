@@ -22,7 +22,10 @@ public:
 	{
 		std::unique_ptr<ComponentClass> component = std::make_unique<ComponentClass>(owner, creationTemplate);
 		ComponentClass& componentRef = *component.get();
+
+		const size_t index = owner.mComponents.size();
 		owner.mComponents.push_back(std::move(component));
+		owner.mComponentsByClass[typeid(ComponentClass)].push_back(index);
 
 		return componentRef;
 	}

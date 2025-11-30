@@ -32,9 +32,11 @@ namespace std
 std::vector<VkVertexInputBindingDescription> Model::Vertex::GetBindingDescriptions()
 {
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+
 	bindingDescriptions[0].binding = 0;
 	bindingDescriptions[0].stride = sizeof(Vertex);
 	bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
 	return bindingDescriptions;
 }
 
@@ -107,6 +109,8 @@ void Model::Builder::LoadModel(const std::string& path)
 			Indices.push_back(uniqueVertices[vertex]);
 		}
 	}
+
+	FixWindingOrders();
 }
  
 void Model::Builder::MakeCube(float halfExtentX, float halfExtentY, float halfExtentZ)
@@ -156,6 +160,8 @@ void Model::Builder::MakeCube(float halfExtentX, float halfExtentY, float halfEx
 		for (int32_t j = 0; j < 6; j++)
 			Indices.push_back(4 * i + (j / 3) + (j % 3));
 	}
+
+	FixWindingOrders();
 }
 
 void Model::Builder::MakeSphere(float radius)
@@ -274,6 +280,8 @@ void Model::Builder::MakeSphere(float radius)
 			Indices.push_back(edges[i].second);
 			Indices.push_back(edges[j].second);
 		}
+
+	FixWindingOrders();
 }
 
 void Model::Builder::MakeCylinder(float radius, float halfHeight)
@@ -412,6 +420,8 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 			Indices.push_back(edges[i].second);
 			Indices.push_back(edges[j].second);
 		}
+
+	FixWindingOrders();
 }
 
 void Model::Builder::MakeCapsule(float radius, float halfHeight)
@@ -560,13 +570,32 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 			Indices.push_back(edges[i].second);
 			Indices.push_back(edges[j].second);
 		}
+
+	FixWindingOrders();
+}
+
+void Model::Builder::FixWindingOrders()
+{
+	for (int32_t i = 0; i < Indices.size(); i += 3)
+	{
+		const Vertex& a = Vertices[Indices[i]];
+		const Vertex& b = Vertices[Indices[i + 1]];
+		const Vertex& c = Vertices[Indices[i + 2]];
+
+		if (glm::dot(a.Normal, glm::cross(b.Position - a.Position, c.Position - a.Position)) > 0.0f)
+		{
+			Indices[i + 1] ^= Indices[i + 2];
+			Indices[i + 2] ^= Indices[i + 1];
+			Indices[i + 1] ^= Indices[i + 2];
+		}
+	}
 }
 
 Model::Model(Device& device, const Builder& builder) :
 	mDevice(device)
 {
-	CreateVertexBuffers(builder.Vertices);
-	CreateIndexBuffers(builder.Indices);
+	CreateVertexBuffer(builder.Vertices);
+	CreateIndexBuffer(builder.Indices);
 }
 
 Model::~Model()
@@ -654,7 +683,7 @@ std::shared_ptr<Model> Model::CreateCapsule(Device& device, float radius, float 
 	return std::make_shared<Model>(device, builder);
 }
 
-void Model::Bind(VkCommandBuffer commandBuffer)
+void Model::Bind(VkCommandBuffer commandBuffer) const
 {
 	VkBuffer buffers[] = { mVertexBuffer->GetBuffer() };
 	VkDeviceSize offsets[] = { 0 };
@@ -666,7 +695,7 @@ void Model::Bind(VkCommandBuffer commandBuffer)
 	}
 }
 
-void Model::Draw(VkCommandBuffer commandBuffer)
+void Model::Draw(VkCommandBuffer commandBuffer) const
 {
 	if (mIndexCount > 0)
 	{
@@ -678,7 +707,7 @@ void Model::Draw(VkCommandBuffer commandBuffer)
 	}
 }
 
-void Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
+void Model::CreateVertexBuffer(const std::vector<Vertex>& vertices)
 {
 	mVertexCount = static_cast<uint32_t>(vertices.size());
 	mage_ensure(mVertexCount >= 3);
@@ -707,7 +736,7 @@ void Model::CreateVertexBuffers(const std::vector<Vertex>& vertices)
 	mDevice.CopyBuffer(stagingBuffer.GetBuffer(), mVertexBuffer->GetBuffer(), stagingBuffer.GetBufferSize());
 }
 
-void Model::CreateIndexBuffers(const std::vector<uint32_t>& indices)
+void Model::CreateIndexBuffer(const std::vector<uint32_t>& indices)
 {
 	mIndexCount = static_cast<uint32_t>(indices.size());
 	if (mIndexCount == 0)

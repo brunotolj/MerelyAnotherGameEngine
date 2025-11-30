@@ -22,6 +22,7 @@ layout(push_constant) uniform Push
 void main()
 {
 	gl_Position = ubo.CameraTransform * push.Transform * vec4(position, 1.0);
+	fragUV = uv;
 	
 	vec4 transformedNormal = push.Transform * vec4(normal, 0.0);
 	transformedNormal.w = 0.0;

@@ -25,6 +25,8 @@ public:
 
 	bool IsFrameInProgress() const { return mIsFrameInProgress; }
 
+	VkExtent2D GetExtent() const { return mSwapchain->GetExtent(); }
+
 	float GetAspectRatio() const { return mSwapchain->GetAspectRatio(); }
 
 	VkCommandBuffer GetCurrentCommandBuffer() const;

@@ -1,13 +1,13 @@
 #include "Core/Asserts.h"
 #include "Rendering/Buffer.h"
 #include "Rendering/Descriptor.h"
+#include "Rendering/Systems/SpriteRenderSystem.h"
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
 #include "Rendering/Renderer.h"
-#include "Rendering/RenderSystem.h"
 #include "Rendering/Texture.h"
 
-RenderSystem::RenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths) :
+SpriteRenderSystem::SpriteRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths) :
 	mDevice(device), mRenderer(renderer)
 {
 	uint32_t uniformBufferCount = Swapchain::gMaxFramesInFlight;
@@ -28,7 +28,7 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer, const std::vector
 		std::unique_ptr<Buffer>& buffer = mUniformBuffers[i];
 		buffer = std::make_unique<Buffer>(
 			device,
-			sizeof(GlobalUBO),
+			sizeof(SpriteUBO),
 			1,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
@@ -70,39 +70,36 @@ RenderSystem::RenderSystem(Device& device, Renderer& renderer, const std::vector
 			.Build(mDescriptorSets[uniformBufferCount + i]);
 	}
 
+	CreateVertexBuffer();
+
 	CreatePipelineLayout(mUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(), mTextureDescriptorSetLayout->GetDescriptorSetLayout());
 	CreatePipeline(renderer.GetSwapchainRenderPass());
 }
 
-RenderSystem::~RenderSystem()
+SpriteRenderSystem::~SpriteRenderSystem()
 {
 	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-float RenderSystem::GetAspectRatio() const
+float SpriteRenderSystem::GetAspectRatio() const
 {
 	return mRenderer.GetAspectRatio();
 }
 
-void RenderSystem::SetCamera(ICamera const* camera)
-{
-	mCamera = camera;
-}
-
-void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
+void SpriteRenderSystem::RenderSprites(VkCommandBuffer commandBuffer, const std::vector<SpriteRenderData>& data)
 {
 	mPipeline->Bind(commandBuffer);
+	
+	VkExtent2D screenExtent = mRenderer.GetExtent();
 
-	GlobalUBO ubo;
-	ubo.CameraTransform = mCamera ? mCamera->GetProjectionTransform() * mCamera->GetViewTransform() : glm::mat4(1.0f);
-	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(3.0, 2.0, -2.5, 0.0));
-	ubo.LightDirectionAndAmbient.w = 0.05f;
-
+	SpriteUBO ubo;
+	ubo.ScreenTransform = { -1.0f, -1.0f, 2.0f / 1920.0f, 2.0f / 1080.0f };
+	
 	int frameIndex = mRenderer.GetCurrentFrameIndex();
 	std::unique_ptr<Buffer>& uniformBuffer = mUniformBuffers[frameIndex];
 	uniformBuffer->WriteToBuffer(&ubo);
 	uniformBuffer->Flush();
-
+	
 	vkCmdBindDescriptorSets(
 		commandBuffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -113,27 +110,40 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 		0,
 		nullptr);
 
-	for (IRenderable const* renderable : mRenderables)
 	{
-		const glm::mat4 transform = renderable->GetTransform().Matrix();
-		const glm::vec4 color = glm::vec4(renderable->GetColor(), 1.0f);
+		VkBuffer buffers[] = { mVertexBuffer->GetBuffer() };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+	}
 
+	for (const SpriteRenderData& spriteData : data)
+	{
 		PushConstantData push;
-		push.Transform = transform;
-		push.Color = color;
+		
+		push.ScreenCoords = {
+			spriteData.ScreenCoordsMin.x,
+			spriteData.ScreenCoordsMin.y,
+			spriteData.ScreenCoordsMax.x - spriteData.ScreenCoordsMin.x,
+			spriteData.ScreenCoordsMax.y - spriteData.ScreenCoordsMin.y };
 
-		mage_check(renderable->GetTextureIndex() >= 0 && renderable->GetTextureIndex() < mTextures.size());
-
+		push.TextureCoords = {
+			spriteData.TextureCoordsMin.x,
+			spriteData.TextureCoordsMin.y,
+			spriteData.TextureCoordsMax.x - spriteData.TextureCoordsMin.x,
+			spriteData.TextureCoordsMax.y - spriteData.TextureCoordsMin.y };
+	
+		mage_check(spriteData.TextureIndex >= 0 && spriteData.TextureIndex < mTextures.size());
+	
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			mPipelineLayout,
 			1,
 			1,
-			&mDescriptorSets[Swapchain::gMaxFramesInFlight + renderable->GetTextureIndex()],
+			&mDescriptorSets[Swapchain::gMaxFramesInFlight + spriteData.TextureIndex],
 			0,
 			nullptr);
-
+	
 		vkCmdPushConstants(
 			commandBuffer,
 			mPipelineLayout,
@@ -141,23 +151,12 @@ void RenderSystem::RenderScene(VkCommandBuffer commandBuffer)
 			0,
 			sizeof(PushConstantData),
 			&push);
-
-		renderable->Bind(commandBuffer);
-		renderable->Draw(commandBuffer);
+	
+		vkCmdDraw(commandBuffer, 4, 1, 0, 0);
 	}
 }
 
-void RenderSystem::AddRenderable(IRenderable const* renderable)
-{
-	mRenderables.insert(renderable);
-}
-
-void RenderSystem::RemoveRenderable(IRenderable const* renderable)
-{
-	mRenderables.erase(renderable);
-}
-
-void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout)
+void SpriteRenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout)
 {
 	VkPushConstantRange pushConstantRange;
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -176,18 +175,51 @@ void RenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescr
 	mage_check(vkCreatePipelineLayout(mDevice.GetDevice(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) == VK_SUCCESS);
 }
 
-void RenderSystem::CreatePipeline(VkRenderPass renderPass)
+void SpriteRenderSystem::CreatePipeline(VkRenderPass renderPass)
 {
 	mage_check(mPipelineLayout != nullptr);
 
 	PipelineConfigInfo pipelineConfig{};
 	Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
 
+	pipelineConfig.mInputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 	pipelineConfig.mRenderPass = renderPass;
 	pipelineConfig.mPipelineLayout = mPipelineLayout;
+	pipelineConfig.mDepthStencilInfo.depthTestEnable = VK_FALSE;
+	pipelineConfig.BindingDescriptions = {{ 0, sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX }};
+	pipelineConfig.AttributeDescriptions = {{ 0, 0, VK_FORMAT_R32_SFLOAT, 0 }};
+
 	mPipeline = std::make_unique<Pipeline>(
 		mDevice,
-		"Source/Shaders/SimpleShader.vert",
-		"Source/Shaders/SimpleShader.frag",
+		"Source/Shaders/SpriteShader.vert",
+		"Source/Shaders/SpriteShader.frag",
 		pipelineConfig);
+}
+
+void SpriteRenderSystem::CreateVertexBuffer()
+{
+	VkDeviceSize vertexSize = sizeof(float);
+
+	float vertexData[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+
+	Buffer stagingBuffer(
+		mDevice,
+		vertexSize,
+		4,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	);
+
+	stagingBuffer.Map();
+	stagingBuffer.WriteToBuffer((void*)vertexData);
+
+	mVertexBuffer = std::make_unique<Buffer>(
+		mDevice,
+		vertexSize,
+		4,
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+	);
+
+	mDevice.CopyBuffer(stagingBuffer.GetBuffer(), mVertexBuffer->GetBuffer(), stagingBuffer.GetBufferSize());
 }

@@ -113,9 +113,9 @@ void Texture::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLa
 	barrier.image = mImage;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
 	barrier.subresourceRange.baseArrayLayer = 0;
 	barrier.subresourceRange.layerCount = 1;
-	barrier.subresourceRange.levelCount = 1;
 
 	VkPipelineStageFlags srcStage, dstStage;
 

@@ -41,7 +41,7 @@ void Pipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 	configInfo.mRasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
 	configInfo.mRasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	configInfo.mRasterizationInfo.lineWidth = 1.0f;
-	configInfo.mRasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+	configInfo.mRasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	configInfo.mRasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	configInfo.mRasterizationInfo.depthBiasEnable = VK_FALSE;
 
@@ -135,8 +135,8 @@ void Pipeline::CreateGraphicsPipeline(
 	shaderStages[1].pNext = nullptr;
 	shaderStages[1].pSpecializationInfo = nullptr;
 
-	const std::vector<VkVertexInputBindingDescription> bindingDescriptions = Model::Vertex::GetBindingDescriptions();
-	const std::vector<VkVertexInputAttributeDescription> attributeDescriptions = Model::Vertex::GetAttributeDescriptions();
+	const std::vector<VkVertexInputBindingDescription>& bindingDescriptions = configInfo.BindingDescriptions;
+	const std::vector<VkVertexInputAttributeDescription>& attributeDescriptions = configInfo.AttributeDescriptions;
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

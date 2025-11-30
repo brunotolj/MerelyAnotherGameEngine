@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core/NonCopyable.h"
-#include "Rendering/RenderCommon.h"
 
 #include <memory>
 #include <set>
@@ -14,17 +13,37 @@ class Buffer;
 class Device;
 class DescriptorPool;
 class DescriptorSetLayout;
+class Model;
 class Pipeline;
 class Renderer;
 class Texture;
 
-struct GlobalUBO
+struct MeshUBO
 {
 	alignas(16) glm::mat4 CameraTransform;
 	alignas(16) glm::vec4 LightDirectionAndAmbient;
 };
 
-class RenderSystem : public NonCopyableClass
+struct MeshRenderData
+{
+	const Model* Mesh;
+	glm::mat4 Transform;
+	glm::vec3 Color;
+	uint32_t TextureIndex;
+};
+
+struct SceneRenderData
+{
+	glm::mat4 ViewTransform;
+	glm::mat4 ProjectionTransform;
+
+	glm::vec3 LightDirection;
+	float AmbientLightIntensity;
+
+	std::vector<MeshRenderData> Meshes;
+};
+
+class MeshRenderSystem : public NonCopyableClass
 {
 	struct PushConstantData
 	{
@@ -33,19 +52,13 @@ class RenderSystem : public NonCopyableClass
 	};
 
 public:
-	RenderSystem(Device& device, Renderer& renderPass, const std::vector<std::string>& texturePaths);
+	MeshRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths);
 
-	~RenderSystem();
+	~MeshRenderSystem();
 
 	float GetAspectRatio() const;
 
-	void SetCamera(ICamera const* camera);
-
-	void RenderScene(VkCommandBuffer commandBuffer);
-
-	void AddRenderable(IRenderable const* renderable);
-
-	void RemoveRenderable(IRenderable const* renderable);
+	void RenderMeshes(VkCommandBuffer commandBuffer, const SceneRenderData& data);
 
 private:
 	Device& mDevice;
@@ -66,11 +79,7 @@ private:
 
 	std::vector<VkDescriptorSet> mDescriptorSets;
 
-	ICamera const* mCamera;
-
 	VkPipelineLayout mPipelineLayout;
-
-	std::set<IRenderable const*> mRenderables;
 
 	void CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout);
 

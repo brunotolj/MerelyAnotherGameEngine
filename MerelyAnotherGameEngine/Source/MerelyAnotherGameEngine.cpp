@@ -10,7 +10,8 @@
 #include "Rendering/Model.h"
 #include "Rendering/Renderer.h"
 #include "Rendering/Window.h"
-#include "Rendering/RenderSystem.h"
+#include "Rendering/Systems/MeshRenderSystem.h"
+#include "Rendering/Systems/SpriteRenderSystem.h"
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
@@ -28,9 +29,6 @@ static constexpr int gWindowHeight = 720;
 
 std::shared_ptr<TransformableObject> CreateControllableCamera(
 	const mage::Transform& transform,
-	float nearPlane,
-	float farPlane,
-	float horizontalFOV,
 	float speed,
 	PhysicsRigidBodyParams ballRigidBodyParams,
 	std::shared_ptr<Model> ballModel,
@@ -47,9 +45,6 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 	GameObject::CreateComponent(object, movementTemplate);
 
 	ComponentTemplate<CameraComponent> cameraTemplate;
-	cameraTemplate.NearPlane = nearPlane;
-	cameraTemplate.FarPlane = farPlane;
-	cameraTemplate.HorizontalFOV = horizontalFOV;
 	GameObject::CreateComponent(object, cameraTemplate);
 
 	ComponentTemplate<BallSpawnerComponent> ballSpawnerTemplate;
@@ -135,8 +130,9 @@ int main()
 
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
-		std::make_unique<RenderSystem>(device, renderer, texturePaths),
-		std::make_unique<PhysicsSystem>());
+		std::make_unique<PhysicsSystem>(),
+		std::make_unique<MeshRenderSystem>(device, renderer, texturePaths),
+		std::make_unique<SpriteRenderSystem>(device, renderer, texturePaths));
 
 	constexpr float boardSize = 20.0f;
 
@@ -152,7 +148,7 @@ int main()
 	constexpr float ballRadius = 1.0f;
 
 	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.9f });
-	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, -0.5f });
+	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.0f });
 
 	std::shared_ptr<physx::PxGeometry> floorCollision = std::make_unique<physx::PxBoxGeometry>(boardSize, boardSize, 1.0f);
 	std::shared_ptr<Model> floorModel = Model::CreateCube(device, boardSize, boardSize, 1.0f);
@@ -181,8 +177,7 @@ int main()
 		world.AddObject(CreateLevelObject(transform, floorRigidBodyParams, floorModel, floorColor));
 
 		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
-		world.AddObject(CreateControllableCamera(transform, 0.1f, 1000.0f, glm::radians(90.0f), 5.0f,
-			ballRigidBodyParams, ballModel, ballColor, 10.0f, GLFW_KEY_F));
+		world.AddObject(CreateControllableCamera(transform, 5.0f, ballRigidBodyParams, ballModel, ballColor, 10.0f, GLFW_KEY_F));
 
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
 
@@ -231,15 +226,7 @@ int main()
 
 		world.Update(frameTime);
 
-		if (VkCommandBuffer commandBuffer = renderer.BeginFrame())
-		{
-			renderer.BeginSwapChainRenderPass(commandBuffer);
-
-			world.GetRenderSystem().RenderScene(commandBuffer);
-
-			renderer.EndSwapChainRenderPass(commandBuffer);
-			renderer.EndFrame();
-		}
+		world.Render(renderer);
 	}
 
 	vkDeviceWaitIdle(device.GetDevice());
