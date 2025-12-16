@@ -19,23 +19,23 @@ void BoundedLineMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 	mCenter = mOwner.Transform.Position;
 }
 
-void BoundedLineMovementComponent::UpdatePrePhysics(float deltaTime)
+void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
 {
 	InputSystem& inputSystem = mOwner.GetWorld()->GetInputSystem();
 
-	float input = 0.0f;
+	f32 input = 0.0f;
 	if (inputSystem.GetKeyState(mInputNeg) == GLFW_PRESS) input -= 1.0f;
 	if (inputSystem.GetKeyState(mInputPos) == GLFW_PRESS) input += 1.0f;
 
-	float remainingTime = deltaTime;
-	float movement = 0.0f;
+	f32 remainingTime = deltaTime;
+	f32 movement = 0.0f;
 
 	if (remainingTime > 0.0f && mSpeed != 0.0f && input * mSpeed <= 0.0f)
 	{
-		const float decelTime = std::fabsf(mSpeed) / mDeceleration;
+		const f32 decelTime = std::fabsf(mSpeed) / mDeceleration;
 		if (decelTime > remainingTime)
 		{
-			const float deltaSpeed = mSpeed / std::fabsf(mSpeed) * mDeceleration * remainingTime;
+			const f32 deltaSpeed = mSpeed / std::fabsf(mSpeed) * mDeceleration * remainingTime;
 			movement += (mSpeed - 0.5f * deltaSpeed) * remainingTime;
 			mSpeed -= deltaSpeed;
 			remainingTime = 0.0f;
@@ -50,10 +50,10 @@ void BoundedLineMovementComponent::UpdatePrePhysics(float deltaTime)
 
 	if (remainingTime > 0.0f && ((mSpeed == 0.0f && input != 0.0f) || input * mSpeed > 0.0f))
 	{
-		const float accelTime = (mMaxSpeed - input * mSpeed) / mAcceleration;
+		const f32 accelTime = (mMaxSpeed - input * mSpeed) / mAcceleration;
 		if (accelTime > remainingTime)
 		{
-			const float deltaSpeed = input * mAcceleration * remainingTime;
+			const f32 deltaSpeed = input * mAcceleration * remainingTime;
 			movement += (mSpeed + 0.5f * deltaSpeed) * remainingTime;
 			mSpeed += deltaSpeed;
 			remainingTime = 0.0f;

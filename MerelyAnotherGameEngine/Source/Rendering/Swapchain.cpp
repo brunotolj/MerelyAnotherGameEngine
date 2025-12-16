@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Rendering/Swapchain.h"
 
 #include <array>
@@ -34,7 +33,7 @@ Swapchain::~Swapchain()
 		mSwapChain = nullptr;
 	}
 
-	for (int i = 0; i < mDepthImages.size(); i++)
+	for (i32 i = 0; i < mDepthImages.size(); i++)
 	{
 		vkDestroyImageView(mDevice.GetDevice(), mDepthImageViews[i], nullptr);
 		vkDestroyImage(mDevice.GetDevice(), mDepthImages[i], nullptr);
@@ -49,7 +48,7 @@ Swapchain::~Swapchain()
 	vkDestroyRenderPass(mDevice.GetDevice(), mRenderPass, nullptr);
 
 	// cleanup synchronization objects
-	for (size_t i = 0; i < gMaxFramesInFlight; i++)
+	for (u64 i = 0; i < gMaxFramesInFlight; i++)
 	{
 		vkDestroySemaphore(mDevice.GetDevice(), mRenderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(mDevice.GetDevice(), mImageAvailableSemaphores[i], nullptr);
@@ -57,19 +56,19 @@ Swapchain::~Swapchain()
 	}
 }
 
-VkResult Swapchain::AcquireNextImage(uint32_t* imageIndex)
+VkResult Swapchain::AcquireNextImage(u32* imageIndex)
 {
 	vkWaitForFences(
 		mDevice.GetDevice(),
 		1,
 		&mInFlightFences[mCurrentFrame],
 		VK_TRUE,
-		std::numeric_limits<uint64_t>::max());
+		std::numeric_limits<u64>::max());
 
 	VkResult result = vkAcquireNextImageKHR(
 		mDevice.GetDevice(),
 		mSwapChain,
-		std::numeric_limits<uint64_t>::max(),
+		std::numeric_limits<u64>::max(),
 		mImageAvailableSemaphores[mCurrentFrame],  // must be a not signaled semaphore
 		VK_NULL_HANDLE,
 		imageIndex);
@@ -77,7 +76,7 @@ VkResult Swapchain::AcquireNextImage(uint32_t* imageIndex)
 	return result;
 }
 
-VkResult Swapchain::SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex)
+VkResult Swapchain::SubmitCommandBuffers(const VkCommandBuffer* buffers, u32* imageIndex)
 {
 	if (mImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
 	{
@@ -150,7 +149,7 @@ void Swapchain::CreateSwapChain()
 	VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.mPresentModes);
 	VkExtent2D extent = ChooseSwapExtent(swapChainSupport.mCapabilities);
 
-	uint32_t imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
+	u32 imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
 	if (swapChainSupport.mCapabilities.maxImageCount > 0
 		&& imageCount > swapChainSupport.mCapabilities.maxImageCount)
 	{
@@ -169,7 +168,7 @@ void Swapchain::CreateSwapChain()
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	QueueFamilyIndices indices = mDevice.FindPhysicalQueueFamilies();
-	uint32_t queueFamilyIndices[] = { indices.mGraphicsFamily, indices.mPresentFamily };
+	u32 queueFamilyIndices[] = { indices.mGraphicsFamily, indices.mPresentFamily };
 
 	if (indices.mGraphicsFamily != indices.mPresentFamily)
 	{
@@ -212,7 +211,7 @@ void Swapchain::CreateSwapChain()
 void Swapchain::CreateImageViews()
 {
 	mImageViews.resize(mSwapChainImages.size());
-	for (size_t i = 0; i < mSwapChainImages.size(); i++) {
+	for (u64 i = 0; i < mSwapChainImages.size(); i++) {
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = mSwapChainImages[i];
@@ -281,7 +280,7 @@ void Swapchain::CreateRenderPass()
 	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.attachmentCount = static_cast<u32>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
@@ -297,7 +296,7 @@ void Swapchain::CreateRenderPass()
 void Swapchain::CreateFramebuffers()
 {
 	mFrameBuffers.resize(GetImageCount());
-	for (size_t i = 0; i < GetImageCount(); i++)
+	for (u64 i = 0; i < GetImageCount(); i++)
 	{
 		std::array<VkImageView, 2> attachments = { mImageViews[i], mDepthImageViews[i] };
 
@@ -305,7 +304,7 @@ void Swapchain::CreateFramebuffers()
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = mRenderPass;
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.attachmentCount = static_cast<u32>(attachments.size());
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = swapChainExtent.width;
 		framebufferInfo.height = swapChainExtent.height;
@@ -326,7 +325,7 @@ void Swapchain::CreateDepthResources()
 	mDepthImageMemorys.resize(GetImageCount());
 	mDepthImageViews.resize(GetImageCount());
 
-	for (int i = 0; i < mDepthImages.size(); i++)
+	for (i32 i = 0; i < mDepthImages.size(); i++)
 	{
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -379,7 +378,7 @@ void Swapchain::CreateSyncObjects()
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (size_t i = 0; i < gMaxFramesInFlight; i++)
+	for (u64 i = 0; i < gMaxFramesInFlight; i++)
 	{
 		mage_check(vkCreateSemaphore(mDevice.GetDevice(), &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) == VK_SUCCESS);
 		mage_check(vkCreateSemaphore(mDevice.GetDevice(), &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) == VK_SUCCESS);
@@ -416,7 +415,7 @@ VkPresentModeKHR Swapchain::ChooseSwapPresentMode(const std::vector<VkPresentMod
 
 VkExtent2D Swapchain::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
-	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+	if (capabilities.currentExtent.width != std::numeric_limits<u32>::max())
 	{
 		return capabilities.currentExtent;
 	}

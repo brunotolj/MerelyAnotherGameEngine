@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Rendering\Systems">
       <UniqueIdentifier>{65bda673-7838-4360-875e-5dc75fa7ed67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Framework">
+      <UniqueIdentifier>{88a4bb55-f911-4d40-8672-8d7ebaf04db8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -104,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp">
       <Filter>Source Files\Rendering\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Framework\VulkanDevice.cpp">
+      <Filter>Source Files\Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -193,6 +199,21 @@
     </ClInclude>
     <ClInclude Include="Source\Rendering\Systems\SpriteRenderSystem.h">
       <Filter>Source Files\Rendering\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\VulkanDevice.h">
+      <Filter>Source Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\String.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Array.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\_PCH.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Types.h">
+      <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

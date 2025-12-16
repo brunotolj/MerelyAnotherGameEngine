@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Rendering/Buffer.h"
 #include "Rendering/Descriptor.h"
 #include "Rendering/Systems/SpriteRenderSystem.h"
@@ -10,8 +9,8 @@
 SpriteRenderSystem::SpriteRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths) :
 	mDevice(device), mRenderer(renderer)
 {
-	uint32_t uniformBufferCount = Swapchain::gMaxFramesInFlight;
-	uint32_t textureCount = static_cast<uint32_t>(texturePaths.size());
+	u32 uniformBufferCount = Swapchain::gMaxFramesInFlight;
+	u32 textureCount = static_cast<u32>(texturePaths.size());
 	mage_check(textureCount > 0);
 
 	mDescriptorPool = DescriptorPool::Builder(mDevice)
@@ -23,7 +22,7 @@ SpriteRenderSystem::SpriteRenderSystem(Device& device, Renderer& renderer, const
 	mDescriptorSets.resize(uniformBufferCount + textureCount);
 
 	mUniformBuffers.resize(uniformBufferCount);
-	for (size_t i = 0; i < uniformBufferCount; ++i)
+	for (u64 i = 0; i < uniformBufferCount; ++i)
 	{
 		std::unique_ptr<Buffer>& buffer = mUniformBuffers[i];
 		buffer = std::make_unique<Buffer>(
@@ -41,7 +40,7 @@ SpriteRenderSystem::SpriteRenderSystem(Device& device, Renderer& renderer, const
 		.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.Build();
 
-	for (size_t i = 0; i < uniformBufferCount; ++i)
+	for (u64 i = 0; i < uniformBufferCount; ++i)
 	{
 		VkDescriptorBufferInfo bufferInfo = mUniformBuffers[i]->DescriptorInfo();
 		DescriptorWriter(*mUniformBufferDescriptorSetLayout, *mDescriptorPool)
@@ -50,7 +49,7 @@ SpriteRenderSystem::SpriteRenderSystem(Device& device, Renderer& renderer, const
 	}
 
 	mTextures.resize(textureCount);
-	for (size_t i = 0; i < textureCount; ++i)
+	for (u64 i = 0; i < textureCount; ++i)
 	{
 		std::unique_ptr<Texture>& texture = mTextures[i];
 		texture = std::make_unique<Texture>(
@@ -62,7 +61,7 @@ SpriteRenderSystem::SpriteRenderSystem(Device& device, Renderer& renderer, const
 		.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.Build();
 
-	for (size_t i = 0; i < textureCount; ++i)
+	for (u64 i = 0; i < textureCount; ++i)
 	{
 		VkDescriptorImageInfo imageInfo = mTextures[i]->DescriptorInfo();
 		DescriptorWriter(*mTextureDescriptorSetLayout, *mDescriptorPool)
@@ -81,7 +80,7 @@ SpriteRenderSystem::~SpriteRenderSystem()
 	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-float SpriteRenderSystem::GetAspectRatio() const
+f32 SpriteRenderSystem::GetAspectRatio() const
 {
 	return mRenderer.GetAspectRatio();
 }
@@ -95,7 +94,7 @@ void SpriteRenderSystem::RenderSprites(VkCommandBuffer commandBuffer, const std:
 	SpriteUBO ubo;
 	ubo.ScreenTransform = { -1.0f, -1.0f, 2.0f / 1920.0f, 2.0f / 1080.0f };
 	
-	int frameIndex = mRenderer.GetCurrentFrameIndex();
+	i32 frameIndex = mRenderer.GetCurrentFrameIndex();
 	std::unique_ptr<Buffer>& uniformBuffer = mUniformBuffers[frameIndex];
 	uniformBuffer->WriteToBuffer(&ubo);
 	uniformBuffer->Flush();
@@ -167,7 +166,7 @@ void SpriteRenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBuffe
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	pipelineLayoutInfo.setLayoutCount = static_cast<u32>(descriptorSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
@@ -186,7 +185,7 @@ void SpriteRenderSystem::CreatePipeline(VkRenderPass renderPass)
 	pipelineConfig.mRenderPass = renderPass;
 	pipelineConfig.mPipelineLayout = mPipelineLayout;
 	pipelineConfig.mDepthStencilInfo.depthTestEnable = VK_FALSE;
-	pipelineConfig.BindingDescriptions = {{ 0, sizeof(float), VK_VERTEX_INPUT_RATE_VERTEX }};
+	pipelineConfig.BindingDescriptions = {{ 0, sizeof(f32), VK_VERTEX_INPUT_RATE_VERTEX }};
 	pipelineConfig.AttributeDescriptions = {{ 0, 0, VK_FORMAT_R32_SFLOAT, 0 }};
 
 	mPipeline = std::make_unique<Pipeline>(
@@ -198,9 +197,9 @@ void SpriteRenderSystem::CreatePipeline(VkRenderPass renderPass)
 
 void SpriteRenderSystem::CreateVertexBuffer()
 {
-	VkDeviceSize vertexSize = sizeof(float);
+	VkDeviceSize vertexSize = sizeof(f32);
 
-	float vertexData[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+	f32 vertexData[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
 
 	Buffer stagingBuffer(
 		mDevice,

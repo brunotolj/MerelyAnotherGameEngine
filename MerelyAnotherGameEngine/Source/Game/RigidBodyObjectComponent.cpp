@@ -27,7 +27,7 @@ void RigidBodyObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
 	world.GetPhysicsSystem().RemoveActor(mPhysicsActor);
 }
 
-void RigidBodyObjectComponent::UpdatePrePhysics(float deltaTime)
+void RigidBodyObjectComponent::UpdatePrePhysics(f32 deltaTime)
 {
 	if (mRigidBodyParams.Type == PhysicsSystemObjectType::RigidKinematic)
 	{
@@ -42,7 +42,7 @@ void RigidBodyObjectComponent::UpdatePrePhysics(float deltaTime)
 	}
 }
 
-void RigidBodyObjectComponent::UpdatePostPhysics(float deltaTime)
+void RigidBodyObjectComponent::UpdatePostPhysics(f32 deltaTime)
 {
 	if (mRigidBodyParams.Type == PhysicsSystemObjectType::RigidDynamic)
 	{

@@ -77,7 +77,7 @@ void Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	std::array<VkClearValue, 2> clearValues{};
 	clearValues[0].color = { 0.1f, 0.1f, 0.1f, 1.0f };
 	clearValues[1].depthStencil = { 1.0f, 0 };
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+	renderPassInfo.clearValueCount = static_cast<u32>(clearValues.size());
 	renderPassInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -85,8 +85,8 @@ void Renderer::BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(mSwapchain->GetExtent().width);
-	viewport.height = static_cast<float>(mSwapchain->GetExtent().height);
+	viewport.width = static_cast<f32>(mSwapchain->GetExtent().width);
+	viewport.height = static_cast<f32>(mSwapchain->GetExtent().height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -109,7 +109,7 @@ VkCommandBuffer Renderer::GetCurrentCommandBuffer() const
 	return mCommandBuffers[mCurrentFrameIndex];
 }
 
-int32_t Renderer::GetCurrentFrameIndex() const
+i32 Renderer::GetCurrentFrameIndex() const
 {
 	mage_check(mIsFrameInProgress);
 	return mCurrentFrameIndex;
@@ -128,7 +128,7 @@ void Renderer::CreateCommandBuffers()
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandPool = mDevice.GetCommandPool();
-	allocInfo.commandBufferCount = static_cast<uint32_t>(mCommandBuffers.size());
+	allocInfo.commandBufferCount = static_cast<u32>(mCommandBuffers.size());
 
 	mage_check(vkAllocateCommandBuffers(mDevice.GetDevice(), &allocInfo, mCommandBuffers.data()) == VK_SUCCESS);
 }
@@ -138,7 +138,7 @@ void Renderer::FreeCommandBuffers()
 	vkFreeCommandBuffers(
 		mDevice.GetDevice(),
 		mDevice.GetCommandPool(),
-		static_cast<uint32_t>(mCommandBuffers.size()),
+		static_cast<u32>(mCommandBuffers.size()),
 		mCommandBuffers.data());
 }
 

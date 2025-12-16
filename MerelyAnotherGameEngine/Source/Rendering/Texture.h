@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Rendering/Device.h"
 
 #include <string>

@@ -11,12 +11,12 @@ struct ComponentTemplate<class BoundedLineMovementComponent>
 {
 	glm::vec3 Extent;
 
-	int InputNeg = GLFW_KEY_LEFT;
-	int InputPos = GLFW_KEY_RIGHT;
+	i32 InputNeg = GLFW_KEY_LEFT;
+	i32 InputPos = GLFW_KEY_RIGHT;
 
-	float Acceleration = 1.0f;
-	float Deceleration = 1.0f;
-	float MaxSpeed = 1.0f;
+	f32 Acceleration = 1.0f;
+	f32 Deceleration = 1.0f;
+	f32 MaxSpeed = 1.0f;
 };
 
 class BoundedLineMovementComponent : public GameObjectComponent<TransformableObject>
@@ -27,20 +27,20 @@ public:
 protected:
 	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
 
-	virtual void UpdatePrePhysics(float deltaTime) override final;
+	virtual void UpdatePrePhysics(f32 deltaTime) override final;
 
 private:
 	glm::vec3 mCenter;
 	glm::vec3 mExtent;
 
-	int mInputNeg;
-	int mInputPos;
+	i32 mInputNeg;
+	i32 mInputPos;
 
-	float mAcceleration;
-	float mDeceleration;
-	float mMaxSpeed;
+	f32 mAcceleration;
+	f32 mDeceleration;
+	f32 mMaxSpeed;
 
-	float mSpeed = 0.0f;
-	float mPosition = 0.0f;
-	float mLength;
+	f32 mSpeed = 0.0f;
+	f32 mPosition = 0.0f;
+	f32 mLength;
 };

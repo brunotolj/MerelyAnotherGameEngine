@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Rendering/Device.h"
 
 #define GLM_FORCE_RADIANS
@@ -30,17 +29,17 @@ public:
 	struct Builder
 	{
 		std::vector<Vertex> Vertices{};
-		std::vector<uint32_t> Indices{};
+		std::vector<u32> Indices{};
 
 		void LoadModel(const std::string& path);
 
-		void MakeCube(float halfExtentX, float halfExtentY, float halfExtentZ);
+		void MakeCube(f32 halfExtentX, f32 halfExtentY, f32 halfExtentZ);
 
-		void MakeSphere(float radius);
+		void MakeSphere(f32 radius);
 
-		void MakeCylinder(float radius, float halfHeight);
+		void MakeCylinder(f32 radius, f32 halfHeight);
 
-		void MakeCapsule(float radius, float halfHeight);
+		void MakeCapsule(f32 radius, f32 halfHeight);
 
 		void FixWindingOrders();
 	};
@@ -50,13 +49,13 @@ public:
 
 	static std::shared_ptr<Model> CreateFromFile(Device& device, const std::string& path);
 	
-	static std::shared_ptr<Model> CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ);
+	static std::shared_ptr<Model> CreateCube(Device& device, f32 halfExtentX, f32 halfExtentY, f32 halfExtentZ);
 	
-	static std::shared_ptr<Model> CreateSphere(Device& device, float radius);
+	static std::shared_ptr<Model> CreateSphere(Device& device, f32 radius);
 	
-	static std::shared_ptr<Model> CreateCylinder(Device& device, float radius, float halfHeight);
+	static std::shared_ptr<Model> CreateCylinder(Device& device, f32 radius, f32 halfHeight);
 	
-	static std::shared_ptr<Model> CreateCapsule(Device& device, float radius, float halfHeight);
+	static std::shared_ptr<Model> CreateCapsule(Device& device, f32 radius, f32 halfHeight);
 
 	void Bind(VkCommandBuffer commandBuffer) const;
 
@@ -66,11 +65,11 @@ private:
 	Device& mDevice;
 
 	std::unique_ptr<Buffer> mVertexBuffer;
-	uint32_t mVertexCount;
+	u32 mVertexCount;
 
 	std::unique_ptr<Buffer> mIndexBuffer;
-	uint32_t mIndexCount;
+	u32 mIndexCount;
 
 	void CreateVertexBuffer(const std::vector<Vertex>& vertices);
-	void CreateIndexBuffer(const std::vector<uint32_t>& indices);
+	void CreateIndexBuffer(const std::vector<u32>& indices);
 };

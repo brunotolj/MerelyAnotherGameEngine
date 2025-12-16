@@ -1,11 +1,10 @@
-#include "Core/Asserts.h"
 #include "Rendering/Descriptor.h"
 
 DescriptorSetLayout::Builder& DescriptorSetLayout::Builder::AddBinding(
-	uint32_t binding,
+	u32 binding,
 	VkDescriptorType descriptorType,
 	VkShaderStageFlags stageFlags,
-	uint32_t count)
+	u32 count)
 {
 	mage_check(mBindings.count(binding) == 0);
 	VkDescriptorSetLayoutBinding layoutBinding{};
@@ -22,7 +21,7 @@ std::unique_ptr<DescriptorSetLayout> DescriptorSetLayout::Builder::Build() const
 	return std::make_unique<DescriptorSetLayout>(mDevice, mBindings);
 }
 
-DescriptorSetLayout::DescriptorSetLayout(Device& device, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
+DescriptorSetLayout::DescriptorSetLayout(Device& device, std::unordered_map<u32, VkDescriptorSetLayoutBinding> bindings)
 	: mDevice{ device }, mBindings{ bindings }
 {
 	std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
@@ -33,7 +32,7 @@ DescriptorSetLayout::DescriptorSetLayout(Device& device, std::unordered_map<uint
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo{};
 	descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutInfo.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+	descriptorSetLayoutInfo.bindingCount = static_cast<u32>(setLayoutBindings.size());
 	descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
 	
 	mage_check(vkCreateDescriptorSetLayout(mDevice.GetDevice(), &descriptorSetLayoutInfo, nullptr, &mDescriptorSetLayout) == VK_SUCCESS);
@@ -44,7 +43,7 @@ DescriptorSetLayout::~DescriptorSetLayout()
 	vkDestroyDescriptorSetLayout(mDevice.GetDevice(), mDescriptorSetLayout, nullptr);
 }
 
-DescriptorPool::Builder& DescriptorPool::Builder::AddPoolSize(VkDescriptorType descriptorType, uint32_t count)
+DescriptorPool::Builder& DescriptorPool::Builder::AddPoolSize(VkDescriptorType descriptorType, u32 count)
 {
 	mPoolSizes.push_back({ descriptorType, count });
 	return *this;
@@ -56,7 +55,7 @@ DescriptorPool::Builder& DescriptorPool::Builder::SetPoolFlags(VkDescriptorPoolC
 	return *this;
 }
 
-DescriptorPool::Builder& DescriptorPool::Builder::SetMaxSets(uint32_t count)
+DescriptorPool::Builder& DescriptorPool::Builder::SetMaxSets(u32 count)
 {
 	mMaxSets = count;
 	return *this;
@@ -69,14 +68,14 @@ std::unique_ptr<DescriptorPool> DescriptorPool::Builder::Build() const
 
 DescriptorPool::DescriptorPool(
 	Device& device,
-	uint32_t maxSets,
+	u32 maxSets,
 	VkDescriptorPoolCreateFlags poolFlags,
 	const std::vector<VkDescriptorPoolSize>& poolSizes)
 	: mDevice(device)
 {
 	VkDescriptorPoolCreateInfo descriptorPoolInfo{};
 	descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	descriptorPoolInfo.poolSizeCount = static_cast<u32>(poolSizes.size());
 	descriptorPoolInfo.pPoolSizes = poolSizes.data();
 	descriptorPoolInfo.maxSets = maxSets;
 	descriptorPoolInfo.flags = poolFlags;
@@ -107,7 +106,7 @@ void DescriptorPool::FreeDescriptorSets(std::vector<VkDescriptorSet>& descriptor
 	vkFreeDescriptorSets(
 		mDevice.GetDevice(),
 		mDescriptorPool,
-		static_cast<uint32_t>(descriptorSets.size()),
+		static_cast<u32>(descriptorSets.size()),
 		descriptorSets.data());
 }
 
@@ -119,7 +118,7 @@ void DescriptorPool::ResetPool()
 DescriptorWriter::DescriptorWriter(DescriptorSetLayout& setLayout, DescriptorPool& pool)
 	: mSetLayout(setLayout), mPool(pool) {}
 
-DescriptorWriter& DescriptorWriter::WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo)
+DescriptorWriter& DescriptorWriter::WriteBuffer(u32 binding, VkDescriptorBufferInfo* bufferInfo)
 {
 	mage_check(mSetLayout.mBindings.count(binding) == 1);
 
@@ -137,7 +136,7 @@ DescriptorWriter& DescriptorWriter::WriteBuffer(uint32_t binding, VkDescriptorBu
 	return *this;
 }
 
-DescriptorWriter& DescriptorWriter::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo)
+DescriptorWriter& DescriptorWriter::WriteImage(u32 binding, VkDescriptorImageInfo* imageInfo)
 {
 	mage_check(mSetLayout.mBindings.count(binding) == 1);
 
@@ -169,5 +168,5 @@ void DescriptorWriter::Overwrite(VkDescriptorSet& set)
 	for (VkWriteDescriptorSet& write : mWrites)
 		write.dstSet = set;
 
-	vkUpdateDescriptorSets(mPool.mDevice.GetDevice(), static_cast<uint32_t>(mWrites.size()), mWrites.data(), 0, nullptr);
+	vkUpdateDescriptorSets(mPool.mDevice.GetDevice(), static_cast<u32>(mWrites.size()), mWrites.data(), 0, nullptr);
 }

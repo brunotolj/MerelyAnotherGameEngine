@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/Asserts.h"
 #include "Rendering/Device.h"
 #include "Rendering/Swapchain.h"
 #include "Rendering/Window.h"
@@ -27,11 +26,11 @@ public:
 
 	VkExtent2D GetExtent() const { return mSwapchain->GetExtent(); }
 
-	float GetAspectRatio() const { return mSwapchain->GetAspectRatio(); }
+	f32 GetAspectRatio() const { return mSwapchain->GetAspectRatio(); }
 
 	VkCommandBuffer GetCurrentCommandBuffer() const;
 
-	int32_t GetCurrentFrameIndex() const;
+	i32 GetCurrentFrameIndex() const;
 
 	VkRenderPass GetSwapchainRenderPass() const;
 
@@ -41,8 +40,8 @@ private:
 	std::unique_ptr<Swapchain> mSwapchain;
 	std::vector<VkCommandBuffer> mCommandBuffers;
 
-	uint32_t mCurrentImageIndex = -1;
-	int32_t mCurrentFrameIndex = 0;
+	u32 mCurrentImageIndex = -1;
+	i32 mCurrentFrameIndex = 0;
 	bool mIsFrameInProgress = false;
 
 	void CreateCommandBuffers();

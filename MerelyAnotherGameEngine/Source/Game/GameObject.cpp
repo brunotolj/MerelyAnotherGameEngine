@@ -1,5 +1,4 @@
 #include "Game/GameObject.h"
-#include "Core/Asserts.h"
 #include "Game/GameObjectComponent.h"
 
 void GameObject::OnAddedToWorld(GameWorld& world)
@@ -23,7 +22,7 @@ void GameObject::OnRemovedFromWorld(GameWorld& world)
 	}
 }
 
-void GameObject::UpdatePrePhysics(float deltaTime)
+void GameObject::UpdatePrePhysics(f32 deltaTime)
 {
 	for (const std::shared_ptr<GameObjectComponentBase>& component : mComponents)
 	{
@@ -31,7 +30,7 @@ void GameObject::UpdatePrePhysics(float deltaTime)
 	}
 }
 
-void GameObject::UpdatePostPhysics(float deltaTime)
+void GameObject::UpdatePostPhysics(f32 deltaTime)
 {
 	for (const std::shared_ptr<GameObjectComponentBase>& component : mComponents)
 	{

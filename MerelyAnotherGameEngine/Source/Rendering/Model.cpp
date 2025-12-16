@@ -1,6 +1,3 @@
-#include "Core/Asserts.h"
-#include "Core/Rotor.h"
-#include "Core/Utils.h"
 #include "Rendering/Buffer.h"
 #include "Rendering/Model.h"
 
@@ -20,9 +17,9 @@ namespace std
 	template<>
 	struct hash<Model::Vertex>
 	{
-		size_t operator()(const Model::Vertex& vertex) const
+		u64 operator()(const Model::Vertex& vertex) const
 		{
-			size_t seed = 0;
+			u64 seed = 0;
 			mage::HashCombine(seed, vertex.Position, vertex.Normal, vertex.UV);
 			return seed;
 		}
@@ -63,7 +60,7 @@ void Model::Builder::LoadModel(const std::string& path)
 	Vertices.clear();
 	Indices.clear();
 
-	std::unordered_map<Vertex, uint32_t> uniqueVertices;
+	std::unordered_map<Vertex, u32> uniqueVertices;
 
 	for (const tinyobj::shape_t& shape : shapes)
 	{
@@ -102,7 +99,7 @@ void Model::Builder::LoadModel(const std::string& path)
 
 			if (uniqueVertices.count(vertex) == 0)
 			{
-				uniqueVertices[vertex] = static_cast<uint32_t>(Vertices.size());
+				uniqueVertices[vertex] = static_cast<u32>(Vertices.size());
 				Vertices.push_back(vertex);
 			}
 
@@ -113,7 +110,7 @@ void Model::Builder::LoadModel(const std::string& path)
 	FixWindingOrders();
 }
  
-void Model::Builder::MakeCube(float halfExtentX, float halfExtentY, float halfExtentZ)
+void Model::Builder::MakeCube(f32 halfExtentX, f32 halfExtentY, f32 halfExtentZ)
 {
 	constexpr glm::vec3 positions[8]
 	{
@@ -139,9 +136,9 @@ void Model::Builder::MakeCube(float halfExtentX, float halfExtentY, float halfEx
 
 	const glm::vec3 halfExtent(halfExtentX, halfExtentY, halfExtentZ);
 
-	for (int32_t i = 0; i < 6; i++)
+	for (i32 i = 0; i < 6; i++)
 	{
-		for (int32_t j = 0; j < 8; j++)
+		for (i32 j = 0; j < 8; j++)
 		{
 			const glm::vec3 test = positions[j] * normals[i];
 
@@ -157,17 +154,17 @@ void Model::Builder::MakeCube(float halfExtentX, float halfExtentY, float halfEx
 			Vertices.emplace_back(halfExtent * positions[j], normals[i], glm::vec2(0.0f));
 		}
 
-		for (int32_t j = 0; j < 6; j++)
+		for (i32 j = 0; j < 6; j++)
 			Indices.push_back(4 * i + (j / 3) + (j % 3));
 	}
 
 	FixWindingOrders();
 }
 
-void Model::Builder::MakeSphere(float radius)
+void Model::Builder::MakeSphere(f32 radius)
 {
-	constexpr float phi = glm::golden_ratio<float>();
-	const float factor = glm::inversesqrt(1.0f + phi * phi);
+	constexpr f32 phi = glm::golden_ratio<f32>();
+	const f32 factor = glm::inversesqrt(1.0f + phi * phi);
 
 	constexpr glm::vec3 positions[12]
 	{
@@ -187,26 +184,26 @@ void Model::Builder::MakeSphere(float radius)
 		{  phi, 0.0f,  1.0f }
 	};
 
-	for (int32_t i = 0; i < 12; i++)
+	for (i32 i = 0; i < 12; i++)
 	{
 		glm::vec3 pos = factor * positions[i];
 
 		Vertices.emplace_back(radius * pos, pos, glm::vec2(0.0f));
 	}
 
-	std::vector<std::pair<uint32_t, uint32_t>> edges;
+	std::vector<std::pair<u32, u32>> edges;
 
-	for (int32_t i = 0; i < 12; i += 2)
+	for (i32 i = 0; i < 12; i += 2)
 	{
 		edges.emplace_back(i, i + 1);
 	}
 
-	for (int32_t i = 0; i < 3; i++)
-		for (int32_t j = 0; j < 4; j++)
-			for (int32_t k = 0; k < 4; k++)
+	for (i32 i = 0; i < 3; i++)
+		for (i32 j = 0; j < 4; j++)
+			for (i32 k = 0; k < 4; k++)
 			{
-				const int32_t indexA = (4 * i + j) % 12;
-				const int32_t indexB = (4 * i + k + 4) % 12;
+				const i32 indexA = (4 * i + j) % 12;
+				const i32 indexB = (4 * i + k + 4) % 12;
 
 				const glm::vec3 test = positions[indexA] * positions[indexB];
 
@@ -227,14 +224,14 @@ void Model::Builder::MakeSphere(float radius)
 
 	std::sort(edges.begin(), edges.end());
 
-	for (int32_t subdiv = 0; subdiv < 3; subdiv++)
+	for (i32 subdiv = 0; subdiv < 3; subdiv++)
 	{
-		std::vector<std::pair<uint32_t, uint32_t>> oldEdges = edges;
+		std::vector<std::pair<u32, u32>> oldEdges = edges;
 		edges.clear();
 
-		const uint32_t indexOffset = static_cast<uint32_t>(Vertices.size());
+		const u32 indexOffset = static_cast<u32>(Vertices.size());
 
-		for (int32_t i = 0; i < oldEdges.size(); i++)
+		for (i32 i = 0; i < oldEdges.size(); i++)
 		{
 			glm::vec3 pos = Vertices[oldEdges[i].first].Normal + Vertices[oldEdges[i].second].Normal;
 			pos /= glm::length(pos);
@@ -244,12 +241,12 @@ void Model::Builder::MakeSphere(float radius)
 			edges.emplace_back(oldEdges[i].first, i + indexOffset);
 			edges.emplace_back(oldEdges[i].second, i + indexOffset);
 
-			for (int32_t j = 0; j < i; j++)
+			for (i32 j = 0; j < i; j++)
 			{
 				if (oldEdges[j].second != oldEdges[i].first)
 					continue;
 
-				for (int32_t k = j + 1; k < i; k++)
+				for (i32 k = j + 1; k < i; k++)
 				{
 					if (oldEdges[k].first != oldEdges[j].first)
 						break;
@@ -267,8 +264,8 @@ void Model::Builder::MakeSphere(float radius)
 		std::sort(edges.begin(), edges.end());
 	}
 
-	for (int32_t i = 0; i < edges.size(); i++)
-		for (int32_t j = i + 1; j < edges.size(); j++)
+	for (i32 i = 0; i < edges.size(); i++)
+		for (i32 j = i + 1; j < edges.size(); j++)
 		{
 			if (edges[i].first != edges[j].first)
 				continue;
@@ -284,17 +281,17 @@ void Model::Builder::MakeSphere(float radius)
 	FixWindingOrders();
 }
 
-void Model::Builder::MakeCylinder(float radius, float halfHeight)
+void Model::Builder::MakeCylinder(f32 radius, f32 halfHeight)
 {
-	std::vector<std::pair<uint32_t, uint32_t>> edges;
+	std::vector<std::pair<u32, u32>> edges;
 
 	const glm::vec3 halfHeightVec = glm::vec3(halfHeight, 0.0f, 0.0f);
 	const glm::vec3 normalVec = glm::vec3(1.0f, 0.0f, 0.0f);
 
-	for (int32_t i = 0; i < 80; i++)
+	for (i32 i = 0; i < 80; i++)
 	{
-		const float c = glm::cos(glm::radians(4.5f * i));
-		const float s = glm::sin(glm::radians(4.5f * i));
+		const f32 c = glm::cos(glm::radians(4.5f * i));
+		const f32 s = glm::sin(glm::radians(4.5f * i));
 		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
 		Vertices.emplace_back(radius * base + halfHeightVec, base, glm::vec2(0.0f));
@@ -307,10 +304,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 		edges.emplace_back(1 + (i ? 2 * i - 2 : 0), 1 + (i ? 2 * i : 158));
 	}
 
-	for (int32_t i = 0; i < 80; i++)
+	for (i32 i = 0; i < 80; i++)
 	{
-		const float c = glm::cos(glm::radians(4.5f * i));
-		const float s = glm::sin(glm::radians(4.5f * i));
+		const f32 c = glm::cos(glm::radians(4.5f * i));
+		const f32 s = glm::sin(glm::radians(4.5f * i));
 		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
 		Vertices.emplace_back(radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
@@ -320,10 +317,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 		edges.emplace_back(161 + (i ? 2 * i - 2 : 0), 161 + (i ? 2 * i : 158));
 	}
 
-	for (int32_t i = 0; i < 40; i++)
+	for (i32 i = 0; i < 40; i++)
 	{
-		const float c = glm::cos(glm::radians(9.0f * i));
-		const float s = glm::sin(glm::radians(9.0f * i));
+		const f32 c = glm::cos(glm::radians(9.0f * i));
+		const f32 s = glm::sin(glm::radians(9.0f * i));
 		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
 		Vertices.emplace_back(0.9f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
@@ -340,10 +337,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 		edges.emplace_back(161 + 4 * i + 2, 321 + 2 * i);
 	}
 
-	for (int32_t i = 0; i < 20; i++)
+	for (i32 i = 0; i < 20; i++)
 	{
-		const float c = glm::cos(glm::radians(18.0f * i));
-		const float s = glm::sin(glm::radians(18.0f * i));
+		const f32 c = glm::cos(glm::radians(18.0f * i));
+		const f32 s = glm::sin(glm::radians(18.0f * i));
 		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
 		Vertices.emplace_back(0.75f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
@@ -360,10 +357,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 		edges.emplace_back(321 + 4 * i + 2, 401 + 2 * i);
 	}
 
-	for (int32_t i = 0; i < 10; i++)
+	for (i32 i = 0; i < 10; i++)
 	{
-		const float c = glm::cos(glm::radians(36.0f * i));
-		const float s = glm::sin(glm::radians(36.0f * i));
+		const f32 c = glm::cos(glm::radians(36.0f * i));
+		const f32 s = glm::sin(glm::radians(36.0f * i));
 		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
 		Vertices.emplace_back(0.55f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
@@ -380,10 +377,10 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 		edges.emplace_back(401 + 4 * i + 2, 441 + 2 * i);
 	}
 
-	for (int32_t i = 0; i < 5; i++)
+	for (i32 i = 0; i < 5; i++)
 	{
-		const float c = glm::cos(glm::radians(72.0f * i));
-		const float s = glm::sin(glm::radians(72.0f * i));
+		const f32 c = glm::cos(glm::radians(72.0f * i));
+		const f32 s = glm::sin(glm::radians(72.0f * i));
 		const glm::vec3 base = glm::vec3(0.0f, c, s);
 
 		Vertices.emplace_back(0.3f * radius * base + halfHeightVec, normalVec, glm::vec2(0.0f));
@@ -407,8 +404,8 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 
 	std::sort(edges.begin(), edges.end());
 
-	for (int32_t i = 0; i < edges.size(); i++)
-		for (int32_t j = i + 1; j < edges.size(); j++)
+	for (i32 i = 0; i < edges.size(); i++)
+		for (i32 j = i + 1; j < edges.size(); j++)
 		{
 			if (edges[i].first != edges[j].first)
 				continue;
@@ -424,12 +421,12 @@ void Model::Builder::MakeCylinder(float radius, float halfHeight)
 	FixWindingOrders();
 }
 
-void Model::Builder::MakeCapsule(float radius, float halfHeight)
+void Model::Builder::MakeCapsule(f32 radius, f32 halfHeight)
 {
-	constexpr float phi = glm::golden_ratio<float>();
+	constexpr f32 phi = glm::golden_ratio<f32>();
 	auto reflect = [](glm::vec3 a, glm::vec3 b) -> glm::vec3 { return 2.0f * glm::dot(a, b) * b - a; };
 
-	std::vector<std::pair<uint32_t, uint32_t>> edges;
+	std::vector<std::pair<u32, u32>> edges;
 
 	const glm::vec3 tip = glm::vec3(1.0f, 0.0f, 0.0f);
 	Vertices.emplace_back(radius * tip, tip, glm::vec2(0.0f));
@@ -437,7 +434,7 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 	const glm::vec3 first = glm::vec3(glm::sqrt(1.0f - 1.0f / (glm::sqrt(5.0f) * phi)), 1.0f / glm::sqrt(glm::sqrt(5.0f) * phi), 0.0f);
 	Vertices.emplace_back(radius * first, first, glm::vec2(0.0f));
 	
-	for (int32_t i = 1; i < 5; i++)
+	for (i32 i = 1; i < 5; i++)
 	{
 		const mage::Rotor rotor = mage::Rotor::FromAxisAndAngle(tip, glm::radians(72.0f * i));
 		const glm::vec3 rotated = rotor.Rotate(first);
@@ -447,16 +444,16 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 	const glm::vec3 second = reflect(tip, first);
 	Vertices.emplace_back(radius * second, second, glm::vec2(0.0f));
 
-	for (int32_t i = 1; i < 5; i++)
+	for (i32 i = 1; i < 5; i++)
 	{
 		const mage::Rotor rotor = mage::Rotor::FromAxisAndAngle(tip, glm::radians(72.0f * i));
 		const glm::vec3 rotated = rotor.Rotate(second);
 		Vertices.emplace_back(radius * rotated, rotated, glm::vec2(0.0f));
 	}
 
-	for (int32_t i = 0; i < 5; i++)
+	for (i32 i = 0; i < 5; i++)
 	{
-		const int32_t j = (i + 1) % 5;
+		const i32 j = (i + 1) % 5;
 		glm::vec3 pos = Vertices[6 + i].Position + Vertices[6 + j].Position;
 		pos /= glm::length(pos);
 
@@ -472,9 +469,9 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 		edges.emplace_back(1 + j, 11 + i);
 	}
 
-	for (int32_t i = 0; i < 5; i++)
+	for (i32 i = 0; i < 5; i++)
 	{
-		const int32_t j = (i + 1) % 5;
+		const i32 j = (i + 1) % 5;
 		const glm::vec3 pos = Vertices[11 + i].Normal;
 
 		const glm::vec3 pos1 = reflect(Vertices[1 + j].Position, pos);
@@ -493,14 +490,14 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 
 	std::sort(edges.begin(), edges.end());
 
-	for (int32_t subdiv = 0; subdiv < 3; subdiv++)
+	for (i32 subdiv = 0; subdiv < 3; subdiv++)
 	{
-		std::vector<std::pair<uint32_t, uint32_t>> oldEdges = edges;
+		std::vector<std::pair<u32, u32>> oldEdges = edges;
 		edges.clear();
 
-		const uint32_t indexOffset = static_cast<uint32_t>(Vertices.size());
+		const u32 indexOffset = static_cast<u32>(Vertices.size());
 
-		for (int32_t i = 0; i < oldEdges.size(); i++)
+		for (i32 i = 0; i < oldEdges.size(); i++)
 		{
 			glm::vec3 pos = Vertices[oldEdges[i].first].Normal + Vertices[oldEdges[i].second].Normal;
 			pos /= glm::length(pos);
@@ -510,12 +507,12 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 			edges.emplace_back(oldEdges[i].first, i + indexOffset);
 			edges.emplace_back(oldEdges[i].second, i + indexOffset);
 
-			for (int32_t j = 0; j < i; j++)
+			for (i32 j = 0; j < i; j++)
 			{
 				if (oldEdges[j].second != oldEdges[i].first)
 					continue;
 
-				for (int32_t k = j + 1; k < i; k++)
+				for (i32 k = j + 1; k < i; k++)
 				{
 					if (oldEdges[k].first != oldEdges[j].first)
 						break;
@@ -533,10 +530,10 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 		std::sort(edges.begin(), edges.end());
 	}
 
-	const uint32_t hemisphereVertexCount = static_cast<uint32_t>(Vertices.size());
-	const uint32_t hemisphereEdgeCount = static_cast<uint32_t>(edges.size());
+	const u32 hemisphereVertexCount = static_cast<u32>(Vertices.size());
+	const u32 hemisphereEdgeCount = static_cast<u32>(edges.size());
 
-	for (uint32_t i = 0; i < hemisphereEdgeCount; i++)
+	for (u32 i = 0; i < hemisphereEdgeCount; i++)
 	{
 		if (Vertices[edges[i].first].Position.x < 1.0e-4f && Vertices[edges[i].second].Position.x < 1.0e-4f)
 			edges.emplace_back(edges[i].first, edges[i].second + hemisphereVertexCount);
@@ -544,7 +541,7 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 		edges.emplace_back(edges[i].first + hemisphereVertexCount, edges[i].second + hemisphereVertexCount);
 	}
 
-	for (uint32_t i = 0; i < hemisphereVertexCount; i++)
+	for (u32 i = 0; i < hemisphereVertexCount; i++)
 	{
 		if (Vertices[i].Position.x < 1.0e-4f)
 			edges.emplace_back(i, i + hemisphereVertexCount);
@@ -557,8 +554,8 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 
 	std::sort(edges.begin(), edges.end());
 
-	for (int32_t i = 0; i < edges.size(); i++)
-		for (int32_t j = i + 1; j < edges.size(); j++)
+	for (i32 i = 0; i < edges.size(); i++)
+		for (i32 j = i + 1; j < edges.size(); j++)
 		{
 			if (edges[i].first != edges[j].first)
 				continue;
@@ -576,7 +573,7 @@ void Model::Builder::MakeCapsule(float radius, float halfHeight)
 
 void Model::Builder::FixWindingOrders()
 {
-	for (int32_t i = 0; i < Indices.size(); i += 3)
+	for (i32 i = 0; i < Indices.size(); i += 3)
 	{
 		const Vertex& a = Vertices[Indices[i]];
 		const Vertex& b = Vertices[Indices[i + 1]];
@@ -610,7 +607,7 @@ std::shared_ptr<Model> Model::CreateFromFile(Device& device, const std::string& 
 	return std::make_shared<Model>(device, builder);
 }
 
-std::shared_ptr<Model> Model::CreateCube(Device& device, float halfExtentX, float halfExtentY, float halfExtentZ)
+std::shared_ptr<Model> Model::CreateCube(Device& device, f32 halfExtentX, f32 halfExtentY, f32 halfExtentZ)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -627,7 +624,7 @@ std::shared_ptr<Model> Model::CreateCube(Device& device, float halfExtentX, floa
 	return std::make_shared<Model>(device, builder);
 }
 
-std::shared_ptr<Model> Model::CreateSphere(Device& device, float radius)
+std::shared_ptr<Model> Model::CreateSphere(Device& device, f32 radius)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -644,7 +641,7 @@ std::shared_ptr<Model> Model::CreateSphere(Device& device, float radius)
 	return std::make_shared<Model>(device, builder);
 }
 
-std::shared_ptr<Model> Model::CreateCylinder(Device& device, float radius, float halfHeight)
+std::shared_ptr<Model> Model::CreateCylinder(Device& device, f32 radius, f32 halfHeight)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -661,7 +658,7 @@ std::shared_ptr<Model> Model::CreateCylinder(Device& device, float radius, float
 	return std::make_shared<Model>(device, builder);
 }
 
-std::shared_ptr<Model> Model::CreateCapsule(Device& device, float radius, float halfHeight)
+std::shared_ptr<Model> Model::CreateCapsule(Device& device, f32 radius, f32 halfHeight)
 {
 	static Builder defaultBuilder;
 	static bool madeDefault = false;
@@ -674,7 +671,7 @@ std::shared_ptr<Model> Model::CreateCapsule(Device& device, float radius, float 
 	Builder builder = defaultBuilder;
 	for (Model::Vertex& vertex : builder.Vertices)
 	{
-		const float hemisphereSign = float(vertex.Position.x > 0.0f) - float(vertex.Position.x < 0.0f);
+		const f32 hemisphereSign = f32(vertex.Position.x > 0.0f) - f32(vertex.Position.x < 0.0f);
 		vertex.Position.x -= hemisphereSign;
 		vertex.Position *= radius;
 		vertex.Position.x += hemisphereSign * halfHeight;
@@ -709,7 +706,7 @@ void Model::Draw(VkCommandBuffer commandBuffer) const
 
 void Model::CreateVertexBuffer(const std::vector<Vertex>& vertices)
 {
-	mVertexCount = static_cast<uint32_t>(vertices.size());
+	mVertexCount = static_cast<u32>(vertices.size());
 	mage_ensure(mVertexCount >= 3);
 
 	VkDeviceSize vertexSize = sizeof(Vertex);
@@ -736,15 +733,15 @@ void Model::CreateVertexBuffer(const std::vector<Vertex>& vertices)
 	mDevice.CopyBuffer(stagingBuffer.GetBuffer(), mVertexBuffer->GetBuffer(), stagingBuffer.GetBufferSize());
 }
 
-void Model::CreateIndexBuffer(const std::vector<uint32_t>& indices)
+void Model::CreateIndexBuffer(const std::vector<u32>& indices)
 {
-	mIndexCount = static_cast<uint32_t>(indices.size());
+	mIndexCount = static_cast<u32>(indices.size());
 	if (mIndexCount == 0)
 		return;
 
 	mage_ensure(mIndexCount >= 3);
 
-	VkDeviceSize indexSize = sizeof(uint32_t);
+	VkDeviceSize indexSize = sizeof(u32);
 
 	Buffer stagingBuffer(
 		mDevice,

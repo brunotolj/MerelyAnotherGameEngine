@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Rendering/Buffer.h"
 #include "Rendering/Texture.h"
 
@@ -8,12 +7,12 @@
 Texture::Texture(Device& device, const std::string& filePath) :
 	mDevice(device)
 {
-	uint32_t width, height;
-	int bytesPerPixel;
+	u32 width, height;
+	i32 bytesPerPixel;
 
-	stbi_uc* imageData = stbi_load(filePath.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), &bytesPerPixel, 4);
+	stbi_uc* imageData = stbi_load(filePath.c_str(), reinterpret_cast<i32*>(&width), reinterpret_cast<i32*>(&height), &bytesPerPixel, 4);
 
-	VkDeviceSize bufferSize = width * height * static_cast<uint32_t>(bytesPerPixel);
+	VkDeviceSize bufferSize = width * height * static_cast<u32>(bytesPerPixel);
 
 	Buffer stagingBuffer(
 		device,

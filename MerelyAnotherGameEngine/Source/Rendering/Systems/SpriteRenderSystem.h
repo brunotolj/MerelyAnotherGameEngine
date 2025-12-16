@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
-
 #include <memory>
 #include <set>
 #include <string>
@@ -29,7 +27,7 @@ struct SpriteRenderData
 	glm::vec2 ScreenCoordsMax;
 	glm::vec2 TextureCoordsMin;
 	glm::vec2 TextureCoordsMax;
-	uint32_t TextureIndex;
+	u32 TextureIndex;
 };
 
 class SpriteRenderSystem : public NonCopyableClass
@@ -45,7 +43,7 @@ public:
 
 	~SpriteRenderSystem();
 
-	float GetAspectRatio() const;
+	f32 GetAspectRatio() const;
 
 	void RenderSprites(VkCommandBuffer commandBuffer, const std::vector<SpriteRenderData>& data);
 

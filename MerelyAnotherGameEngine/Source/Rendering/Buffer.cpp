@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Rendering/Buffer.h"
 
 #include <cassert>
@@ -7,7 +6,7 @@
 Buffer::Buffer(
 	Device& device,
 	VkDeviceSize instanceSize,
-	uint32_t instanceCount,
+	u32 instanceCount,
 	VkBufferUsageFlags usageFlags,
 	VkMemoryPropertyFlags memoryPropertyFlags,
 	VkDeviceSize minOffsetAlignment) :
@@ -150,7 +149,7 @@ VkDescriptorBufferInfo Buffer::DescriptorInfo(VkDeviceSize size, VkDeviceSize of
  * @param index Used in offset calculation
  *
  */
-void Buffer::WriteToIndex(void* data, int index)
+void Buffer::WriteToIndex(void* data, i32 index)
 {
 	WriteToBuffer(data, mInstanceSize, index * mAlignmentSize);
 }
@@ -161,7 +160,7 @@ void Buffer::WriteToIndex(void* data, int index)
  * @param index Used in offset calculation
  *
  */
-VkResult Buffer::FlushIndex(int index) { return Flush(mAlignmentSize, index * mAlignmentSize); }
+VkResult Buffer::FlushIndex(i32 index) { return Flush(mAlignmentSize, index * mAlignmentSize); }
 
 /**
  * Create a buffer info descriptor
@@ -170,7 +169,7 @@ VkResult Buffer::FlushIndex(int index) { return Flush(mAlignmentSize, index * mA
  *
  * @return VkDescriptorBufferInfo for instance at index
  */
-VkDescriptorBufferInfo Buffer::DescriptorInfoForIndex(int index)
+VkDescriptorBufferInfo Buffer::DescriptorInfoForIndex(i32 index)
 {
 	return DescriptorInfo(mAlignmentSize, index * mAlignmentSize);
 }
@@ -184,7 +183,7 @@ VkDescriptorBufferInfo Buffer::DescriptorInfoForIndex(int index)
  *
  * @return VkResult of the invalidate call
  */
-VkResult Buffer::InvalidateIndex(int index)
+VkResult Buffer::InvalidateIndex(i32 index)
 {
 	return Invalidate(mAlignmentSize, index * mAlignmentSize);
 }

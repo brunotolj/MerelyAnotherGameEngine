@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Game/GameObjectCommon.h"
 
 class GameObject;
@@ -15,9 +14,9 @@ protected:
 
 	virtual void OnOwnerRemovedFromWorld(GameWorld& world) {}
 
-	virtual void UpdatePrePhysics(float deltaTime) {}
+	virtual void UpdatePrePhysics(f32 deltaTime) {}
 
-	virtual void UpdatePostPhysics(float deltaTime) {}
+	virtual void UpdatePostPhysics(f32 deltaTime) {}
 };
 
 template<GameObjectClass OwnerClass>

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Physics/PhysicsCommon.h"
 
 #include <PxPhysicsAPI.h>
@@ -14,7 +13,7 @@ public:
 
 	~PhysicsSystem();
 
-	void Update(float deltaTime);
+	void Update(f32 deltaTime);
 
 	physx::PxRigidActor* AddRigidBody(
 		const PhysicsRigidBodyParams& params,

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Rendering/Window.h"
 
 #include <string>
@@ -21,8 +20,8 @@ struct SwapChainSupportDetails
 
 struct QueueFamilyIndices
 {
-	uint32_t mGraphicsFamily;
-	uint32_t mPresentFamily;
+	u32 mGraphicsFamily;
+	u32 mPresentFamily;
 	bool mGraphicsFamilyHasValue = false;
 	bool mPresentFamilyHasValue = false;
 
@@ -45,7 +44,7 @@ public:
 	VkQueue GetPresentQueue() { return mPresentQueue; }
 
 	SwapChainSupportDetails GetSwapChainSupport() { return QuerySwapChainSupport(mPhysicalDevice); }
-	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	u32 FindMemoryType(u32 typeFilter, VkMemoryPropertyFlags properties);
 	QueueFamilyIndices FindPhysicalQueueFamilies() { return FindQueueFamilies(mPhysicalDevice); }
 	VkFormat FindSupportedFormat(
 		const std::vector<VkFormat>& candidates,
@@ -65,9 +64,9 @@ public:
 	void CopyBufferToImage(
 		VkBuffer buffer,
 		VkImage image,
-		uint32_t width,
-		uint32_t height,
-		uint32_t layerCount);
+		u32 width,
+		u32 height,
+		u32 layerCount);
 
 	void CreateImageWithInfo(
 		const VkImageCreateInfo& imageInfo,

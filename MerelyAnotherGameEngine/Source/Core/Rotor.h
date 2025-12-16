@@ -8,17 +8,17 @@ namespace mage
 {
 	struct Rotor
 	{
-		float S;
-		float XY;
-		float YZ;
-		float ZX;
+		f32 S;
+		f32 XY;
+		f32 YZ;
+		f32 ZX;
 
 		glm::vec3 Rotate(glm::vec3 vector) const
 		{
-			const float x = S * vector.x + XY * vector.y - ZX * vector.z;
-			const float y = S * vector.y + YZ * vector.z - XY * vector.x;
-			const float z = S * vector.z + ZX * vector.x - YZ * vector.y;
-			const float xyz = XY * vector.z + YZ * vector.x + ZX * vector.y;
+			const f32 x = S * vector.x + XY * vector.y - ZX * vector.z;
+			const f32 y = S * vector.y + YZ * vector.z - XY * vector.x;
+			const f32 z = S * vector.z + ZX * vector.x - YZ * vector.y;
+			const f32 xyz = XY * vector.z + YZ * vector.x + ZX * vector.y;
 
 			return
 			{
@@ -33,12 +33,12 @@ namespace mage
 			return { 1.0f, 0.0f, 0.0f, 0.0f };
 		}
 
-		static Rotor FromAxisAndAngle(glm::vec3 axis, float angleRad)
+		static Rotor FromAxisAndAngle(glm::vec3 axis, f32 angleRad)
 		{
-			const float invSqrt = 1.0f / std::sqrtf(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
-			const float halfAngle = 0.5f * angleRad;
-			const float sine = std::sinf(halfAngle);
-			const float factor = invSqrt * sine;
+			const f32 invSqrt = 1.0f / std::sqrtf(axis.x * axis.x + axis.y * axis.y + axis.z * axis.z);
+			const f32 halfAngle = 0.5f * angleRad;
+			const f32 sine = std::sinf(halfAngle);
+			const f32 factor = invSqrt * sine;
 
 			Rotor result;
 			result.S = std::cosf(halfAngle);

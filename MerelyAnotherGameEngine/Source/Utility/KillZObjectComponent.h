@@ -6,7 +6,7 @@
 template<>
 struct ComponentTemplate<class KillZObjectComponent>
 {
-	float KillZ = 0.0f;
+	f32 KillZ = 0.0f;
 };
 
 class KillZObjectComponent : public GameObjectComponent<TransformableObject>
@@ -15,8 +15,8 @@ public:
 	KillZObjectComponent(TransformableObject& owner, const ComponentTemplate<KillZObjectComponent>& creationTemplate);
 
 protected:
-	virtual void UpdatePostPhysics(float deltaTime) override final;
+	virtual void UpdatePostPhysics(f32 deltaTime) override final;
 
 private:
-	float mKillZ;
+	f32 mKillZ;
 };

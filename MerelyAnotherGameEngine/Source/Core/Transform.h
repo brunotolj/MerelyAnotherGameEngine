@@ -15,19 +15,19 @@ namespace mage
 
 		glm::mat4 Matrix() const
 		{
-			const float s = Rotation.S;
-			const float p = Rotation.XY;
-			const float q = Rotation.YZ;
-			const float r = Rotation.ZX;
-			float a = s + p; a *= a;
-			float b = s + q; b *= b;
-			float c = s + r; c *= c;
-			float d = s - p; d *= d;
-			float e = s - q; e *= e;
-			float f = s - r; f *= f;
-			float g = p + q; g *= g;
-			float h = q + r; h *= h;
-			float i = r + p; i *= i;
+			const f32 s = Rotation.S;
+			const f32 p = Rotation.XY;
+			const f32 q = Rotation.YZ;
+			const f32 r = Rotation.ZX;
+			f32 a = s + p; a *= a;
+			f32 b = s + q; b *= b;
+			f32 c = s + r; c *= c;
+			f32 d = s - p; d *= d;
+			f32 e = s - q; e *= e;
+			f32 f = s - r; f *= f;
+			f32 g = p + q; g *= g;
+			f32 h = q + r; h *= h;
+			f32 i = r + p; i *= i;
 
 			return
 			{

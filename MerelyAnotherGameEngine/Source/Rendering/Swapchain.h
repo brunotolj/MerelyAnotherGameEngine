@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Rendering/Device.h"
 
 #include <vulkan/vulkan.h>
@@ -12,31 +11,31 @@
 class Swapchain : public NonCopyableClass
 {
 public:
-	static constexpr int32_t gMaxFramesInFlight = 2;
+	static constexpr i32 gMaxFramesInFlight = 2;
 
 	Swapchain(Device& device, VkExtent2D extent);
 	Swapchain(Device& device, VkExtent2D extent, std::shared_ptr<Swapchain> previous);
 	~Swapchain();
 
-	VkFramebuffer GetFrameBuffer(int index) { return mFrameBuffers[index]; }
+	VkFramebuffer GetFrameBuffer(i32 index) { return mFrameBuffers[index]; }
 	VkRenderPass GetRenderPass() { return mRenderPass; }
-	VkImageView GetImageView(int index) { return mImageViews[index]; }
-	size_t GetImageCount() { return mSwapChainImages.size(); }
+	VkImageView GetImageView(i32 index) { return mImageViews[index]; }
+	u64 GetImageCount() { return mSwapChainImages.size(); }
 	VkFormat GetImageFormat() { return mImageFormat; }
 	VkFormat GetDepthFormat() { return mDepthFormat; }
 	VkExtent2D GetExtent() { return mExtent; }
-	uint32_t GetWidth() { return mExtent.width; }
-	uint32_t GetHeight() { return mExtent.height; }
+	u32 GetWidth() { return mExtent.width; }
+	u32 GetHeight() { return mExtent.height; }
 
-	float GetAspectRatio()
+	f32 GetAspectRatio()
 	{
-		return static_cast<float>(mExtent.width) / static_cast<float>(mExtent.height);
+		return static_cast<f32>(mExtent.width) / static_cast<f32>(mExtent.height);
 	}
 
 	VkFormat FindDepthFormat();
 
-	VkResult AcquireNextImage(uint32_t* imageIndex);
-	VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, uint32_t* imageIndex);
+	VkResult AcquireNextImage(u32* imageIndex);
+	VkResult SubmitCommandBuffers(const VkCommandBuffer* buffers, u32* imageIndex);
 
 	bool CompareSwapFormats(const Swapchain& other) const;
 
@@ -64,7 +63,7 @@ private:
 	std::vector<VkSemaphore> mRenderFinishedSemaphores;
 	std::vector<VkFence> mInFlightFences;
 	std::vector<VkFence> mImagesInFlight;
-	size_t mCurrentFrame = 0;
+	u64 mCurrentFrame = 0;
 
 	void Init();
 	void CreateSwapChain();

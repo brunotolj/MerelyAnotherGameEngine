@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Rendering/Model.h"
 #include "Rendering/Pipeline.h"
 
@@ -71,7 +70,7 @@ void Pipeline::DefaultPipelineConfigInfo(PipelineConfigInfo& configInfo)
 	configInfo.mDynamicStateEnables = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	configInfo.mDynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	configInfo.mDynamicStateInfo.pDynamicStates = configInfo.mDynamicStateEnables.data();
-	configInfo.mDynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.mDynamicStateEnables.size());
+	configInfo.mDynamicStateInfo.dynamicStateCount = static_cast<u32>(configInfo.mDynamicStateEnables.size());
 	configInfo.mDynamicStateInfo.flags = 0;
 	configInfo.mDynamicStateInfo.pNext = nullptr;
 }
@@ -87,7 +86,7 @@ std::vector<char> Pipeline::ReadFile(const std::string& path)
 
 	mage_ensure(file.is_open());
 
-	size_t fileSize = static_cast<size_t>(file.tellg());
+	u64 fileSize = static_cast<u64>(file.tellg());
 	std::vector<char> buffer(fileSize + 1);
 
 	file.seekg(0);
@@ -140,9 +139,9 @@ void Pipeline::CreateGraphicsPipeline(
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+	vertexInputInfo.vertexBindingDescriptionCount = static_cast<u32>(bindingDescriptions.size());
 	vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<u32>(attributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -172,7 +171,7 @@ void Pipeline::CreateShaderModule(SpirVBinary code, VkShaderModule* shaderModule
 {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = sizeof(uint32_t) * code.Size;
+	createInfo.codeSize = sizeof(u32) * code.Size;
 	createInfo.pCode = code.Words;
 
 	mage_check(vkCreateShaderModule(mDevice.GetDevice(), &createInfo, nullptr, shaderModule) == VK_SUCCESS);
@@ -236,7 +235,7 @@ Pipeline::SpirVBinary Pipeline::CompileShaderToSPIRV(glslang_stage_t stage, cons
 	glslang_program_SPIRV_generate(program, stage);
 
 	bin.Size = glslang_program_SPIRV_get_size(program);
-	bin.Words = (uint32_t*)malloc(bin.Size * sizeof(uint32_t));
+	bin.Words = (u32*)malloc(bin.Size * sizeof(u32));
 	glslang_program_SPIRV_get(program, bin.Words);
 
 	const char* spirv_messages = glslang_program_SPIRV_get_messages(program);

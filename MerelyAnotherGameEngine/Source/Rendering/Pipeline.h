@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Rendering/Device.h"
 
 #include "glslang/Include/glslang_c_shader_types.h"
@@ -23,7 +22,7 @@ struct PipelineConfigInfo : public NonCopyableStruct
 	VkPipelineDynamicStateCreateInfo mDynamicStateInfo;
 	VkPipelineLayout mPipelineLayout = nullptr;
 	VkRenderPass mRenderPass = nullptr;
-	uint32_t mSubpass = 0;
+	u32 mSubpass = 0;
 
 	std::vector<VkVertexInputBindingDescription> BindingDescriptions;
 	std::vector<VkVertexInputAttributeDescription> AttributeDescriptions;
@@ -33,8 +32,8 @@ class Pipeline : public NonMovableClass
 {
 	struct SpirVBinary
 	{
-		uint32_t* Words = nullptr;
-		size_t Size = 0;
+		u32* Words = nullptr;
+		u64 Size = 0;
 	};
 
 public:

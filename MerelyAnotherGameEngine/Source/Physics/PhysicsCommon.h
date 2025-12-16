@@ -6,7 +6,7 @@
 #include <Foundation/PxTransform.h>
 #include <Geometry/PxCustomGeometry.h>
 
-enum class PhysicsSystemObjectType : uint8_t
+enum class PhysicsSystemObjectType : u8
 {
 	RigidStatic,
 	RigidKinematic,
@@ -15,9 +15,9 @@ enum class PhysicsSystemObjectType : uint8_t
 
 struct PhysicsSystemMaterialProperties
 {
-	float StaticFriction;
-	float DynamicFriction;
-	float Restitution;
+	f32 StaticFriction;
+	f32 DynamicFriction;
+	f32 Restitution;
 };
 
 struct PhysicsSystemMaterial;

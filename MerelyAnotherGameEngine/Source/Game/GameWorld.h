@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
-
 #include <memory>
 #include <vector>
 
@@ -21,7 +19,7 @@ public:
 		std::unique_ptr<MeshRenderSystem>&& meshRenderSystem,
 		std::unique_ptr<SpriteRenderSystem>&& spriteRenderSystem);
 
-	void Update(float deltaTime);
+	void Update(f32 deltaTime);
 	void Render(Renderer& renderer) const;
 
 	void AddObject(const std::shared_ptr<GameObject>& object);

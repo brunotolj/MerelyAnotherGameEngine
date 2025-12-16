@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
-#include "Core/Transform.h"
 #include "Game/GameObjectCommon.h"
 
 #include <map>
@@ -23,7 +21,7 @@ public:
 		std::unique_ptr<ComponentClass> component = std::make_unique<ComponentClass>(owner, creationTemplate);
 		ComponentClass& componentRef = *component.get();
 
-		const size_t index = owner.mComponents.size();
+		const u64 index = owner.mComponents.size();
 		owner.mComponents.push_back(std::move(component));
 		owner.mComponentsByClass[typeid(ComponentClass)].push_back(index);
 
@@ -40,7 +38,7 @@ public:
 		if (componentArray == mComponentsByClass.end())
 			return result;
 
-		for (size_t index : componentArray->second)
+		for (u64 index : componentArray->second)
 			result.push_back(std::reinterpret_pointer_cast<ComponentClass>(mComponents[index]));
 
 		return result;
@@ -56,16 +54,16 @@ protected:
 
 	void OnRemovedFromWorld(GameWorld& world);
 	
-	void UpdatePrePhysics(float deltaTime);
+	void UpdatePrePhysics(f32 deltaTime);
 
-	void UpdatePostPhysics(float deltaTime);
+	void UpdatePostPhysics(f32 deltaTime);
 
 private:
 	GameWorld* mWorld = nullptr;
 
 	std::vector<std::shared_ptr<GameObjectComponentBase>> mComponents;
 
-	std::map<std::type_index, std::vector<size_t>> mComponentsByClass;
+	std::map<std::type_index, std::vector<u64>> mComponentsByClass;
 
 	bool mIsDestoryed = false;
 };

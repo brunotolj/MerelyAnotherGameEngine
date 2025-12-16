@@ -1,5 +1,4 @@
 #include "Physics/PhysicsSystem.h"
-#include "Core/Asserts.h"
 
 PhysicsSystem::PhysicsSystem()
 {
@@ -44,7 +43,7 @@ PhysicsSystem::~PhysicsSystem()
 	PX_RELEASE(mFoundation);
 }
 
-void PhysicsSystem::Update(float deltaTime)
+void PhysicsSystem::Update(f32 deltaTime)
 {
 	mScene->simulate(deltaTime);
 	mScene->fetchResults(true);

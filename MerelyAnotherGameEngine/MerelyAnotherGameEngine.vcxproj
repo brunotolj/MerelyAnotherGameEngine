@@ -69,6 +69,9 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -94,6 +97,9 @@
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,6 +125,9 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,6 +144,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Framework\VulkanDevice.cpp" />
     <ClCompile Include="Source\Game\CameraComponent.cpp" />
     <ClCompile Include="Source\Game\GameObject.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />
@@ -160,11 +170,16 @@
     <ClCompile Include="Source\Utility\KillZObjectComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Array.h" />
     <ClInclude Include="Source\Core\Asserts.h" />
     <ClInclude Include="Source\Core\NonCopyable.h" />
+    <ClInclude Include="Source\Core\Types.h" />
+    <ClInclude Include="Source\Core\_PCH.h" />
     <ClInclude Include="Source\Core\Rotor.h" />
+    <ClInclude Include="Source\Core\String.h" />
     <ClInclude Include="Source\Core\Transform.h" />
     <ClInclude Include="Source\Core\Utils.h" />
+    <ClInclude Include="Source\Framework\VulkanDevice.h" />
     <ClInclude Include="Source\Game\CameraComponent.h" />
     <ClInclude Include="Source\Game\GameObject.h" />
     <ClInclude Include="Source\Game\GameObjectComponent.h" />

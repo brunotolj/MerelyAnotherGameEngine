@@ -20,7 +20,7 @@ GameWorld::GameWorld(
 {
 }
 
-void GameWorld::Update(float deltaTime)
+void GameWorld::Update(f32 deltaTime)
 {
 	mIsCurrentlyUpdatingObjects = true;
 	for (const std::shared_ptr<GameObject>& object : mObjects)
@@ -58,9 +58,9 @@ void GameWorld::Update(float deltaTime)
 	}
 	mNewObjects.clear();
 
-	size_t currentObject = 0;
-	size_t destroyedObjectCount = 0;
-	const size_t totalObjectCount = mObjects.size();
+	u64 currentObject = 0;
+	u64 destroyedObjectCount = 0;
+	const u64 totalObjectCount = mObjects.size();
 
 	while (currentObject + destroyedObjectCount < mObjects.size())
 	{
@@ -80,13 +80,13 @@ void GameWorld::Update(float deltaTime)
 	mObjects.resize(totalObjectCount - destroyedObjectCount);
 }
 
-glm::mat4 CalcProjectionTransform(float nearPlane, float farPlane, float horizontalFOV, float aspectRatio)
+glm::mat4 CalcProjectionTransform(f32 nearPlane, f32 farPlane, f32 horizontalFOV, f32 aspectRatio)
 {
 	mage_check(nearPlane >= 0.0f && farPlane > nearPlane);
 	mage_check(horizontalFOV > 0.0f && glm::degrees(horizontalFOV) < 180.0f);
 
-	const float fovFactor = 1.0f / glm::tan(horizontalFOV / 2.0f);
-	const float planeDelta = farPlane - nearPlane;
+	const f32 fovFactor = 1.0f / glm::tan(horizontalFOV / 2.0f);
+	const f32 planeDelta = farPlane - nearPlane;
 
 	return
 	{

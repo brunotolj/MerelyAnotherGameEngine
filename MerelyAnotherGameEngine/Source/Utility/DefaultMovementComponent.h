@@ -9,14 +9,14 @@
 template<>
 struct ComponentTemplate<class DefaultMovementComponent>
 {
-	int InputR = GLFW_KEY_D;
-	int InputL = GLFW_KEY_A;
-	int InputF = GLFW_KEY_W;
-	int InputB = GLFW_KEY_S;
-	int InputU = GLFW_KEY_E;
-	int InputD = GLFW_KEY_Q;
+	i32 InputR = GLFW_KEY_D;
+	i32 InputL = GLFW_KEY_A;
+	i32 InputF = GLFW_KEY_W;
+	i32 InputB = GLFW_KEY_S;
+	i32 InputU = GLFW_KEY_E;
+	i32 InputD = GLFW_KEY_Q;
 
-	float Speed = 1.0f;
+	f32 Speed = 1.0f;
 };
 
 class DefaultMovementComponent : public GameObjectComponent<TransformableObject>
@@ -27,17 +27,17 @@ public:
 protected:
 	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
 
-	virtual void UpdatePrePhysics(float deltaTime) override final;
+	virtual void UpdatePrePhysics(f32 deltaTime) override final;
 
 private:
-	int mInputR;
-	int mInputL;
-	int mInputF;
-	int mInputB;
-	int mInputU;
-	int mInputD;
+	i32 mInputR;
+	i32 mInputL;
+	i32 mInputF;
+	i32 mInputB;
+	i32 mInputU;
+	i32 mInputD;
 
-	float mSpeed;
+	f32 mSpeed;
 
 	glm::dvec2 mCursorMovement = glm::dvec2(0.0f);
 	glm::vec2 mRotation = glm::vec2(0.0f);

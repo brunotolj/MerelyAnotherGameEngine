@@ -16,11 +16,11 @@ DefaultMovementComponent::DefaultMovementComponent(TransformableObject& owner, c
 
 void DefaultMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	world.GetInputSystem().BindCursorMovementHandler([this](glm::dvec2 movement, int cursorMode)
+	world.GetInputSystem().BindCursorMovementHandler([this](glm::dvec2 movement, i32 cursorMode)
 		{ if (cursorMode == GLFW_CURSOR_DISABLED) mCursorMovement += movement; });
 }
 
-void DefaultMovementComponent::UpdatePrePhysics(float deltaTime)
+void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
 {
 	glm::vec3 movement(0.0f);
 	InputSystem& inputSystem = mOwner.GetWorld()->GetInputSystem();

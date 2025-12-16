@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
-
 #include <functional>
 #include <map>
 
@@ -16,20 +14,20 @@ public:
 
 	~InputSystem() {}
 
-	int GetKeyState(int key);
+	i32 GetKeyState(i32 key);
 
-	void BindKeyInputHandler(int key, int action, std::function<void()> handler) { mKeyInputHandlers[std::make_pair(key, action)] = handler; }
+	void BindKeyInputHandler(i32 key, i32 action, std::function<void()> handler) { mKeyInputHandlers[std::make_pair(key, action)] = handler; }
 
-	void BindCursorMovementHandler(std::function<void(glm::dvec2, int)> handler) { mCursorMovementHandler = handler; }
+	void BindCursorMovementHandler(std::function<void(glm::dvec2, i32)> handler) { mCursorMovementHandler = handler; }
 
 private:
 	Window& mWindow;
 
 	glm::dvec2 mCursorPosition;
 
-	std::map<std::pair<int, int>, std::function<void()>> mKeyInputHandlers;
-	std::function<void(glm::dvec2, int)> mCursorMovementHandler;
+	std::map<std::pair<i32, i32>, std::function<void()>> mKeyInputHandlers;
+	std::function<void(glm::dvec2, i32)> mCursorMovementHandler;
 
-	void KeyCallback(int key, int action, int mods);
+	void KeyCallback(i32 key, i32 action, i32 mods);
 	void CursorPositionCallback(glm::dvec2 position);
 };

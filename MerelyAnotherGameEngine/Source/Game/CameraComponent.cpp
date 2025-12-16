@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Game/CameraComponent.h"
 #include "Game/GameWorld.h"
 #include "Rendering/Systems/MeshRenderSystem.h"

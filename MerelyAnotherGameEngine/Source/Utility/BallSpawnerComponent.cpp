@@ -21,7 +21,7 @@ void BallSpawnerComponent::OnOwnerAddedToWorld(GameWorld& world)
 	world.GetInputSystem().BindKeyInputHandler(mInputSpawn, GLFW_PRESS, [this]() { mPendingBallSpawn = true; });
 }
 
-void BallSpawnerComponent::UpdatePrePhysics(float deltaTime)
+void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
 {
 	if (mPendingBallSpawn)
 	{

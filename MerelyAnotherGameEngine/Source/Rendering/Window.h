@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
-
 #include <functional>
 #include <string>
 
@@ -10,13 +8,13 @@
 
 #include <glm/glm.hpp>
 
-using KeyCallbackType = std::function<void(int, int, int, int)>;
+using KeyCallbackType = std::function<void(i32, i32, i32, i32)>;
 using CursorPositionCallbackType = std::function<void(glm::dvec2)>;
 
 class Window : public NonMovableClass
 {
 public:
-	Window(int32_t width, int32_t height, const std::string& name);
+	Window(i32 width, i32 height, const std::string& name);
 	~Window();
 
 	static void PollEvents() { glfwPollEvents(); }
@@ -31,18 +29,18 @@ public:
 
 	void CreateWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 
-	int GetCursorInputMode() const { return glfwGetInputMode(mWindow, GLFW_CURSOR); }
-	void SetCursorInputMode(int value) { glfwSetInputMode(mWindow, GLFW_CURSOR, value); }
+	i32 GetCursorInputMode() const { return glfwGetInputMode(mWindow, GLFW_CURSOR); }
+	void SetCursorInputMode(i32 value) { glfwSetInputMode(mWindow, GLFW_CURSOR, value); }
 
-	int GetKeyState(int key) const { return glfwGetKey(mWindow, key); }
+	i32 GetKeyState(i32 key) const { return glfwGetKey(mWindow, key); }
 	glm::dvec2 GetCursorPosition() const { glm::dvec2 pos; glfwGetCursorPos(mWindow, &pos.x, &pos.y); return pos; }
 
 	void SetKeyCallback(KeyCallbackType&& value) { mKeyCallback = value; }
 	void SetCursorPositionCallback(CursorPositionCallbackType&& value) { mCursorPositionCallback = value; }
 
 private:
-	int32_t mWidth;
-	int32_t mHeight;
+	i32 mWidth;
+	i32 mHeight;
 
 	bool mFramebufferResized = false;
 
@@ -53,12 +51,12 @@ private:
 	KeyCallbackType mKeyCallback;
 	CursorPositionCallbackType mCursorPositionCallback;
 
-	static uint32_t sWindowCount;
+	static u32 sWindowCount;
 
 	static void IncrementWindowCount();
 	static void DecrementWindowCount();
 
-	static void FramebufferResizedCallback(GLFWwindow* glfwWindow, int32_t width, int32_t height);
-	static void KeyCallback(GLFWwindow* glfwWindow, int key, int scancode, int action, int mods);
-	static void CursorPositionCallback(GLFWwindow* glfwWindow, double posX, double posY);
+	static void FramebufferResizedCallback(GLFWwindow* glfwWindow, i32 width, i32 height);
+	static void KeyCallback(GLFWwindow* glfwWindow, i32 key, i32 scancode, i32 action, i32 mods);
+	static void CursorPositionCallback(GLFWwindow* glfwWindow, f64 posX, f64 posY);
 };

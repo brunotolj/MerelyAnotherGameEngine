@@ -7,7 +7,7 @@ KillZObjectComponent::KillZObjectComponent(TransformableObject& owner, const Com
 {
 }
 
-void KillZObjectComponent::UpdatePostPhysics(float deltaTime)
+void KillZObjectComponent::UpdatePostPhysics(f32 deltaTime)
 {
 	if (mOwner.Transform.Position.z < mKillZ)
 	{

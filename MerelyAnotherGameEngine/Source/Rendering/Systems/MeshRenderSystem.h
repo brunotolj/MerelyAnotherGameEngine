@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
-
 #include <memory>
 #include <set>
 #include <string>
@@ -29,7 +27,7 @@ struct MeshRenderData
 	const Model* Mesh;
 	glm::mat4 Transform;
 	glm::vec3 Color;
-	uint32_t TextureIndex;
+	u32 TextureIndex;
 };
 
 struct SceneRenderData
@@ -38,7 +36,7 @@ struct SceneRenderData
 	glm::mat4 ProjectionTransform;
 
 	glm::vec3 LightDirection;
-	float AmbientLightIntensity;
+	f32 AmbientLightIntensity;
 
 	std::vector<MeshRenderData> Meshes;
 };
@@ -56,7 +54,7 @@ public:
 
 	~MeshRenderSystem();
 
-	float GetAspectRatio() const;
+	f32 GetAspectRatio() const;
 
 	void RenderMeshes(VkCommandBuffer commandBuffer, const SceneRenderData& data);
 

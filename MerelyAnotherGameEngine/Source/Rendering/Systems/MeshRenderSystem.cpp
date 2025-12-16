@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Rendering/Buffer.h"
 #include "Rendering/Descriptor.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
@@ -10,8 +9,8 @@
 MeshRenderSystem::MeshRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths) :
 	mDevice(device), mRenderer(renderer)
 {
-	uint32_t uniformBufferCount = Swapchain::gMaxFramesInFlight;
-	uint32_t textureCount = static_cast<uint32_t>(texturePaths.size());
+	u32 uniformBufferCount = Swapchain::gMaxFramesInFlight;
+	u32 textureCount = static_cast<u32>(texturePaths.size());
 	mage_check(textureCount > 0);
 
 	mDescriptorPool = DescriptorPool::Builder(mDevice)
@@ -23,7 +22,7 @@ MeshRenderSystem::MeshRenderSystem(Device& device, Renderer& renderer, const std
 	mDescriptorSets.resize(uniformBufferCount + textureCount);
 
 	mUniformBuffers.resize(uniformBufferCount);
-	for (size_t i = 0; i < uniformBufferCount; ++i)
+	for (u64 i = 0; i < uniformBufferCount; ++i)
 	{
 		std::unique_ptr<Buffer>& buffer = mUniformBuffers[i];
 		buffer = std::make_unique<Buffer>(
@@ -41,7 +40,7 @@ MeshRenderSystem::MeshRenderSystem(Device& device, Renderer& renderer, const std
 		.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.Build();
 
-	for (size_t i = 0; i < uniformBufferCount; ++i)
+	for (u64 i = 0; i < uniformBufferCount; ++i)
 	{
 		VkDescriptorBufferInfo bufferInfo = mUniformBuffers[i]->DescriptorInfo();
 		DescriptorWriter(*mUniformBufferDescriptorSetLayout, *mDescriptorPool)
@@ -50,7 +49,7 @@ MeshRenderSystem::MeshRenderSystem(Device& device, Renderer& renderer, const std
 	}
 
 	mTextures.resize(textureCount);
-	for (size_t i = 0; i < textureCount; ++i)
+	for (u64 i = 0; i < textureCount; ++i)
 	{
 		std::unique_ptr<Texture>& texture = mTextures[i];
 		texture = std::make_unique<Texture>(
@@ -62,7 +61,7 @@ MeshRenderSystem::MeshRenderSystem(Device& device, Renderer& renderer, const std
 		.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.Build();
 
-	for (size_t i = 0; i < textureCount; ++i)
+	for (u64 i = 0; i < textureCount; ++i)
 	{
 		VkDescriptorImageInfo imageInfo = mTextures[i]->DescriptorInfo();
 		DescriptorWriter(*mTextureDescriptorSetLayout, *mDescriptorPool)
@@ -79,7 +78,7 @@ MeshRenderSystem::~MeshRenderSystem()
 	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-float MeshRenderSystem::GetAspectRatio() const
+f32 MeshRenderSystem::GetAspectRatio() const
 {
 	return mRenderer.GetAspectRatio();
 }
@@ -93,7 +92,7 @@ void MeshRenderSystem::RenderMeshes(VkCommandBuffer commandBuffer, const SceneRe
 	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(data.LightDirection, 0.0f));
 	ubo.LightDirectionAndAmbient.w = data.AmbientLightIntensity;
 
-	int frameIndex = mRenderer.GetCurrentFrameIndex();
+	i32 frameIndex = mRenderer.GetCurrentFrameIndex();
 	std::unique_ptr<Buffer>& uniformBuffer = mUniformBuffers[frameIndex];
 	uniformBuffer->WriteToBuffer(&ubo);
 	uniformBuffer->Flush();
@@ -150,7 +149,7 @@ void MeshRenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBufferD
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	pipelineLayoutInfo.setLayoutCount = static_cast<u32>(descriptorSetLayouts.size());
 	pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
 	pipelineLayoutInfo.pushConstantRangeCount = 1;
 	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;

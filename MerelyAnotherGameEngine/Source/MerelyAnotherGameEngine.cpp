@@ -1,4 +1,3 @@
-#include "Core/Asserts.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
 #include "Game/InputSystem.h"
@@ -24,17 +23,17 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-static constexpr int gWindowWidth = 1280;
-static constexpr int gWindowHeight = 720;
+static constexpr i32 gWindowWidth = 1280;
+static constexpr i32 gWindowHeight = 720;
 
 std::shared_ptr<TransformableObject> CreateControllableCamera(
 	const mage::Transform& transform,
-	float speed,
+	f32 speed,
 	PhysicsRigidBodyParams ballRigidBodyParams,
 	std::shared_ptr<Model> ballModel,
 	glm::vec3 ballColor,
-	float ballSpeed,
-	int inputSpawnBall)
+	f32 ballSpeed,
+	i32 inputSpawnBall)
 {
 	std::shared_ptr<TransformableObject> objectPtr = std::make_shared<TransformableObject>();
 	TransformableObject& object = *objectPtr.get();
@@ -85,8 +84,8 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 	PhysicsRigidBodyParams rigidBodyParams,
 	std::shared_ptr<Model> model,
 	glm::vec3 color,
-	int inputNeg,
-	int inputPos)
+	i32 inputNeg,
+	i32 inputPos)
 {
 	const glm::mat4 matrix = transform.Matrix();
 	const glm::vec3 right = matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
@@ -116,12 +115,12 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 	return capsulePtr;
 }
 
-int main()
+i32 main()
 {
 	FT_Library library;
 	mage_check(FT_Init_FreeType(&library) == 0);
 
-	Window window{ gWindowWidth, gWindowHeight, "Window" };
+	Window window{ gWindowWidth, gWindowHeight, "MerelyAnotherGameEngine" };
 	Device device{ window };
 	Renderer renderer{ window, device };
 
@@ -134,18 +133,18 @@ int main()
 		std::make_unique<MeshRenderSystem>(device, renderer, texturePaths),
 		std::make_unique<SpriteRenderSystem>(device, renderer, texturePaths));
 
-	constexpr float boardSize = 20.0f;
+	constexpr f32 boardSize = 20.0f;
 
-	constexpr float cornerHalfHeight = 3.0f;
-	constexpr float cornerRadius = 4.0f;
-	constexpr float cornerPosition = boardSize - cornerRadius;
+	constexpr f32 cornerHalfHeight = 3.0f;
+	constexpr f32 cornerRadius = 4.0f;
+	constexpr f32 cornerPosition = boardSize - cornerRadius;
 
-	constexpr float capsuleDistance = cornerPosition + 4.0f;
-	constexpr float capsuleElevation = 2.0f;
-	constexpr float capsuleRadius = 2.0f;
-	constexpr float capsuleLength = 1.5f;
+	constexpr f32 capsuleDistance = cornerPosition + 4.0f;
+	constexpr f32 capsuleElevation = 2.0f;
+	constexpr f32 capsuleRadius = 2.0f;
+	constexpr f32 capsuleLength = 1.5f;
 
-	constexpr float ballRadius = 1.0f;
+	constexpr f32 ballRadius = 1.0f;
 
 	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.9f });
 	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.0f });
@@ -221,7 +220,7 @@ int main()
 		Window::PollEvents();
 
 		const std::chrono::steady_clock::time_point newTime = std::chrono::high_resolution_clock::now();
-		const float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+		const f32 frameTime = std::chrono::duration<f32, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
 		world.Update(frameTime);

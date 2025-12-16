@@ -31,9 +31,9 @@ protected:
 
 	virtual void OnOwnerRemovedFromWorld(GameWorld& world) override final;
 
-	virtual void UpdatePrePhysics(float deltaTime) override final;
+	virtual void UpdatePrePhysics(f32 deltaTime) override final;
 
-	virtual void UpdatePostPhysics(float deltaTime) override final;
+	virtual void UpdatePostPhysics(f32 deltaTime) override final;
 
 private:
 	PhysicsRigidBodyParams mRigidBodyParams;
