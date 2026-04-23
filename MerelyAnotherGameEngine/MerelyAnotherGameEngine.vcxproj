@@ -63,7 +63,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;MAGE_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -89,7 +89,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;MAGE_TEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -119,7 +119,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;MAGE_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -144,7 +144,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Framework\VulkanDevice.cpp" />
     <ClCompile Include="Source\Game\CameraComponent.cpp" />
     <ClCompile Include="Source\Game\GameObject.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />
@@ -153,21 +152,19 @@
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp" />
-    <ClCompile Include="Source\Rendering\Buffer.cpp" />
-    <ClCompile Include="Source\Rendering\Descriptor.cpp" />
-    <ClCompile Include="Source\Rendering\Device.cpp" />
-    <ClCompile Include="Source\Rendering\Model.cpp" />
-    <ClCompile Include="Source\Rendering\Pipeline.cpp" />
-    <ClCompile Include="Source\Rendering\Renderer.cpp" />
-    <ClCompile Include="Source\Rendering\Swapchain.cpp" />
     <ClCompile Include="Source\Rendering\Systems\MeshRenderSystem.cpp" />
     <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp" />
-    <ClCompile Include="Source\Rendering\Texture.cpp" />
-    <ClCompile Include="Source\Rendering\Window.cpp" />
     <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp" />
     <ClCompile Include="Source\Utility\BoundedLineMovementComponent.cpp" />
     <ClCompile Include="Source\Utility\DefaultMovementComponent.cpp" />
     <ClCompile Include="Source\Utility\KillZObjectComponent.cpp" />
+    <ClCompile Include="Source\Vulkan\Buffer.cpp" />
+    <ClCompile Include="Source\Vulkan\Model.cpp" />
+    <ClCompile Include="Source\Vulkan\Pipeline.cpp" />
+    <ClCompile Include="Source\Vulkan\Renderer.cpp" />
+    <ClCompile Include="Source\Vulkan\Texture.cpp" />
+    <ClCompile Include="Source\Vulkan\VulkanInterface.cpp" />
+    <ClCompile Include="Source\Vulkan\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Array.h" />
@@ -179,7 +176,6 @@
     <ClInclude Include="Source\Core\String.h" />
     <ClInclude Include="Source\Core\Transform.h" />
     <ClInclude Include="Source\Core\Utils.h" />
-    <ClInclude Include="Source\Framework\VulkanDevice.h" />
     <ClInclude Include="Source\Game\CameraComponent.h" />
     <ClInclude Include="Source\Game\GameObject.h" />
     <ClInclude Include="Source\Game\GameObjectComponent.h" />
@@ -189,23 +185,23 @@
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h" />
     <ClInclude Include="Source\Physics\PhysicsCommon.h" />
     <ClInclude Include="Source\Physics\PhysicsSystem.h" />
-    <ClInclude Include="Source\Rendering\Buffer.h" />
-    <ClInclude Include="Source\Rendering\Descriptor.h" />
-    <ClInclude Include="Source\Rendering\Device.h" />
-    <ClInclude Include="Source\Rendering\Model.h" />
-    <ClInclude Include="Source\Rendering\Pipeline.h" />
-    <ClInclude Include="Source\Rendering\Renderer.h" />
-    <ClInclude Include="Source\Rendering\Swapchain.h" />
     <ClInclude Include="Source\Rendering\Systems\MeshRenderSystem.h" />
     <ClInclude Include="Source\Rendering\Systems\SpriteRenderSystem.h" />
-    <ClInclude Include="Source\Rendering\Texture.h" />
-    <ClInclude Include="Source\Rendering\Window.h" />
     <ClInclude Include="Source\Utility\BallSpawnerComponent.h" />
     <ClInclude Include="Source\Utility\BoundedLineMovementComponent.h" />
     <ClInclude Include="Source\Utility\DefaultMovementComponent.h" />
     <ClInclude Include="Source\Utility\KillZObjectComponent.h" />
+    <ClInclude Include="Source\Vulkan\Buffer.h" />
+    <ClInclude Include="Source\Vulkan\Model.h" />
+    <ClInclude Include="Source\Vulkan\Texture.h" />
+    <ClInclude Include="Source\Vulkan\Pipeline.h" />
+    <ClInclude Include="Source\Vulkan\Renderer.h" />
+    <ClInclude Include="Source\Vulkan\VulkanInterface.h" />
+    <ClInclude Include="Source\Vulkan\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Source\Shaders\BasicShader.frag" />
+    <None Include="Source\Shaders\BasicShader.vert" />
     <None Include="Source\Shaders\MeshShader.frag" />
     <None Include="Source\Shaders\MeshShader.vert" />
     <None Include="Source\Shaders\SpriteShader.frag" />

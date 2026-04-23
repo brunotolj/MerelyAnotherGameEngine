@@ -4,15 +4,10 @@
 
 #include <glm/glm.hpp>
 
-#include <cmath>
-
 namespace mage
 {
 	struct Transform
 	{
-		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-		mage::Rotor Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
-
 		glm::mat4 Matrix() const
 		{
 			const f32 s = Rotation.S;
@@ -37,5 +32,9 @@ namespace mage
 				glm::vec4{ Position, 1.0f }
 			};
 		}
+
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+		mage::Rotor Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
+
 	};
 }

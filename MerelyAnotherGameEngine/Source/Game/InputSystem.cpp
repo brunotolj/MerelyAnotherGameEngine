@@ -1,7 +1,7 @@
 #include "Game/InputSystem.h"
-#include "Rendering/Window.h"
+#include "Vulkan/Window.h"
 
-InputSystem::InputSystem(Window& window) : mWindow(window)
+InputSystem::InputSystem(Vulkan::Window& window) : mWindow(window)
 {
 	mWindow.SetKeyCallback([this](i32 key, i32 scancode, i32 action, i32 mods) { KeyCallback(key, action, mods); });
 	mWindow.SetCursorPositionCallback([this](glm::dvec2 position) { CursorPositionCallback(position); });

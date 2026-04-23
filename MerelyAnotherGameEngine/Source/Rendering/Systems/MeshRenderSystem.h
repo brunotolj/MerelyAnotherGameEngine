@@ -1,20 +1,15 @@
 #pragma once
 
-#include <memory>
-#include <set>
-#include <string>
+#include "Vulkan/Buffer.h"
+#include "Vulkan/Pipeline.h"
+#include "Vulkan/Texture.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-class Buffer;
-class Device;
-class DescriptorPool;
-class DescriptorSetLayout;
-class Model;
-class Pipeline;
-class Renderer;
-class Texture;
+namespace Vulkan
+{
+	class Model;
+	class Renderer;
+	struct RenderFrameData;
+}
 
 struct MeshUBO
 {
@@ -24,7 +19,7 @@ struct MeshUBO
 
 struct MeshRenderData
 {
-	const Model* Mesh;
+	const Vulkan::Model* Mesh;
 	glm::mat4 Transform;
 	glm::vec3 Color;
 	u32 TextureIndex;
@@ -50,36 +45,19 @@ class MeshRenderSystem : public NonCopyableClass
 	};
 
 public:
-	MeshRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths);
-
+	MeshRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths);
 	~MeshRenderSystem();
 
-	f32 GetAspectRatio() const;
-
-	void RenderMeshes(VkCommandBuffer commandBuffer, const SceneRenderData& data);
+	void RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data);
 
 private:
-	Device& mDevice;
+	Vulkan::Renderer const& mRenderer;
 
-	std::unique_ptr<DescriptorPool> mDescriptorPool;
+	Vulkan::Pipeline mPipeline;
 
-	Renderer& mRenderer;
+	mage::Array<Vulkan::Buffer> mUniformBuffers;
 
-	std::unique_ptr<Pipeline> mPipeline;
+	mage::Array<Vulkan::Texture> mTextures;
 
-	std::vector<std::unique_ptr<Buffer>> mUniformBuffers;
-
-	std::vector<std::unique_ptr<Texture>> mTextures;
-
-	std::unique_ptr<DescriptorSetLayout> mUniformBufferDescriptorSetLayout;
-
-	std::unique_ptr<DescriptorSetLayout> mTextureDescriptorSetLayout;
-
-	std::vector<VkDescriptorSet> mDescriptorSets;
-
-	VkPipelineLayout mPipelineLayout;
-
-	void CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout);
-
-	void CreatePipeline(VkRenderPass renderPass);
+	Vulkan::Pipeline CreatePipeline(u32 inTextureCount);
 };

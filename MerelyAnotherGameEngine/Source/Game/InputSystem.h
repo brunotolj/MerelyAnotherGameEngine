@@ -1,16 +1,16 @@
 #pragma once
 
-#include <functional>
 #include <map>
 
-#include <glm/glm.hpp>
-
-class Window;
+namespace Vulkan
+{
+	class Window;
+}
 
 class InputSystem : public NonCopyableClass
 {
 public:
-	InputSystem(Window& window);
+	InputSystem(Vulkan::Window& window);
 
 	~InputSystem() {}
 
@@ -21,7 +21,7 @@ public:
 	void BindCursorMovementHandler(std::function<void(glm::dvec2, i32)> handler) { mCursorMovementHandler = handler; }
 
 private:
-	Window& mWindow;
+	Vulkan::Window& mWindow;
 
 	glm::dvec2 mCursorPosition;
 

@@ -34,31 +34,13 @@
     <Filter Include="Source Files\Rendering\Systems">
       <UniqueIdentifier>{65bda673-7838-4360-875e-5dc75fa7ed67}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Framework">
-      <UniqueIdentifier>{88a4bb55-f911-4d40-8672-8d7ebaf04db8}</UniqueIdentifier>
+    <Filter Include="Source Files\Vulkan">
+      <UniqueIdentifier>{974dfce2-5b9c-4236-9599-0b14cd965c9c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Device.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Model.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Pipeline.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Renderer.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Swapchain.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Window.cpp">
-      <Filter>Source Files\Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
       <Filter>Source Files\Physics</Filter>
@@ -93,23 +75,32 @@
     <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\Descriptor.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Buffer.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Texture.cpp">
-      <Filter>Source Files\Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Rendering\Systems\MeshRenderSystem.cpp">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
     <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Framework\VulkanDevice.cpp">
-      <Filter>Source Files\Framework</Filter>
+    <ClCompile Include="Source\Vulkan\VulkanInterface.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Pipeline.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Renderer.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Window.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Buffer.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Texture.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Model.cpp">
+      <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,24 +118,6 @@
     </ClInclude>
     <ClInclude Include="Source\Core\Utils.h">
       <Filter>Source Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Device.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Model.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Pipeline.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Renderer.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Swapchain.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Window.h">
-      <Filter>Source Files\Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsSystem.h">
       <Filter>Source Files\Physics</Filter>
@@ -185,23 +158,11 @@
     <ClInclude Include="Source\Utility\BallSpawnerComponent.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\Descriptor.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Buffer.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Texture.h">
-      <Filter>Source Files\Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Rendering\Systems\MeshRenderSystem.h">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClInclude>
     <ClInclude Include="Source\Rendering\Systems\SpriteRenderSystem.h">
       <Filter>Source Files\Rendering\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Framework\VulkanDevice.h">
-      <Filter>Source Files\Framework</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\String.h">
       <Filter>Source Files\Core</Filter>
@@ -215,6 +176,27 @@
     <ClInclude Include="Source\Core\Types.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Vulkan\VulkanInterface.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Pipeline.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Renderer.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Window.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Buffer.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Texture.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Model.h">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\MeshShader.frag">
@@ -227,6 +209,12 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="Source\Shaders\SpriteShader.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\BasicShader.frag">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\BasicShader.vert">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

@@ -1,111 +1,96 @@
-#include "Rendering/Buffer.h"
-#include "Rendering/Descriptor.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
-#include "Rendering/Model.h"
-#include "Rendering/Pipeline.h"
-#include "Rendering/Renderer.h"
-#include "Rendering/Texture.h"
+#include "Vulkan/Model.h"
+#include "Vulkan/Renderer.h"
 
-MeshRenderSystem::MeshRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths) :
-	mDevice(device), mRenderer(renderer)
+MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths) :
+	mRenderer(renderer), mPipeline(CreatePipeline(texturePaths.GetSize()))
 {
-	u32 uniformBufferCount = Swapchain::gMaxFramesInFlight;
-	u32 textureCount = static_cast<u32>(texturePaths.size());
+	u32 uniformBufferCount = mRenderer.cMaxFramesInFlight;
+	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
 	mage_check(textureCount > 0);
 
-	mDescriptorPool = DescriptorPool::Builder(mDevice)
-		.SetMaxSets(uniformBufferCount + textureCount)
-		.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniformBufferCount)
-		.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textureCount)
-		.Build();
-
-	mDescriptorSets.resize(uniformBufferCount + textureCount);
-
-	mUniformBuffers.resize(uniformBufferCount);
-	for (u64 i = 0; i < uniformBufferCount; ++i)
+	Vulkan::BufferCreateInfo bufferCreateInfo
 	{
-		std::unique_ptr<Buffer>& buffer = mUniformBuffers[i];
-		buffer = std::make_unique<Buffer>(
-			device,
-			sizeof(MeshUBO),
-			1,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-			device.properties.limits.minUniformBufferOffsetAlignment);
+		.Size = sizeof(MeshUBO),
+		.UsageFlags = vk::BufferUsageFlagBits::eUniformBuffer,
+		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible
+	};
 
-		buffer->Map();
+	mUniformBuffers.Reserve(uniformBufferCount);
+	for (u32 i = 0; i < uniformBufferCount; ++i)
+	{
+		mUniformBuffers.Add(mRenderer.CreateBuffer(bufferCreateInfo));
+		mUniformBuffers[i].Map();
 	}
 
-	mUniformBufferDescriptorSetLayout = DescriptorSetLayout::Builder(mDevice)
-		.AddBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-		.Build();
-
-	for (u64 i = 0; i < uniformBufferCount; ++i)
+	mTextures.Reserve(textureCount);
+	for (u32 i = 0; i < textureCount; ++i)
 	{
-		VkDescriptorBufferInfo bufferInfo = mUniformBuffers[i]->DescriptorInfo();
-		DescriptorWriter(*mUniformBufferDescriptorSetLayout, *mDescriptorPool)
-			.WriteBuffer(0, &bufferInfo)
-			.Build(mDescriptorSets[i]);
+		Vulkan::TextureCreateInfo textureCreateInfo
+		{
+			.ImageData = Vulkan::Texture::LoadImage(texturePaths[i])
+		};
+
+		mTextures.Add(mRenderer.CreateTexture(textureCreateInfo));
 	}
 
-	mTextures.resize(textureCount);
-	for (u64 i = 0; i < textureCount; ++i)
+	for (u32 i = 0; i < uniformBufferCount; ++i)
 	{
-		std::unique_ptr<Texture>& texture = mTextures[i];
-		texture = std::make_unique<Texture>(
-			device,
-			texturePaths[i]);
+		vk::DescriptorBufferInfo bufferInfo = mUniformBuffers[i].GetDescriptorInfo();
+
+		vk::WriteDescriptorSet descriptorWrite
+		{
+			.dstBinding = 0,
+			.dstArrayElement = 0,
+			.descriptorCount = 1,
+			.descriptorType = vk::DescriptorType::eUniformBuffer,
+			.pBufferInfo = &bufferInfo
+		};
+
+		mPipeline.UpdateDescriptorSet(descriptorWrite, i);
 	}
 
-	mTextureDescriptorSetLayout = DescriptorSetLayout::Builder(mDevice)
-		.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-		.Build();
-
-	for (u64 i = 0; i < textureCount; ++i)
+	for (u32 i = 0; i < textureCount; ++i)
 	{
-		VkDescriptorImageInfo imageInfo = mTextures[i]->DescriptorInfo();
-		DescriptorWriter(*mTextureDescriptorSetLayout, *mDescriptorPool)
-			.WriteImage(0, &imageInfo)
-			.Build(mDescriptorSets[uniformBufferCount + i]);
-	}
+		vk::DescriptorImageInfo bufferInfo = mTextures[i].GetDescriptorInfo();
 
-	CreatePipelineLayout(mUniformBufferDescriptorSetLayout->GetDescriptorSetLayout(), mTextureDescriptorSetLayout->GetDescriptorSetLayout());
-	CreatePipeline(renderer.GetSwapchainRenderPass());
+		vk::WriteDescriptorSet descriptorWrite
+		{
+			.dstBinding = 0,
+			.dstArrayElement = 0,
+			.descriptorCount = 1,
+			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+			.pImageInfo = &bufferInfo
+		};
+
+		mPipeline.UpdateDescriptorSet(descriptorWrite, uniformBufferCount + i);
+	}
 }
 
 MeshRenderSystem::~MeshRenderSystem()
 {
-	vkDestroyPipelineLayout(mDevice.GetDevice(), mPipelineLayout, nullptr);
 }
 
-f32 MeshRenderSystem::GetAspectRatio() const
+void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data)
 {
-	return mRenderer.GetAspectRatio();
-}
-
-void MeshRenderSystem::RenderMeshes(VkCommandBuffer commandBuffer, const SceneRenderData& data)
-{
-	mPipeline->Bind(commandBuffer);
+	mPipeline.Bind(frameData.CommandBuffer);
 
 	MeshUBO ubo;
 	ubo.CameraTransform = data.ProjectionTransform * data.ViewTransform;
 	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(data.LightDirection, 0.0f));
 	ubo.LightDirectionAndAmbient.w = data.AmbientLightIntensity;
 
-	i32 frameIndex = mRenderer.GetCurrentFrameIndex();
-	std::unique_ptr<Buffer>& uniformBuffer = mUniformBuffers[frameIndex];
-	uniformBuffer->WriteToBuffer(&ubo);
-	uniformBuffer->Flush();
+	Vulkan::Buffer& uniformBuffer = mUniformBuffers[frameData.Index];
+	uniformBuffer.Write(&ubo, sizeof(ubo));
+	uniformBuffer.Flush();
 
-	vkCmdBindDescriptorSets(
-		commandBuffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		mPipelineLayout,
-		0,
-		1,
-		&mDescriptorSets[frameIndex],
-		0,
-		nullptr);
+	vk::BindDescriptorSetsInfo bindInfo
+	{
+		.stageFlags = vk::ShaderStageFlagBits::eVertex,
+		.firstSet = 0
+	};
+
+	mPipeline.BindDescriptorSet(frameData.CommandBuffer, bindInfo, frameData.Index);
 
 	for (const MeshRenderData& meshData : data.Meshes)
 	{
@@ -113,65 +98,80 @@ void MeshRenderSystem::RenderMeshes(VkCommandBuffer commandBuffer, const SceneRe
 		push.Transform = meshData.Transform;
 		push.Color = glm::vec4(meshData.Color, 1.0f);
 
-		mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.size());
+		mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.GetSize());
 
-		vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			mPipelineLayout,
-			1,
-			1,
-			&mDescriptorSets[Swapchain::gMaxFramesInFlight + meshData.TextureIndex],
-			0,
-			nullptr);
+		vk::BindDescriptorSetsInfo bindInfo
+		{
+			.stageFlags = vk::ShaderStageFlagBits::eFragment,
+			.firstSet = 1
+		};
 
-		vkCmdPushConstants(
-			commandBuffer,
-			mPipelineLayout,
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-			0,
-			sizeof(PushConstantData),
-			&push);
+		mPipeline.BindDescriptorSet(frameData.CommandBuffer, bindInfo, mRenderer.cMaxFramesInFlight + meshData.TextureIndex);
 
-		meshData.Mesh->Bind(commandBuffer);
-		meshData.Mesh->Draw(commandBuffer);
+		vk::PushConstantsInfo pushInfo
+		{
+			.stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+			.offset = 0,
+			.size = sizeof(PushConstantData),
+			.pValues = &push
+		};
+
+		mPipeline.PushConstants(frameData.CommandBuffer, pushInfo);
+
+		meshData.Mesh->Bind(frameData.CommandBuffer);
+		meshData.Mesh->Draw(frameData.CommandBuffer);
 	}
 }
 
-void MeshRenderSystem::CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout)
+Vulkan::Pipeline MeshRenderSystem::CreatePipeline(u32 inTextureCount)
 {
-	VkPushConstantRange pushConstantRange;
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(PushConstantData);
+	Vulkan::SpirVBinary vertShader = Vulkan::CompileSPIRV(glslang_stage_t::GLSLANG_STAGE_VERTEX, mage::ReadFile("Source/Shaders/MeshShader.vert"), "Vertex Shader");
+	Vulkan::SpirVBinary fragShader = Vulkan::CompileSPIRV(glslang_stage_t::GLSLANG_STAGE_FRAGMENT, mage::ReadFile("Source/Shaders/MeshShader.frag"), "Fragment Shader");
 
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ uniformBufferDescriptorSetLayout, textureDescriptorSetLayout };
+	Vulkan::DescriptorSetLayoutInfo layoutInfo0
+	{
+		.Bindings
+		{{
+				.binding = 0,
+				.descriptorType = vk::DescriptorType::eUniformBuffer,
+				.descriptorCount = 1,
+				.stageFlags = vk::ShaderStageFlagBits::eVertex
+		}},
+		.Count = mRenderer.cMaxFramesInFlight
+	};
 
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = static_cast<u32>(descriptorSetLayouts.size());
-	pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-	pipelineLayoutInfo.pushConstantRangeCount = 1;
-	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+	Vulkan::DescriptorSetLayoutInfo layoutInfo1
+	{
+		.Bindings
+		{{
+				.binding = 0,
+				.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+				.descriptorCount = 1,
+				.stageFlags = vk::ShaderStageFlagBits::eFragment
+		}},
+		.Count = inTextureCount
+	};
 
-	mage_check(vkCreatePipelineLayout(mDevice.GetDevice(), &pipelineLayoutInfo, nullptr, &mPipelineLayout) == VK_SUCCESS);
-}
+	Vulkan::PipelineCreateInfo pipelineCreateInfo
+	{
+		.VertexShaderCode = std::move(vertShader),
+		.FragmentShaderCode = std::move(fragShader),
+		.BindingDescriptions = Vulkan::Vertex::GetBindingDescriptions(),
+		.AttributeDescriptions = Vulkan::Vertex::GetAttributeDescriptions(),
+		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleList },
+		.DescriptorSetLayouts { layoutInfo0, layoutInfo1 },
+		.DescriptorPoolSizes
+		{
+			{ .type = vk::DescriptorType::eUniformBuffer, .descriptorCount = mRenderer.cMaxFramesInFlight },
+			{ .type = vk::DescriptorType::eCombinedImageSampler, .descriptorCount = inTextureCount }
+		},
+		.PushConstantRanges
+		{{
+			.stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+			.offset = 0,
+			.size = sizeof(PushConstantData)
+		}}
+	};
 
-void MeshRenderSystem::CreatePipeline(VkRenderPass renderPass)
-{
-	mage_check(mPipelineLayout != nullptr);
-
-	PipelineConfigInfo pipelineConfig{};
-	Pipeline::DefaultPipelineConfigInfo(pipelineConfig);
-
-	pipelineConfig.mRenderPass = renderPass;
-	pipelineConfig.mPipelineLayout = mPipelineLayout;
-	pipelineConfig.BindingDescriptions = Model::Vertex::GetBindingDescriptions();
-	pipelineConfig.AttributeDescriptions = Model::Vertex::GetAttributeDescriptions();
-
-	mPipeline = std::make_unique<Pipeline>(
-		mDevice,
-		"Source/Shaders/MeshShader.vert",
-		"Source/Shaders/MeshShader.frag",
-		pipelineConfig);
+	return std::move(mRenderer.CreatePipeline(pipelineCreateInfo));
 }

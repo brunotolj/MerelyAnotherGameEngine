@@ -4,9 +4,9 @@
 #include "Game/InputSystem.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
-#include "Rendering/Renderer.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
 #include "Rendering/Systems/SpriteRenderSystem.h"
+#include "Vulkan/Renderer.h"
 
 GameWorld::GameWorld(
 	std::unique_ptr<InputSystem>&& inputSystem,
@@ -97,11 +97,10 @@ glm::mat4 CalcProjectionTransform(f32 nearPlane, f32 farPlane, f32 horizontalFOV
 	};
 }
 
-void GameWorld::Render(Renderer& renderer) const
+void GameWorld::Render(Vulkan::Renderer& renderer) const
 {
 	SceneRenderData sceneData;
-	
-	sceneData.ProjectionTransform = CalcProjectionTransform(0.1f, 1000.0f, glm::radians(90.0f), renderer.GetAspectRatio());
+
 	sceneData.LightDirection = glm::vec3(3.0f, 2.0f, -2.5f);
 	sceneData.AmbientLightIntensity = 0.05f;
 
@@ -129,25 +128,23 @@ void GameWorld::Render(Renderer& renderer) const
 
 	{
 		SpriteRenderData data;
-		data.ScreenCoordsMin = {50.0f, 50.0f};
-		data.ScreenCoordsMax = {150.0f, 150.0f};
-		data.TextureCoordsMin = {0.0f, 0.0f};
-		data.TextureCoordsMax = {1.0f, 1.0f};
+		data.ScreenCoordsMin = { 50.0f, 50.0f };
+		data.ScreenCoordsMax = { 150.0f, 150.0f };
+		data.TextureCoordsMin = { 0.0f, 0.0f };
+		data.TextureCoordsMax = { 1.0f, 1.0f };
 		data.TextureIndex = 0;
 
 		spriteData.push_back(data);
 	}
 
-	if (VkCommandBuffer commandBuffer = renderer.BeginFrame())
-	{
-		renderer.BeginSwapChainRenderPass(commandBuffer);
+	renderer.RenderFrame([this, &sceneData, &spriteData](Vulkan::RenderFrameData const& inFrameData)
+		{
+			f32 aspectRatio = f32(inFrameData.Extent.width) / f32(inFrameData.Extent.height);
+			sceneData.ProjectionTransform = CalcProjectionTransform(0.1f, 1000.0f, glm::radians(90.0f), aspectRatio);
 
-		mMeshRenderSystem->RenderMeshes(commandBuffer, sceneData);
-		mSpriteRenderSystem->RenderSprites(commandBuffer, spriteData);
-
-		renderer.EndSwapChainRenderPass(commandBuffer);
-		renderer.EndFrame();
-	}
+			mMeshRenderSystem->RenderMeshes(inFrameData, sceneData);
+			mSpriteRenderSystem->RenderSprites(inFrameData, spriteData);
+		});
 }
 
 void GameWorld::AddObject(const std::shared_ptr<GameObject>& object)

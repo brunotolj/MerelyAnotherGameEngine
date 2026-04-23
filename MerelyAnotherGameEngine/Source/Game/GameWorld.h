@@ -5,10 +5,14 @@
 
 class GameObject;
 class PhysicsSystem;
-class Renderer;
 class InputSystem;
 class MeshRenderSystem;
 class SpriteRenderSystem;
+
+namespace Vulkan
+{
+	class Renderer;
+}
 
 class GameWorld : public NonCopyableClass
 {
@@ -20,7 +24,7 @@ public:
 		std::unique_ptr<SpriteRenderSystem>&& spriteRenderSystem);
 
 	void Update(f32 deltaTime);
-	void Render(Renderer& renderer) const;
+	void Render(Vulkan::Renderer& renderer) const;
 
 	void AddObject(const std::shared_ptr<GameObject>& object);
 	void RemoveObject(const std::shared_ptr<GameObject>& object);

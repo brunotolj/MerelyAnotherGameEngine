@@ -18,4 +18,5 @@ void main()
 	float light = lightIntensity.x + max(0.0, lightIntensity.y);
 	vec4 imageColor = vec4(texture(image, fragUV).rgb, 1.0);
 	color = light * push.Color * imageColor;
+	color.w = 1.0;
 }

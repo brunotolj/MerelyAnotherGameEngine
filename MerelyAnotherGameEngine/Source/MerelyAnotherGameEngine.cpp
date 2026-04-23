@@ -5,18 +5,16 @@
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
-#include "Rendering/Device.h"
-#include "Rendering/Model.h"
-#include "Rendering/Renderer.h"
-#include "Rendering/Window.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
 #include "Rendering/Systems/SpriteRenderSystem.h"
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
-#include "Utility/KillZObjectComponent.h"
+#include "Vulkan/Model.h"
+#include "Vulkan/Renderer.h"
+#include "Vulkan/VulkanInterface.h"
+#include "Vulkan/Window.h"
 
-#include <array>
 #include <chrono>
 #include <memory>
 
@@ -30,7 +28,7 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 	const mage::Transform& transform,
 	f32 speed,
 	PhysicsRigidBodyParams ballRigidBodyParams,
-	std::shared_ptr<Model> ballModel,
+	std::shared_ptr<Vulkan::Model> ballModel,
 	glm::vec3 ballColor,
 	f32 ballSpeed,
 	i32 inputSpawnBall)
@@ -60,7 +58,7 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 std::shared_ptr<TransformableObject> CreateLevelObject(
 	const mage::Transform& transform,
 	PhysicsRigidBodyParams rigidBodyParams,
-	std::shared_ptr<Model> model,
+	std::shared_ptr<Vulkan::Model> model,
 	glm::vec3 color)
 {
 	std::shared_ptr<TransformableObject> objectPtr = std::make_shared<TransformableObject>();
@@ -82,7 +80,7 @@ std::shared_ptr<TransformableObject> CreateLevelObject(
 std::shared_ptr<TransformableObject> CreateCapsule(
 	const mage::Transform& transform,
 	PhysicsRigidBodyParams rigidBodyParams,
-	std::shared_ptr<Model> model,
+	std::shared_ptr<Vulkan::Model> model,
 	glm::vec3 color,
 	i32 inputNeg,
 	i32 inputPos)
@@ -118,20 +116,30 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 i32 main()
 {
 	FT_Library library;
-	mage_check(FT_Init_FreeType(&library) == 0);
+	{
+		FT_Error result = FT_Init_FreeType(&library);
+		mage_check(result == 0);
+	}
 
-	Window window{ gWindowWidth, gWindowHeight, "MerelyAnotherGameEngine" };
-	Device device{ window };
-	Renderer renderer{ window, device };
+	Vulkan::WindowInfo windowCreateInfo
+	{
+		.Name = "Merely Another Game Engine",
+		.Width = gWindowWidth,
+		.Height = gWindowHeight
+	};
 
-	std::vector<std::string> texturePaths;
-	texturePaths.push_back("Textures/default.png");
+	Vulkan::Instance vulkan;
+	Vulkan::Window window = vulkan.CreateWindow(windowCreateInfo);
+	Vulkan::Renderer renderer{ vulkan, window };
+
+	mage::Array<mage::StringView> texturePaths;
+	texturePaths.Add("Textures/default.png");
 
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
 		std::make_unique<PhysicsSystem>(),
-		std::make_unique<MeshRenderSystem>(device, renderer, texturePaths),
-		std::make_unique<SpriteRenderSystem>(device, renderer, texturePaths));
+		std::make_unique<MeshRenderSystem>(renderer, texturePaths),
+		std::make_unique<SpriteRenderSystem>(renderer, texturePaths));
 
 	constexpr f32 boardSize = 20.0f;
 
@@ -148,62 +156,62 @@ i32 main()
 
 	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.9f });
 	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.0f });
-
+	
 	std::shared_ptr<physx::PxGeometry> floorCollision = std::make_unique<physx::PxBoxGeometry>(boardSize, boardSize, 1.0f);
-	std::shared_ptr<Model> floorModel = Model::CreateCube(device, boardSize, boardSize, 1.0f);
+	std::shared_ptr<Vulkan::Model> floorModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCube(boardSize, boardSize, 1.0f));
 	PhysicsRigidBodyParams floorRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, nullptr, floorCollision, floorMaterial };
 	constexpr glm::vec3 floorColor = glm::vec3(0.5f, 0.5f, 0.5f);
-
+	
 	std::shared_ptr<physx::PxCustomGeometryExt::CylinderCallbacks> cornerCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * cornerHalfHeight, cornerRadius);
 	std::shared_ptr<physx::PxGeometry> cornerCollision = std::make_shared<physx::PxCustomGeometry>(*cornerCollisionCallbacks.get());
-	std::shared_ptr<Model> cornerModel = Model::CreateCylinder(device, cornerRadius, cornerHalfHeight);
+	std::shared_ptr<Vulkan::Model> cornerModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCylinder(cornerRadius, cornerHalfHeight));
 	PhysicsRigidBodyParams cornerRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cornerCollisionCallbacks, cornerCollision, defaultMaterial };
 	constexpr glm::vec3 cornerColor = glm::vec3(0.8f, 0.3f, 0.3f);
-
+	
 	std::shared_ptr<physx::PxGeometry> capsuleCollision = std::make_unique<physx::PxCapsuleGeometry>(capsuleRadius, capsuleLength);
-	std::shared_ptr<Model> capsuleModel = Model::CreateCapsule(device, capsuleRadius, capsuleLength);
+	std::shared_ptr<Vulkan::Model> capsuleModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCapsule(capsuleRadius, capsuleLength));
 	PhysicsRigidBodyParams capsuleRigidBodyParams = { PhysicsSystemObjectType::RigidKinematic, nullptr, capsuleCollision, defaultMaterial };
 	constexpr glm::vec3 capsuleColor = glm::vec3(0.3f, 0.7f, 0.3f);
-
+	
 	std::shared_ptr<physx::PxGeometry> ballCollision = std::make_unique<physx::PxSphereGeometry>(ballRadius);
-	std::shared_ptr<Model> ballModel = Model::CreateSphere(device, ballRadius);
+	std::shared_ptr<Vulkan::Model> ballModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeSphere(ballRadius));
 	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, nullptr, ballCollision, defaultMaterial };
 	constexpr glm::vec3 ballColor = glm::vec3(0.3f, 0.3f, 1.0f);
 
 	{
 		mage::Transform transform;
-
+		
 		world.AddObject(CreateLevelObject(transform, floorRigidBodyParams, floorModel, floorColor));
-
+		
 		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
-		world.AddObject(CreateControllableCamera(transform, 5.0f, ballRigidBodyParams, ballModel, ballColor, 10.0f, GLFW_KEY_F));
-
+		world.AddObject(CreateControllableCamera(transform, 10.0f, ballRigidBodyParams, ballModel, ballColor, 10.0f, GLFW_KEY_F));
+		
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
-
+		
 		transform.Position = glm::vec3(cornerPosition, cornerPosition, cornerHalfHeight);
 		world.AddObject(CreateLevelObject(transform, cornerRigidBodyParams, cornerModel, cornerColor));
-
+		
 		transform.Position = glm::vec3(-cornerPosition, cornerPosition, cornerHalfHeight);
 		world.AddObject(CreateLevelObject(transform, cornerRigidBodyParams, cornerModel, cornerColor));
-
+		
 		transform.Position = glm::vec3(-cornerPosition, -cornerPosition, cornerHalfHeight);
 		world.AddObject(CreateLevelObject(transform, cornerRigidBodyParams, cornerModel, cornerColor));
-
+		
 		transform.Position = glm::vec3(cornerPosition, -cornerPosition, cornerHalfHeight);
 		world.AddObject(CreateLevelObject(transform, cornerRigidBodyParams, cornerModel, cornerColor));
-
+		
 		transform.Rotation = mage::Rotor::Identity();
 		transform.Position = glm::vec3(capsuleDistance, 0.0f, capsuleElevation);
 		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, capsuleColor, GLFW_KEY_U, GLFW_KEY_I));
-
+		
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
 		transform.Position = glm::vec3(0.0f, -capsuleDistance, capsuleElevation);
 		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, capsuleColor, GLFW_KEY_O, GLFW_KEY_P));
-
+		
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.0f));
 		transform.Position = glm::vec3(-capsuleDistance, 0.0f, capsuleElevation);
 		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, capsuleColor, GLFW_KEY_H, GLFW_KEY_J));
-
+		
 		transform.Rotation = mage::Rotor::FromAxisAndAngle(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
 		transform.Position = glm::vec3(0.0f, capsuleDistance, capsuleElevation);
 		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, capsuleColor, GLFW_KEY_K, GLFW_KEY_L));
@@ -213,11 +221,11 @@ i32 main()
 
 	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_NORMAL); });
 	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_DISABLED); });
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&window]() { window.Close(); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&window]() { window.RequestClose(); });
 
 	while (!window.ShouldClose())
 	{
-		Window::PollEvents();
+		Vulkan::Window::PollEvents();
 
 		const std::chrono::steady_clock::time_point newTime = std::chrono::high_resolution_clock::now();
 		const f32 frameTime = std::chrono::duration<f32, std::chrono::seconds::period>(newTime - currentTime).count();
@@ -228,7 +236,7 @@ i32 main()
 		world.Render(renderer);
 	}
 
-	vkDeviceWaitIdle(device.GetDevice());
+	renderer.WaitIdle();
 
 	return 0;
 }

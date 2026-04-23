@@ -2,16 +2,20 @@
 
 #include "Game/GameObject.h"
 #include "Game/GameObjectComponent.h"
-#include "Rendering/Model.h"
+
+namespace Vulkan
+{
+	class Model;
+}
 
 template<>
 struct ComponentTemplate<class BallSpawnerComponent>
 {
 	PhysicsRigidBodyParams RigidBodyParams;
-	std::shared_ptr<Model> Model = nullptr;
+	std::shared_ptr<Vulkan::Model> Model = nullptr;
 	glm::vec3 Color = glm::vec3(1.0f);
 	f32 Speed = 10.0f;
-	i32 InputSpawn = GLFW_KEY_F;
+	i32 InputSpawn = 70; // #FixMe: GLFW_KEY_F
 };
 
 class BallSpawnerComponent : public GameObjectComponent<TransformableObject>
@@ -26,7 +30,7 @@ protected:
 
 private:
 	PhysicsRigidBodyParams mRigidBodyParams;
-	std::shared_ptr<Model> mModel;
+	std::shared_ptr<Vulkan::Model> mModel;
 	glm::vec3 mColor;
 	f32 mSpeed;
 	i32 mInputSpawn;

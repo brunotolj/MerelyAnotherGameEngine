@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Array.h"
+
 namespace mage
 {
 	class String : public Array<char>
@@ -9,23 +11,25 @@ namespace mage
 	class StringView
 	{
 	public:
-		StringView(const char* cstr)
+		constexpr StringView(const cstr inCstr)
 		{
-			data = cstr;
-			length = (u32)strlen(cstr);
+			mData = inCstr;
+			mLength = CalcLength(inCstr);
 		}
 
-		StringView(const String& string)
+		StringView(const String& inString)
 		{
-			data = string.GetData();
-			length = string.GetSize();
+			mData = inString.GetData();
+			mLength = inString.GetSize();
 		}
 
-		const char* GetCString() const { return data; }
-		u32 GetLength() const { return length; }
+		cstr GetCString() const { return mData; }
+		u32 GetLength() const { return mLength; }
 
 	private:
-		const char* data = nullptr;
-		u32 length = 0;
+		constexpr u32 CalcLength(cstr inCstr) { return (*inCstr) ? (1 + CalcLength(inCstr + 1)) : 0; }
+
+		cstr mData = nullptr;
+		u32 mLength = 0;
 	};
 }

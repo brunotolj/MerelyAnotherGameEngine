@@ -4,8 +4,8 @@ class NonCopyableClass
 {
 protected:
 	NonCopyableClass() {}
-	NonCopyableClass(const NonCopyableClass&) = delete;
-	NonCopyableClass& operator=(const NonCopyableClass&) = delete;
+	NonCopyableClass(NonCopyableClass const&) = delete;
+	NonCopyableClass& operator=(NonCopyableClass const&) = delete;
 };
 
 class NonMovableClass : public NonCopyableClass
@@ -20,8 +20,8 @@ struct NonCopyableStruct
 {
 protected:
 	NonCopyableStruct() {}
-	NonCopyableStruct(const NonCopyableStruct&) = delete;
-	NonCopyableStruct& operator=(const NonCopyableStruct&) = delete;
+	NonCopyableStruct(NonCopyableStruct const&) = delete;
+	NonCopyableStruct& operator=(NonCopyableStruct const&) = delete;
 };
 
 class NonMovableStruct : public NonCopyableStruct

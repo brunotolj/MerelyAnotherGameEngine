@@ -1,20 +1,14 @@
 #pragma once
 
-#include <memory>
-#include <set>
-#include <string>
+#include "Vulkan/Buffer.h"
+#include "Vulkan/Pipeline.h"
+#include "Vulkan/Texture.h"
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-class Buffer;
-class Device;
-class DescriptorPool;
-class DescriptorSetLayout;
-class Model;
-class Pipeline;
-class Renderer;
-class Texture;
+namespace Vulkan
+{
+	class Renderer;
+	struct RenderFrameData;
+}
 
 struct SpriteUBO
 {
@@ -39,39 +33,23 @@ class SpriteRenderSystem : public NonCopyableClass
 	};
 
 public:
-	SpriteRenderSystem(Device& device, Renderer& renderer, const std::vector<std::string>& texturePaths);
-
+	SpriteRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths);
 	~SpriteRenderSystem();
 
-	f32 GetAspectRatio() const;
-
-	void RenderSprites(VkCommandBuffer commandBuffer, const std::vector<SpriteRenderData>& data);
+	void RenderSprites(Vulkan::RenderFrameData const& frameData, const std::vector<SpriteRenderData>& data);
 
 private:
-	Device& mDevice;
+	Vulkan::Renderer const& mRenderer;
 
-	std::unique_ptr<DescriptorPool> mDescriptorPool;
+	Vulkan::Pipeline mPipeline;
 
-	Renderer& mRenderer;
+	mage::Array<Vulkan::Buffer> mUniformBuffers;
 
-	std::unique_ptr<Pipeline> mPipeline;
+	mage::Array<Vulkan::Texture> mTextures;
 
-	std::vector<std::unique_ptr<Buffer>> mUniformBuffers;
+	Vulkan::Buffer mVertexBuffer = nullptr;
 
-	std::vector<std::unique_ptr<Texture>> mTextures;
-
-	std::unique_ptr<DescriptorSetLayout> mUniformBufferDescriptorSetLayout;
-
-	std::unique_ptr<DescriptorSetLayout> mTextureDescriptorSetLayout;
-
-	std::vector<VkDescriptorSet> mDescriptorSets;
-
-	std::unique_ptr<Buffer> mVertexBuffer;
-
-	VkPipelineLayout mPipelineLayout;
-
-	void CreatePipelineLayout(VkDescriptorSetLayout uniformBufferDescriptorSetLayout, VkDescriptorSetLayout textureDescriptorSetLayout);
-	void CreatePipeline(VkRenderPass renderPass);
+	Vulkan::Pipeline CreatePipeline(u32 inTextureCount);
 
 	void CreateVertexBuffer();
 };

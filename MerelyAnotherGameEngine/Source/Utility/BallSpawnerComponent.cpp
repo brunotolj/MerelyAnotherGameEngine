@@ -18,7 +18,7 @@ BallSpawnerComponent::BallSpawnerComponent(TransformableObject& owner, const Com
 
 void BallSpawnerComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	world.GetInputSystem().BindKeyInputHandler(mInputSpawn, GLFW_PRESS, [this]() { mPendingBallSpawn = true; });
+	world.GetInputSystem().BindKeyInputHandler(mInputSpawn, 1, [this]() { mPendingBallSpawn = true; }); // #FixMe: GLFW_PRESS
 }
 
 void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
