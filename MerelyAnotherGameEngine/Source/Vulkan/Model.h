@@ -35,12 +35,11 @@ namespace Vulkan
 		void Draw(vk::CommandBuffer inCommandBuffer) const;
 
 		static ModelInfo LoadFromFile(mage::StringView inPath);
-		static ModelInfo MakeCube(f32 halfExtentX, f32 halfExtentY, f32 halfExtentZ);
-		static ModelInfo MakeSphere(f32 radius);
-		static ModelInfo MakeCylinder(f32 radius, f32 halfHeight);
-		static ModelInfo MakeCapsule(f32 radius, f32 halfHeight);
-
-		static void FixWindingOrders(ModelInfo& inModelInfo);
+		static ModelInfo MakeCube(glm::vec3 inHalfExtent);
+		static ModelInfo MakeSphere(f32 inRadius);
+		static ModelInfo MakeCylinder(f32 inRadius, f32 inHalfHeight);
+		static ModelInfo MakeCapsule(f32 inRadius, f32 inHalfHeight);
+		static ModelInfo MakeCone(f32 inRadius, f32 inHeight);
 
 	private:
 		void CreateVertexBuffer(Renderer const& inRenderer, mage::Array<Vertex> const& inVertices);
@@ -51,5 +50,8 @@ namespace Vulkan
 
 		u32 mVertexCount = 0;
 		u32 mIndexCount = 0;
+
+		static void PopulateIndices(ModelInfo& inModelInfo, mage::Array<std::pair<u32, u32>> const& inSortedEdges);
+		static void FixWindingOrders(ModelInfo& inModelInfo);
 	};
 }

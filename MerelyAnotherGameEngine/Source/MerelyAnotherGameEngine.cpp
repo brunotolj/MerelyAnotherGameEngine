@@ -21,8 +21,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-static constexpr i32 gWindowWidth = 1280;
-static constexpr i32 gWindowHeight = 720;
+static constexpr i32 gWindowWidth = 1920;
+static constexpr i32 gWindowHeight = 1080;
 
 std::shared_ptr<TransformableObject> CreateControllableCamera(
 	const mage::Transform& transform,
@@ -154,11 +154,11 @@ i32 main()
 
 	constexpr f32 ballRadius = 1.0f;
 
-	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.9f });
-	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.1f, 0.05f, 0.0f });
+	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.3f, 0.1f, 1.0f });
+	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.3f, 0.1f, 0.0f });
 	
 	std::shared_ptr<physx::PxGeometry> floorCollision = std::make_unique<physx::PxBoxGeometry>(boardSize, boardSize, 1.0f);
-	std::shared_ptr<Vulkan::Model> floorModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCube(boardSize, boardSize, 1.0f));
+	std::shared_ptr<Vulkan::Model> floorModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCube({ boardSize, boardSize, 1.0f }));
 	PhysicsRigidBodyParams floorRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, nullptr, floorCollision, floorMaterial };
 	constexpr glm::vec3 floorColor = glm::vec3(0.5f, 0.5f, 0.5f);
 	
