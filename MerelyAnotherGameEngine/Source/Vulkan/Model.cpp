@@ -59,7 +59,7 @@ namespace Vulkan
 		};
 	}
 
-	Model::Model(Renderer const& inRenderer, ModelInfo const& inCreateInfo)
+	Model::Model(Renderer const& inRenderer, ModelCreateInfo const& inCreateInfo)
 	{
 		CreateVertexBuffer(inRenderer, inCreateInfo.Vertices);
 		CreateIndexBuffer(inRenderer, inCreateInfo.Indices);
@@ -81,9 +81,9 @@ namespace Vulkan
 			inCommandBuffer.draw(mVertexCount, 1, 0, 0);
 	}
 
-	ModelInfo Model::LoadFromFile(mage::StringView inPath)
+	ModelCreateInfo Model::LoadFromFile(mage::StringView inPath)
 	{
-		ModelInfo result;
+		ModelCreateInfo result;
 
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -144,9 +144,9 @@ namespace Vulkan
 		return result;
 	}
 
-	ModelInfo Model::MakeCube(glm::vec3 inHalfExtent)
+	ModelCreateInfo Model::MakeCube(glm::vec3 inHalfExtent)
 	{
-		ModelInfo result;
+		ModelCreateInfo result;
 
 		glm::vec3 positions[8]
 		{
@@ -196,9 +196,9 @@ namespace Vulkan
 		return result;
 	}
 
-	ModelInfo Model::MakeSphere(f32 inRadius)
+	ModelCreateInfo Model::MakeSphere(f32 inRadius)
 	{
-		ModelInfo result;
+		ModelCreateInfo result;
 
 		mage::Array<std::pair<u32, u32>> edges;
 		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
@@ -285,9 +285,9 @@ namespace Vulkan
 		return result;
 	}
 
-	ModelInfo Model::MakeCylinder(f32 inRadius, f32 inHalfHeight)
+	ModelCreateInfo Model::MakeCylinder(f32 inRadius, f32 inHalfHeight)
 	{
-		ModelInfo result;
+		ModelCreateInfo result;
 
 		mage::Array<std::pair<u32, u32>> edges;
 		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
@@ -393,9 +393,9 @@ namespace Vulkan
 		return result;
 	}
 
-	ModelInfo Model::MakeCapsule(f32 inRadius, f32 inHalfHeight)
+	ModelCreateInfo Model::MakeCapsule(f32 inRadius, f32 inHalfHeight)
 	{
-		ModelInfo result;
+		ModelCreateInfo result;
 
 		mage::Array<std::pair<u32, u32>> edges;
 		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
@@ -571,9 +571,9 @@ namespace Vulkan
 		return result;
 	}
 
-	ModelInfo Model::MakeCone(f32 inRadius, f32 inHeight)
+	ModelCreateInfo Model::MakeCone(f32 inRadius, f32 inHeight)
 	{
-		ModelInfo result;
+		ModelCreateInfo result;
 
 		mage::Array<std::pair<u32, u32>> edges;
 		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
@@ -684,19 +684,19 @@ namespace Vulkan
 
 		vk::DeviceSize dataSize = mVertexCount * sizeof(Vertex);
 
-		Vulkan::BufferCreateInfo stagingBufferCreateInfo
+		BufferCreateInfo stagingBufferCreateInfo
 		{
 			.Size = dataSize,
 			.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 			.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 		};
 
-		Vulkan::Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
+		Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
 
 		stagingBuffer.Map();
 		stagingBuffer.Write(inVertices.GetData(), dataSize);
 
-		Vulkan::BufferCreateInfo vertexBufferCreateInfo
+		BufferCreateInfo vertexBufferCreateInfo
 		{
 			.Size = dataSize,
 			.UsageFlags = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
@@ -705,9 +705,9 @@ namespace Vulkan
 
 		mVertexBuffer = inRenderer.CreateBuffer(vertexBufferCreateInfo);
 
-		inRenderer.SubmitSingleTimeCommands([this, &inRenderer, &stagingBuffer, dataSize](vk::CommandBuffer inCommandBuffer)
+		inRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 			{
-				inRenderer.CopyBuffer(inCommandBuffer, stagingBuffer, mVertexBuffer, dataSize);
+				mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 			});
 	}
 
@@ -721,19 +721,19 @@ namespace Vulkan
 
 		vk::DeviceSize dataSize = mIndexCount * sizeof(u32);
 
-		Vulkan::BufferCreateInfo stagingBufferCreateInfo
+		BufferCreateInfo stagingBufferCreateInfo
 		{
 			.Size = dataSize,
 			.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 			.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 		};
 
-		Vulkan::Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
+		Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
 
 		stagingBuffer.Map();
 		stagingBuffer.Write(inIndices.GetData(), dataSize);
 
-		Vulkan::BufferCreateInfo indexBufferCreateInfo
+		BufferCreateInfo indexBufferCreateInfo
 		{
 			.Size = dataSize,
 			.UsageFlags = vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
@@ -742,13 +742,13 @@ namespace Vulkan
 
 		mIndexBuffer = inRenderer.CreateBuffer(indexBufferCreateInfo);
 
-		inRenderer.SubmitSingleTimeCommands([this, &inRenderer, &stagingBuffer, dataSize](vk::CommandBuffer inCommandBuffer)
+		inRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 			{
-				inRenderer.CopyBuffer(inCommandBuffer, stagingBuffer, mIndexBuffer, dataSize);
+				mIndexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 			});
 	}
 
-	void Model::PopulateIndices(ModelInfo& inModelInfo, mage::Array<std::pair<u32, u32>> const& inSortedEdges)
+	void Model::PopulateIndices(ModelCreateInfo& inModelInfo, mage::Array<std::pair<u32, u32>> const& inSortedEdges)
 	{
 		for (u32 i = 0; i < inSortedEdges.GetSize(); ++i)
 			for (u32 j = i + 1; j < inSortedEdges.GetSize(); ++j)
@@ -765,7 +765,7 @@ namespace Vulkan
 			}
 	}
 
-	void Model::FixWindingOrders(ModelInfo& inModelInfo)
+	void Model::FixWindingOrders(ModelCreateInfo& inModelInfo)
 	{
 		if (inModelInfo.Indices.GetSize() > 0)
 		{

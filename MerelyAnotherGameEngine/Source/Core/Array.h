@@ -109,7 +109,7 @@ namespace mage
 		}
 
 		template <typename... Args>
-		u32 AddConstruct(Args... args)
+		u32 AddConstruct(Args&&... args)
 		{
 			if (mSize == mCapacity)
 				Realloc(mSize + 1);

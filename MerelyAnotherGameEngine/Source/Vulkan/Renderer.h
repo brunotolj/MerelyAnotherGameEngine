@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Vulkan/Image.h"
+
 #include <vulkan/vulkan_raii.hpp>
 
 namespace Vulkan
@@ -11,19 +13,9 @@ namespace Vulkan
 	class Texture;
 	class Window;
 	struct BufferCreateInfo;
+	struct ImageCreateInfo;
 	struct PipelineCreateInfo;
 	struct TextureCreateInfo;
-
-	struct TransitionImageLayoutParams
-	{
-		vk::PipelineStageFlags2 SrcStageMask;
-		vk::AccessFlags2 SrcAccessMask;
-		vk::PipelineStageFlags2 DstStageMask;
-		vk::AccessFlags2 DstAccessMask;
-		vk::ImageLayout OldLayout;
-		vk::ImageLayout NewLayout;
-		vk::ImageAspectFlags AspectMask;
-	};
 
 	struct RenderFrameData
 	{
@@ -47,11 +39,8 @@ namespace Vulkan
 
 		Pipeline CreatePipeline(PipelineCreateInfo const& inPipelineCreateInfo) const;
 		Buffer CreateBuffer(BufferCreateInfo const& inBufferCreateInfo) const;
-		Texture CreateTexture(TextureCreateInfo const& inTextureCreateInfo) const;
-
-		void CopyBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer, Buffer const& inDstBuffer, vk::DeviceSize inSize) const;
-		void CopyBufferToImage(vk::CommandBuffer inCommandBufer, Buffer const& inSrcBuffer, vk::Image inDstImage, vk::Extent3D inImageSize) const;
-		void TransitionImageLayout(vk::CommandBuffer inCommandBuffer, vk::Image inImage, TransitionImageLayoutParams inParams) const;
+		Image CreateImage(ImageCreateInfo const& inImageCreateInfo) const;
+		vk::raii::Sampler CreateImageSampler(vk::SamplerCreateInfo inSamplerCreateInfo) const;
 
 		mage::Array<cstr> GetRequiredDeviceExtensions() const;
 
@@ -90,15 +79,15 @@ namespace Vulkan
 		mage::Array<vk::Image> mSwapchainImages;
 		mage::Array<vk::raii::ImageView> mSwapchainImageViews;
 		
-		vk::raii::Image mDepthImage = nullptr;
-		vk::raii::DeviceMemory mDepthImageMemory = nullptr;
-		vk::raii::ImageView mDepthImageView = nullptr;
+		Image mColorImage = nullptr;
+		Image mDepthImage = nullptr;
+
+		vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
 
 		u32 mCurrentImageIndex = u32(-1);
 		u32 mCurrentFrameIndex = 0;
 
 		vk::Extent2D mWindowSize;
 		bool mWasWindowResized = false;
-
 	};
 }

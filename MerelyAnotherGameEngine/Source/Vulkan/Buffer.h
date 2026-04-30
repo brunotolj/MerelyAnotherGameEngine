@@ -13,6 +13,7 @@ namespace Vulkan
 
 	class Buffer : public NonCopyableClass
 	{
+		friend class Image;
 		friend class Renderer;
 
 	public:
@@ -28,6 +29,7 @@ namespace Vulkan
 
 		vk::DescriptorBufferInfo GetDescriptorInfo() const;
 
+		void CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const;
 		void BindVertexBuffer(vk::CommandBuffer inCommandBuffer) const;
 		void BindIndexBuffer(vk::CommandBuffer inCommandBuffer) const;
 

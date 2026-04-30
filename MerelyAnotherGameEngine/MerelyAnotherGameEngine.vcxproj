@@ -159,6 +159,7 @@
     <ClCompile Include="Source\Utility\DefaultMovementComponent.cpp" />
     <ClCompile Include="Source\Utility\KillZObjectComponent.cpp" />
     <ClCompile Include="Source\Vulkan\Buffer.cpp" />
+    <ClCompile Include="Source\Vulkan\Image.cpp" />
     <ClCompile Include="Source\Vulkan\Model.cpp" />
     <ClCompile Include="Source\Vulkan\Pipeline.cpp" />
     <ClCompile Include="Source\Vulkan\Renderer.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Source\Utility\DefaultMovementComponent.h" />
     <ClInclude Include="Source\Utility\KillZObjectComponent.h" />
     <ClInclude Include="Source\Vulkan\Buffer.h" />
+    <ClInclude Include="Source\Vulkan\Image.h" />
     <ClInclude Include="Source\Vulkan\Model.h" />
     <ClInclude Include="Source\Vulkan\Texture.h" />
     <ClInclude Include="Source\Vulkan\Pipeline.h" />

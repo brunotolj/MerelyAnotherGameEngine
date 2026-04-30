@@ -1,16 +1,21 @@
 #include "Vulkan/Renderer.h"
 #include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
-#include "Vulkan/Texture.h"
 #include "Vulkan/VulkanInterface.h"
 #include "Vulkan/Window.h"
 
 namespace Vulkan
 {
-	Vulkan::Renderer::Renderer(Instance const& inInstance, Window& inWindow)
+	Renderer::Renderer(Instance const& inInstance, Window& inWindow)
 	{
 		mPhysicalDevice = PickPhysicalDevice(inInstance);
 		mage_check(mPhysicalDevice != nullptr);
+
+		vk::PhysicalDeviceProperties physicalDeviceProperties = mPhysicalDevice.getProperties();
+		VkFlags supportedSampleCounts = VkFlags(physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts);
+
+		while (VkFlags(supportedSampleCounts) & (VkFlags(msaaSamples) << 1))
+			msaaSamples = vk::SampleCountFlagBits(VkFlags(msaaSamples) << 1);
 
 		mSurface = inInstance.CreateWindowSurface(inWindow);
 		mage_check(mSurface != nullptr);
@@ -59,39 +64,54 @@ namespace Vulkan
 		commandBuffer.begin({});
 
 		{
-			TransitionImageLayoutParams transitionParams
+			Image::TransitionLayoutParams transitionParams
 			{
 				.SrcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 				.SrcAccessMask = {},
 				.DstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 				.DstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
 				.OldLayout = vk::ImageLayout::eUndefined,
-				.NewLayout = vk::ImageLayout::eColorAttachmentOptimal,
-				.AspectMask = vk::ImageAspectFlagBits::eColor
+				.NewLayout = vk::ImageLayout::eColorAttachmentOptimal
 			};
 
-			TransitionImageLayout(commandBuffer, currentImage, transitionParams);
+			Image::TransitionLayout(commandBuffer, currentImage, transitionParams, vk::ImageAspectFlagBits::eColor);
 		}
 
 		{
-			TransitionImageLayoutParams transitionParams
+			Image::TransitionLayoutParams transitionParams
+			{
+				.SrcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+				.SrcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+				.DstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+				.DstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+				.OldLayout = vk::ImageLayout::eUndefined,
+				.NewLayout = vk::ImageLayout::eColorAttachmentOptimal
+			};
+
+			mColorImage.TransitionLayout(commandBuffer, transitionParams);
+		}
+
+		{
+			Image::TransitionLayoutParams transitionParams
 			{
 				.SrcStageMask = vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
 				.SrcAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
 				.DstStageMask = vk::PipelineStageFlagBits2::eEarlyFragmentTests | vk::PipelineStageFlagBits2::eLateFragmentTests,
 				.DstAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
 				.OldLayout = vk::ImageLayout::eUndefined,
-				.NewLayout = vk::ImageLayout::eDepthAttachmentOptimal,
-				.AspectMask = vk::ImageAspectFlagBits::eDepth
+				.NewLayout = vk::ImageLayout::eDepthAttachmentOptimal
 			};
 
-			TransitionImageLayout(commandBuffer, mDepthImage, transitionParams);
+			mDepthImage.TransitionLayout(commandBuffer, transitionParams);
 		}
 
 		vk::RenderingAttachmentInfo colorAttachmentInfo
 		{
-			.imageView = currentImageView,
+			.imageView = mColorImage.mImageView,
 			.imageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+			.resolveMode = vk::ResolveModeFlagBits::eAverage,
+			.resolveImageView = currentImageView,
+			.resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
 			.loadOp = vk::AttachmentLoadOp::eClear,
 			.storeOp = vk::AttachmentStoreOp::eStore,
 			.clearValue = vk::ClearColorValue(0.1f, 0.1f, 0.15f, 1.0f)
@@ -99,7 +119,7 @@ namespace Vulkan
 
 		vk::RenderingAttachmentInfo depthAttachmentInfo
 		{
-			.imageView = mDepthImageView,
+			.imageView = mDepthImage.mImageView,
 			.imageLayout = vk::ImageLayout::eDepthAttachmentOptimal,
 			.loadOp = vk::AttachmentLoadOp::eClear,
 			.storeOp = vk::AttachmentStoreOp::eDontCare,
@@ -129,18 +149,17 @@ namespace Vulkan
 		commandBuffer.endRendering();
 
 		{
-			TransitionImageLayoutParams transitionParams
+			Image::TransitionLayoutParams transitionParams
 			{
 				.SrcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
 				.SrcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
 				.DstStageMask = vk::PipelineStageFlagBits2::eBottomOfPipe,
 				.DstAccessMask = {},
 				.OldLayout = vk::ImageLayout::eColorAttachmentOptimal,
-				.NewLayout = vk::ImageLayout::ePresentSrcKHR,
-				.AspectMask = vk::ImageAspectFlagBits::eColor
+				.NewLayout = vk::ImageLayout::ePresentSrcKHR
 			};
 
-			TransitionImageLayout(commandBuffer, currentImage, transitionParams);
+			Image::TransitionLayout(commandBuffer, currentImage, transitionParams, vk::ImageAspectFlagBits::eColor);
 		}
 
 		commandBuffer.end();
@@ -340,8 +359,9 @@ namespace Vulkan
 
 		vk::PipelineMultisampleStateCreateInfo multisampleInfo
 		{
-			.rasterizationSamples = vk::SampleCountFlagBits::e1,
-			.sampleShadingEnable = vk::False
+			.rasterizationSamples = msaaSamples,
+			.sampleShadingEnable = vk::True,
+			.minSampleShading = 0.2f
 		};
 
 		vk::PipelineColorBlendAttachmentState colorBlendAttachmentState
@@ -437,41 +457,29 @@ namespace Vulkan
 		return result;
 	}
 
-	Texture Renderer::CreateTexture(TextureCreateInfo const& inTextureCreateInfo) const
+	Image Renderer::CreateImage(ImageCreateInfo const& inImageCreateInfo) const
 	{
-		Texture result;
+		Image result = nullptr;
 
-		vk::Extent3D imageSize = inTextureCreateInfo.ImageData.Size;
-		vk::DeviceSize dataSize = imageSize.width * imageSize.height * 4;
-
-		Vulkan::BufferCreateInfo stagingBufferCreateInfo
-		{
-			.Size = dataSize,
-			.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
-			.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-		};
-
-		Vulkan::Buffer stagingBuffer = CreateBuffer(stagingBufferCreateInfo);
-		stagingBuffer.Map();
-		stagingBuffer.Write(inTextureCreateInfo.ImageData.Data.GetData(), dataSize);
-		
 		vk::ImageCreateInfo imageCreateInfo
 		{
 			.imageType = vk::ImageType::e2D,
-			.format = vk::Format::eR8G8B8A8Srgb,
-			.extent = imageSize,
+			.format = inImageCreateInfo.Format,
+			.extent = inImageCreateInfo.Size,
 			.mipLevels = 1,
 			.arrayLayers = 1,
-			.samples = vk::SampleCountFlagBits::e1,
+			.samples = inImageCreateInfo.SampleCount,
 			.tiling = vk::ImageTiling::eOptimal,
-			.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+			.usage = inImageCreateInfo.UsageFlags,
 			.sharingMode = vk::SharingMode::eExclusive
 		};
 
-		result.mImage = mDevice.createImage(imageCreateInfo);
+		result.mVkImage = mDevice.createImage(imageCreateInfo);
+		result.mImageSize = inImageCreateInfo.Size;
+		result.mAspectMask = inImageCreateInfo.AspectFlags;
 
-		vk::MemoryRequirements memRequirements = result.mImage.getMemoryRequirements();
-		u32 memoryTypeIndex = SelectMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
+		vk::MemoryRequirements memRequirements = result.mVkImage.getMemoryRequirements();
+		u32 memoryTypeIndex = SelectMemoryType(memRequirements.memoryTypeBits, inImageCreateInfo.MemoryFlags);
 
 		vk::MemoryAllocateInfo memoryAllocInfo
 		{
@@ -480,126 +488,30 @@ namespace Vulkan
 		};
 
 		result.mDeviceMemory = mDevice.allocateMemory(memoryAllocInfo);
-		result.mImage.bindMemory(result.mDeviceMemory, 0);
-
-		SubmitSingleTimeCommands([this, &result, &stagingBuffer, imageSize](vk::CommandBuffer inCommandBuffer)
-			{
-				{
-					TransitionImageLayoutParams transitionParams
-					{
-						.SrcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe,
-						.SrcAccessMask = {},
-						.DstStageMask = vk::PipelineStageFlagBits2::eTransfer,
-						.DstAccessMask = vk::AccessFlagBits2::eTransferWrite,
-						.OldLayout = vk::ImageLayout::eUndefined,
-						.NewLayout = vk::ImageLayout::eTransferDstOptimal,
-						.AspectMask = vk::ImageAspectFlagBits::eColor
-					};
-
-					TransitionImageLayout(inCommandBuffer, result.mImage, transitionParams);
-				}
-
-				CopyBufferToImage(inCommandBuffer, stagingBuffer, result.mImage, imageSize);
-
-				{
-					TransitionImageLayoutParams transitionParams
-					{
-						.SrcStageMask = vk::PipelineStageFlagBits2::eTransfer,
-						.SrcAccessMask = vk::AccessFlagBits2::eTransferWrite,
-						.DstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
-						.DstAccessMask = vk::AccessFlagBits2::eShaderRead,
-						.OldLayout = vk::ImageLayout::eTransferDstOptimal,
-						.NewLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
-						.AspectMask = vk::ImageAspectFlagBits::eColor
-					};
-
-					TransitionImageLayout(inCommandBuffer, result.mImage, transitionParams);
-				}
-			});
+		result.mVkImage.bindMemory(result.mDeviceMemory, 0);
 
 		vk::ImageViewCreateInfo imageViewCreateInfo
 		{
-			.image = result.mImage,
+			.image = result.mVkImage,
 			.viewType = vk::ImageViewType::e2D,
-			.format = vk::Format::eR8G8B8A8Srgb,
-			.subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+			.format = inImageCreateInfo.Format,
+			.subresourceRange
+			{
+				.aspectMask = inImageCreateInfo.AspectFlags,
+				.levelCount = 1,
+				.layerCount = 1
+			}
 		};
 
 		result.mImageView = mDevice.createImageView(imageViewCreateInfo);
 
-		vk::PhysicalDeviceProperties properties = mPhysicalDevice.getProperties();
-		
-		vk::SamplerCreateInfo samplerCreateInfo
-		{
-			.magFilter = vk::Filter::eLinear,
-			.minFilter = vk::Filter::eLinear,
-			.mipmapMode = vk::SamplerMipmapMode::eLinear,
-			.addressModeU = vk::SamplerAddressMode::eRepeat,
-			.addressModeV = vk::SamplerAddressMode::eRepeat,
-			.addressModeW = vk::SamplerAddressMode::eRepeat,
-			.anisotropyEnable = vk::True,
-			.maxAnisotropy = properties.limits.maxSamplerAnisotropy,
-			.compareEnable = vk::False,
-			.compareOp = vk::CompareOp::eAlways
-		};
-
-		result.mSampler = mDevice.createSampler(samplerCreateInfo);
-
 		return result;
 	}
 
-	void Renderer::CopyBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer, Buffer const& inDstBuffer, vk::DeviceSize inSize) const
+	vk::raii::Sampler Renderer::CreateImageSampler(vk::SamplerCreateInfo inSamplerCreateInfo) const
 	{
-		vk::BufferCopy copyRegion{ .size = inSize };
-		inCommandBuffer.copyBuffer(*inSrcBuffer.mVkBuffer, *inDstBuffer.mVkBuffer, copyRegion);
-	}
-
-	void Renderer::CopyBufferToImage(vk::CommandBuffer inCommandBufer, Buffer const& inSrcBuffer, vk::Image inDstImage, vk::Extent3D inImageSize) const
-	{
-		vk::BufferImageCopy copyRegion
-		{
-			.bufferOffset = 0,
-			.bufferRowLength = 0,
-			.bufferImageHeight = 0,
-			.imageSubresource = { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-			.imageOffset = {0, 0, 0},
-			.imageExtent = inImageSize
-		};
-
-		inCommandBufer.copyBufferToImage(inSrcBuffer.mVkBuffer, inDstImage, vk::ImageLayout::eTransferDstOptimal, { copyRegion });
-	}
-
-	void Renderer::TransitionImageLayout(vk::CommandBuffer inCommandBuffer, vk::Image inImage, TransitionImageLayoutParams inParams) const
-	{
-		vk::ImageMemoryBarrier2 barrier
-		{
-			.srcStageMask = inParams.SrcStageMask,
-			.srcAccessMask = inParams.SrcAccessMask,
-			.dstStageMask = inParams.DstStageMask,
-			.dstAccessMask = inParams.DstAccessMask,
-			.oldLayout = inParams.OldLayout,
-			.newLayout = inParams.NewLayout,
-			.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-			.image = inImage,
-			.subresourceRange
-			{
-				   .aspectMask = inParams.AspectMask,
-				   .baseMipLevel = 0,
-				   .levelCount = 1,
-				   .baseArrayLayer = 0,
-				   .layerCount = 1
-			}
-		};
-
-		vk::DependencyInfo dependencyInfo
-		{
-			.dependencyFlags = {},
-			.imageMemoryBarrierCount = 1,
-			.pImageMemoryBarriers = &barrier
-		};
-
-		inCommandBuffer.pipelineBarrier2(dependencyInfo);
+		inSamplerCreateInfo.maxAnisotropy = mPhysicalDevice.getProperties().limits.maxSamplerAnisotropy;
+		return mDevice.createSampler(inSamplerCreateInfo);
 	}
 
 	mage::Array<cstr> Renderer::GetRequiredDeviceExtensions() const
@@ -665,6 +577,7 @@ namespace Vulkan
 
 				{
 					auto& f = features.get<vk::PhysicalDeviceFeatures2>();
+					if (!f.features.sampleRateShading) return 0;
 					if (!f.features.samplerAnisotropy) return 0;
 				}
 
@@ -718,6 +631,7 @@ namespace Vulkan
 		FeatureChain featureChain
 		{
 			{ .features {
+				.sampleRateShading = true,
 				.samplerAnisotropy = true
 			}},
 			{
@@ -830,42 +744,29 @@ namespace Vulkan
 			mSwapchainImageViews.Add(mDevice.createImageView(imageViewCreateInfo));
 		}
 
-		vk::ImageCreateInfo depthImageCreateInfo
+		ImageCreateInfo colorImageCreateInfo
 		{
-			.imageType = vk::ImageType::e2D,
-			.format = vk::Format::eD32Sfloat,
-			.extent = { mSwapchainExtent.width, mSwapchainExtent.height, 1 },
-			.mipLevels = 1,
-			.arrayLayers = 1,
-			.samples = vk::SampleCountFlagBits::e1,
-			.tiling = vk::ImageTiling::eOptimal,
-			.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment,
-			.sharingMode = vk::SharingMode::eExclusive
+			.Size = { mSwapchainExtent.width, mSwapchainExtent.height, 1 },
+			.Format = mSwapchainSurfaceFormat.format,
+			.AspectFlags = vk::ImageAspectFlagBits::eColor,
+			.UsageFlags = vk::ImageUsageFlagBits::eColorAttachment,
+			.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			.SampleCount = msaaSamples
 		};
 
-		mDepthImage = mDevice.createImage(depthImageCreateInfo);
+		mColorImage = CreateImage(colorImageCreateInfo);
 
-		vk::MemoryRequirements memRequirements = mDepthImage.getMemoryRequirements();
-		u32 memoryTypeIndex = SelectMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-		vk::MemoryAllocateInfo depthMemoryAllocInfo
+		ImageCreateInfo depthImageCreateInfo
 		{
-			.allocationSize = memRequirements.size,
-			.memoryTypeIndex = memoryTypeIndex
+			.Size = { mSwapchainExtent.width, mSwapchainExtent.height, 1 },
+			.Format = vk::Format::eD32Sfloat,
+			.AspectFlags = vk::ImageAspectFlagBits::eDepth,
+			.UsageFlags = vk::ImageUsageFlagBits::eDepthStencilAttachment,
+			.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			.SampleCount = msaaSamples
 		};
 
-		mDepthImageMemory = mDevice.allocateMemory(depthMemoryAllocInfo);
-		mDepthImage.bindMemory(mDepthImageMemory, 0);
-
-		vk::ImageViewCreateInfo depthImageViewCreateInfo
-		{
-			.image = mDepthImage,
-			.viewType = vk::ImageViewType::e2D,
-			.format = vk::Format::eD32Sfloat,
-			.subresourceRange = { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
-		};
-
-		mDepthImageView = mDevice.createImageView(depthImageViewCreateInfo);
+		mDepthImage = CreateImage(depthImageCreateInfo);
 	}
 
 	vk::SurfaceFormatKHR Renderer::ChooseSwapchainFormat(mage::Array<vk::SurfaceFormatKHR> const& inFormats) const

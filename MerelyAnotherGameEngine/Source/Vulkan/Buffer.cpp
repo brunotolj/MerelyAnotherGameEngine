@@ -44,6 +44,7 @@ namespace Vulkan
 
 		mVkBuffer.getDevice().flushMappedMemoryRanges(memoryRange);
     }
+
 	vk::DescriptorBufferInfo Buffer::GetDescriptorInfo() const
 	{
 		return vk::DescriptorBufferInfo
@@ -53,6 +54,12 @@ namespace Vulkan
 		};
 	}
 
+	void Buffer::CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const
+	{
+		vk::BufferCopy copyRegion{ .size = mBufferSize };
+		inCommandBuffer.copyBuffer(inSrcBuffer.mVkBuffer, mVkBuffer, copyRegion);
+	}
+
 	void Buffer::BindVertexBuffer(vk::CommandBuffer inCommandBuffer) const
 	{
 		inCommandBuffer.bindVertexBuffers(0, *mVkBuffer, { 0 });
@@ -60,6 +67,6 @@ namespace Vulkan
 
 	void Buffer::BindIndexBuffer(vk::CommandBuffer inCommandBuffer) const
 	{
-		inCommandBuffer.bindIndexBuffer(*mVkBuffer, 0, vk::IndexType::eUint32);
+		inCommandBuffer.bindIndexBuffer(mVkBuffer, 0, vk::IndexType::eUint32);
 	}
 }

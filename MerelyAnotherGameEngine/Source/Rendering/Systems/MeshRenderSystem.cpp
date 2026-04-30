@@ -25,14 +25,7 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, const mage:
 
 	mTextures.Reserve(textureCount);
 	for (u32 i = 0; i < textureCount; ++i)
-	{
-		Vulkan::TextureCreateInfo textureCreateInfo
-		{
-			.ImageData = Vulkan::Texture::LoadImage(texturePaths[i])
-		};
-
-		mTextures.Add(mRenderer.CreateTexture(textureCreateInfo));
-	}
+		mTextures.AddConstruct(mRenderer, Vulkan::Texture::LoadFromFile(texturePaths[i]));
 
 	for (u32 i = 0; i < uniformBufferCount; ++i)
 	{
@@ -52,7 +45,7 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, const mage:
 
 	for (u32 i = 0; i < textureCount; ++i)
 	{
-		vk::DescriptorImageInfo bufferInfo = mTextures[i].GetDescriptorInfo();
+		vk::DescriptorImageInfo imageInfo = mTextures[i].GetDescriptorInfo();
 
 		vk::WriteDescriptorSet descriptorWrite
 		{
@@ -60,7 +53,7 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, const mage:
 			.dstArrayElement = 0,
 			.descriptorCount = 1,
 			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
-			.pImageInfo = &bufferInfo
+			.pImageInfo = &imageInfo
 		};
 
 		mPipeline.UpdateDescriptorSet(descriptorWrite, uniformBufferCount + i);

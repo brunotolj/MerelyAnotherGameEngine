@@ -24,14 +24,7 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, const m
 
 	mTextures.Reserve(textureCount);
 	for (u32 i = 0; i < textureCount; ++i)
-	{
-		Vulkan::TextureCreateInfo textureCreateInfo
-		{
-			.ImageData = Vulkan::Texture::LoadImage(texturePaths[i])
-		};
-
-		mTextures.Add(mRenderer.CreateTexture(textureCreateInfo));
-	}
+		mTextures.AddConstruct(mRenderer, Vulkan::Texture::LoadFromFile(texturePaths[i]));
 
 	for (u32 i = 0; i < uniformBufferCount; ++i)
 	{
@@ -51,7 +44,7 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, const m
 
 	for (u32 i = 0; i < textureCount; ++i)
 	{
-		vk::DescriptorImageInfo bufferInfo = mTextures[i].GetDescriptorInfo();
+		vk::DescriptorImageInfo imageInfo = mTextures[i].GetDescriptorInfo();
 
 		vk::WriteDescriptorSet descriptorWrite
 		{
@@ -59,7 +52,7 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, const m
 			.dstArrayElement = 0,
 			.descriptorCount = 1,
 			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
-			.pImageInfo = &bufferInfo
+			.pImageInfo = &imageInfo
 		};
 
 		mPipeline.UpdateDescriptorSet(descriptorWrite, uniformBufferCount + i);
@@ -215,8 +208,8 @@ void SpriteRenderSystem::CreateVertexBuffer()
 
 	mVertexBuffer = mRenderer.CreateBuffer(vertexBufferCreateInfo);
 
-	mRenderer.SubmitSingleTimeCommands([this, &stagingBuffer, dataSize](vk::CommandBuffer inCommandBuffer)
+	mRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 		{
-			mRenderer.CopyBuffer(inCommandBuffer, stagingBuffer, mVertexBuffer, dataSize);
+			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 		});
 }
