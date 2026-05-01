@@ -33,7 +33,7 @@ class SpriteRenderSystem : public NonCopyableClass
 	};
 
 public:
-	SpriteRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths);
+	SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths);
 	~SpriteRenderSystem();
 
 	void RenderSprites(Vulkan::RenderFrameData const& frameData, const std::vector<SpriteRenderData>& data);
@@ -49,7 +49,7 @@ private:
 
 	Vulkan::Buffer mVertexBuffer = nullptr;
 
-	Vulkan::Pipeline CreatePipeline(u32 inTextureCount);
+	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount);
 
 	void CreateVertexBuffer();
 };

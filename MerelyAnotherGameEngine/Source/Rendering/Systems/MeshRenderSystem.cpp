@@ -2,8 +2,8 @@
 #include "Vulkan/Model.h"
 #include "Vulkan/Renderer.h"
 
-MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths) :
-	mRenderer(renderer), mPipeline(CreatePipeline(texturePaths.GetSize()))
+MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths) :
+	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler, texturePaths.GetSize()))
 {
 	u32 uniformBufferCount = mRenderer.cMaxFramesInFlight;
 	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
@@ -116,11 +116,8 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 	}
 }
 
-Vulkan::Pipeline MeshRenderSystem::CreatePipeline(u32 inTextureCount)
+Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount)
 {
-	Vulkan::SpirVBinary vertShader = Vulkan::CompileSPIRV(glslang_stage_t::GLSLANG_STAGE_VERTEX, mage::ReadFile("Source/Shaders/MeshShader.vert"), "Vertex Shader");
-	Vulkan::SpirVBinary fragShader = Vulkan::CompileSPIRV(glslang_stage_t::GLSLANG_STAGE_FRAGMENT, mage::ReadFile("Source/Shaders/MeshShader.frag"), "Fragment Shader");
-
 	Vulkan::DescriptorSetLayoutInfo layoutInfo0
 	{
 		.Bindings
@@ -147,8 +144,7 @@ Vulkan::Pipeline MeshRenderSystem::CreatePipeline(u32 inTextureCount)
 
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
-		.VertexShaderCode = std::move(vertShader),
-		.FragmentShaderCode = std::move(fragShader),
+		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
 		.BindingDescriptions = Vulkan::Vertex::GetBindingDescriptions(),
 		.AttributeDescriptions = Vulkan::Vertex::GetAttributeDescriptions(),
 		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleList },

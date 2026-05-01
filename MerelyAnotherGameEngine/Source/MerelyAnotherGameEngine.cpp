@@ -135,11 +135,13 @@ i32 main()
 	mage::Array<mage::StringView> texturePaths;
 	texturePaths.Add("Textures/default.png");
 
+	Vulkan::ShaderCompiler shaderCompiler;
+
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
 		std::make_unique<PhysicsSystem>(),
-		std::make_unique<MeshRenderSystem>(renderer, texturePaths),
-		std::make_unique<SpriteRenderSystem>(renderer, texturePaths));
+		std::make_unique<MeshRenderSystem>(renderer, shaderCompiler, texturePaths),
+		std::make_unique<SpriteRenderSystem>(renderer, shaderCompiler, texturePaths));
 
 	constexpr f32 boardSize = 20.0f;
 

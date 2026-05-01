@@ -240,8 +240,7 @@ namespace Vulkan
 	{
 		Pipeline result;
 
-		mage_check(inPipelineCreateInfo.VertexShaderCode.GetSize());
-		mage_check(inPipelineCreateInfo.FragmentShaderCode.GetSize());
+		mage_check(inPipelineCreateInfo.ShaderCode.GetSize());
 
 		for (DescriptorSetLayoutInfo const& layout : inPipelineCreateInfo.DescriptorSetLayouts)
 		{
@@ -302,35 +301,27 @@ namespace Vulkan
 			result.mPipelineLayout = mDevice.createPipelineLayout(pipelineLayoutCreateInfo);
 		}
 
-		mage::Array<vk::PipelineShaderStageCreateInfo> shaderStageCreateInfos;
-
-		vk::ShaderModuleCreateInfo vertShaderModuleCreateInfo
+		vk::ShaderModuleCreateInfo shaderModuleCreateInfo
 		{
-			.codeSize = inPipelineCreateInfo.VertexShaderCode.GetSize() * sizeof(u32),
-			.pCode = inPipelineCreateInfo.VertexShaderCode.GetData()
+			.codeSize = inPipelineCreateInfo.ShaderCode.GetSize() * sizeof(u32),
+			.pCode = inPipelineCreateInfo.ShaderCode.GetData()
 		};
 
-		vk::raii::ShaderModule vertShaderModule{ mDevice, vertShaderModuleCreateInfo };
-		shaderStageCreateInfos.Add(vk::PipelineShaderStageCreateInfo
+		vk::raii::ShaderModule shaderModule{ mDevice, shaderModuleCreateInfo };
+
+		mage::Array<vk::PipelineShaderStageCreateInfo> shaderStageCreateInfos
+		{
 			{
 				.stage = vk::ShaderStageFlagBits::eVertex,
-				.module = vertShaderModule,
-				.pName = "main"
-			});
-
-		vk::ShaderModuleCreateInfo fragShaderModuleCreateInfo
-		{
-			.codeSize = inPipelineCreateInfo.FragmentShaderCode.GetSize() * sizeof(u32),
-			.pCode = inPipelineCreateInfo.FragmentShaderCode.GetData()
-		};
-
-		vk::raii::ShaderModule fragShaderModule{ mDevice, fragShaderModuleCreateInfo };
-		shaderStageCreateInfos.Add(vk::PipelineShaderStageCreateInfo
+				.module = shaderModule,
+				.pName = "vertMain"
+			},
 			{
 				.stage = vk::ShaderStageFlagBits::eFragment,
-				.module = fragShaderModule,
-				.pName = "main"
-			});
+				.module = shaderModule,
+				.pName = "fragMain"
+			}
+		};
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo
 		{

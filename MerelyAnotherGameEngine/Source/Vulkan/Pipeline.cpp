@@ -1,8 +1,7 @@
 #include "Vulkan/Pipeline.h"
 
-#include <glslang/Include/glslang_c_interface.h>
-#include <glslang/Public/resource_limits_c.h>
 #include <iostream>
+#include <slang/slang.h>
 
 namespace Vulkan
 {
@@ -42,75 +41,75 @@ namespace Vulkan
 		mVkPipeline.getDevice().updateDescriptorSets(inWrite, {});
 	}
 
-	SpirVBinary CompileSPIRV(glslang_stage_t inShaderStage, mage::StringView inShaderSource, mage::StringView inShaderName)
+	ShaderCompiler::ShaderCompiler()
 	{
-		const glslang_input_t input
+		slang::createGlobalSession(mGlobalSession.writeRef());
+
+		slang::TargetDesc targetDesc
 		{
-			.language = GLSLANG_SOURCE_GLSL,
-			.stage = inShaderStage,
-			.client = GLSLANG_CLIENT_VULKAN,
-			.client_version = GLSLANG_TARGET_VULKAN_1_4,
-			.target_language = GLSLANG_TARGET_SPV,
-			.target_language_version = GLSLANG_TARGET_SPV_1_6,
-			.code = inShaderSource.GetCString(),
-			.default_version = 100,
-			.default_profile = GLSLANG_NO_PROFILE,
-			.force_default_version_and_profile = false,
-			.forward_compatible = false,
-			.messages = GLSLANG_MSG_DEFAULT_BIT,
-			.resource = glslang_default_resource()
+			.format = SLANG_SPIRV,
+			.profile = mGlobalSession->findProfile("spirv_1_6"),
+			.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY | SLANG_TARGET_FLAG_GENERATE_WHOLE_PROGRAM
 		};
 
-		glslang_shader_t* shader = glslang_shader_create(&input);
-
-		if (!glslang_shader_preprocess(shader, &input))
+		slang::SessionDesc sessionDesc
 		{
-			std::cout << "GLSL preprocessing failed: " << inShaderName.GetCString() << '\n';
-			std::cout << glslang_shader_get_info_log(shader) << '\n';
-			std::cout << glslang_shader_get_info_debug_log(shader) << '\n';
-			std::cout << input.code << '\n';
+			.targets = &targetDesc,
+			.targetCount = 1,
+			.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR
+		};
 
-			glslang_shader_delete(shader);
-			return SpirVBinary();
+		mGlobalSession->createSession(sessionDesc, mSession.writeRef());
+	}
+
+	SpirVBinary ShaderCompiler::CompileFromFile(mage::StringView inPath) const
+	{
+		slang::IModule* slangModule = nullptr;
+		{
+			Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+			slangModule = mSession->loadModule(inPath.GetCString(), diagnosticsBlob.writeRef());
+
+			if (diagnosticsBlob != nullptr)
+				std::cout << cstr(diagnosticsBlob->getBufferPointer());
+
+			if (slangModule == nullptr)
+				return SpirVBinary();
 		}
 
-		if (!glslang_shader_parse(shader, &input))
-		{
-			std::cout << "GLSL parsing failed: " << inShaderName.GetCString() << '\n';
-			std::cout << glslang_shader_get_info_log(shader) << '\n';
-			std::cout << glslang_shader_get_info_debug_log(shader) << '\n';
-			std::cout << glslang_shader_get_preprocessed_code(shader) << '\n';
+		mage::Array<slang::IComponentType*> componentTypes;
+		componentTypes.Add(slangModule);
 
-			glslang_shader_delete(shader);
-			return SpirVBinary();
+		Slang::ComPtr<slang::IComponentType> composedProgram;
+		{
+			Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+			SlangResult result = mSession->createCompositeComponentType(
+				componentTypes.GetData(),
+				componentTypes.GetSize(),
+				composedProgram.writeRef(),
+				diagnosticsBlob.writeRef());
+
+			if (diagnosticsBlob != nullptr)
+				std::cout << cstr(diagnosticsBlob->getBufferPointer());
+
+			if (SLANG_FAILED(result))
+				return SpirVBinary();
 		}
 
-		glslang_program_t* program = glslang_program_create();
-		glslang_program_add_shader(program, shader);
-
-		if (!glslang_program_link(program, GLSLANG_MSG_SPV_RULES_BIT | GLSLANG_MSG_VULKAN_RULES_BIT))
+		Slang::ComPtr<slang::IBlob> spirvCode;
 		{
-			std::cout << "GLSL linking failed: " << inShaderName.GetCString() << '\n';
-			std::cout << glslang_program_get_info_log(program) << '\n';
-			std::cout << glslang_program_get_info_debug_log(program) << '\n';
+			Slang::ComPtr<slang::IBlob> diagnosticsBlob;
+			SlangResult result = composedProgram->getTargetCode(0, spirvCode.writeRef(), diagnosticsBlob.writeRef());
 
-			glslang_program_delete(program);
-			glslang_shader_delete(shader);
-			return SpirVBinary();
+			if (diagnosticsBlob != nullptr)
+				std::cout << cstr(diagnosticsBlob->getBufferPointer());
+
+			if (SLANG_FAILED(result))
+				return SpirVBinary();
 		}
-
-		glslang_program_SPIRV_generate(program, inShaderStage);
 
 		SpirVBinary binary;
-		binary.ResizeUninitialized(u32(glslang_program_SPIRV_get_size(program)));
-		glslang_program_SPIRV_get(program, binary.GetData());
-
-		cstr spirv_messages = glslang_program_SPIRV_get_messages(program);
-		if (spirv_messages)
-			std::cout << "(" << inShaderName.GetCString() << ") " << spirv_messages << '\n';
-
-		glslang_program_delete(program);
-		glslang_shader_delete(shader);
+		binary.ResizeUninitialized(u32(spirvCode->getBufferSize()) / sizeof(u32));
+		memcpy(binary.GetData(), spirvCode->getBufferPointer(), sizeof(u32) * binary.GetSize());
 
 		return binary;
 	}

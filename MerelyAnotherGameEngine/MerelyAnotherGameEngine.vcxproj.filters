@@ -205,22 +205,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Shaders\MeshShader.frag">
+    <None Include="Source\Shaders\MeshShader_Vert.slang" />
+    <None Include="Source\Shaders\MeshShader.slang">
       <Filter>Source Files\Shaders</Filter>
     </None>
-    <None Include="Source\Shaders\MeshShader.vert">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="Source\Shaders\SpriteShader.vert">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="Source\Shaders\SpriteShader.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="Source\Shaders\BasicShader.frag">
-      <Filter>Source Files\Shaders</Filter>
-    </None>
-    <None Include="Source\Shaders\BasicShader.vert">
+    <None Include="Source\Shaders\SpriteShader.slang">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

@@ -1,8 +1,8 @@
 #include "Rendering/Systems/SpriteRenderSystem.h"
 #include "Vulkan/Renderer.h"
 
-SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths) :
-	mRenderer(renderer), mPipeline(CreatePipeline(texturePaths.GetSize()))
+SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths) :
+	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler, texturePaths.GetSize()))
 {
 	u32 uniformBufferCount = Vulkan::Renderer::cMaxFramesInFlight;
 	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
@@ -128,11 +128,8 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 	}
 }
 
-Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(u32 inTextureCount)
+Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount)
 {
-	Vulkan::SpirVBinary vertShader = Vulkan::CompileSPIRV(glslang_stage_t::GLSLANG_STAGE_VERTEX, mage::ReadFile("Source/Shaders/SpriteShader.vert"), "Vertex Shader");
-	Vulkan::SpirVBinary fragShader = Vulkan::CompileSPIRV(glslang_stage_t::GLSLANG_STAGE_FRAGMENT, mage::ReadFile("Source/Shaders/SpriteShader.frag"), "Fragment Shader");
-
 	Vulkan::DescriptorSetLayoutInfo layoutInfo0
 	{
 		.Bindings
@@ -159,8 +156,7 @@ Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(u32 inTextureCount)
 
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
-		.VertexShaderCode = std::move(vertShader),
-		.FragmentShaderCode = std::move(fragShader),
+		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/SpriteShader.slang"),
 		.BindingDescriptions = {{ 0, sizeof(f32), vk::VertexInputRate::eVertex }},
 		.AttributeDescriptions = {{ 0, 0, vk::Format::eR32Sfloat, 0 }},
 		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleStrip },

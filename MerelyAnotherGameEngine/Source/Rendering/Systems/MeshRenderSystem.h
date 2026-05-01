@@ -45,7 +45,7 @@ class MeshRenderSystem : public NonCopyableClass
 	};
 
 public:
-	MeshRenderSystem(Vulkan::Renderer const& renderer, const mage::Array<mage::StringView>& texturePaths);
+	MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths);
 	~MeshRenderSystem();
 
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data);
@@ -59,5 +59,5 @@ private:
 
 	mage::Array<Vulkan::Texture> mTextures;
 
-	Vulkan::Pipeline CreatePipeline(u32 inTextureCount);
+	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount);
 };

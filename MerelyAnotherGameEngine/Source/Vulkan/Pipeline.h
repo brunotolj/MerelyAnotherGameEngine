@@ -1,7 +1,14 @@
 #pragma once
 
 #include <glslang/Include/glslang_c_shader_types.h>
+#include <slang/slang-com-ptr.h>
 #include <vulkan/vulkan_raii.hpp>
+
+namespace slang
+{
+	struct IGlobalSession;
+	struct ISession;
+}
 
 namespace Vulkan
 {
@@ -15,8 +22,7 @@ namespace Vulkan
 
 	struct PipelineCreateInfo
 	{
-		SpirVBinary VertexShaderCode;
-		SpirVBinary FragmentShaderCode;
+		SpirVBinary ShaderCode;
 		mage::Array<vk::VertexInputBindingDescription> BindingDescriptions;
 		mage::Array<vk::VertexInputAttributeDescription> AttributeDescriptions;
 		vk::PipelineInputAssemblyStateCreateInfo InputAssemblyInfo;
@@ -50,5 +56,16 @@ namespace Vulkan
 		vk::raii::Pipeline mVkPipeline = nullptr;
 	};
 
-	SpirVBinary CompileSPIRV(glslang_stage_t inShaderStage, mage::StringView inShaderSource, mage::StringView inShaderName);
+	class ShaderCompiler : public NonMovableClass
+	{
+	public:
+		ShaderCompiler();
+
+		SpirVBinary CompileFromFile(mage::StringView inPath) const;
+
+	private:
+		Slang::ComPtr<slang::IGlobalSession> mGlobalSession = nullptr;
+		Slang::ComPtr<slang::ISession> mSession = nullptr;
+	};
+
 }
