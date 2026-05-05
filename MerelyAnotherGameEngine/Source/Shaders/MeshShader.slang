@@ -3,20 +3,19 @@ struct VSInput
 {
     float3 Position;
     float3 Normal;
-    float2 UV;
+    float2 TextureCoords;
 };
 
 struct VSOutput
 {
     float4 Position : SV_Position;
     float2 LightIntensity;
-    float2 FragUV;
+    float2 TextureCoords;
 };
 
 struct PushConstants
 {
     float4x4 Transform;
-    float4 Color;
 };
 
 struct UniformBuffer
@@ -44,7 +43,7 @@ VSOutput vertMain(VSInput input)
     output.LightIntensity.x = ubo.LightDirectionAndAmbient.w;
     output.LightIntensity.y = -dot(transformedNormal, ubo.LightDirectionAndAmbient);
 
-    output.FragUV = input.UV;
+    output.TextureCoords = input.TextureCoords;
 
     return output;
 }
@@ -53,6 +52,6 @@ VSOutput vertMain(VSInput input)
 float4 fragMain(VSOutput input)
 {
     float light = input.LightIntensity.x + max(0.0, input.LightIntensity.y);
-    float4 imageColor = float4(texture.Sample(input.FragUV).rgb, 1.0);
-    return float4((light * push.Color * imageColor).rgb, 1.0);
+    float4 textureColor = float4(texture.Sample(input.TextureCoords).rgb, 1.0);
+    return float4((light * textureColor).rgb, 1.0);
 }

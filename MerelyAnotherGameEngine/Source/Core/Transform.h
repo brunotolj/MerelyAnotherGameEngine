@@ -10,10 +10,11 @@ namespace mage
 	{
 		glm::mat4 Matrix() const
 		{
-			const f32 s = Rotation.S;
-			const f32 p = Rotation.XY;
-			const f32 q = Rotation.YZ;
-			const f32 r = Rotation.ZX;
+			f32 s = Rotation.S;
+			f32 p = Rotation.XY;
+			f32 q = Rotation.YZ;
+			f32 r = Rotation.ZX;
+			
 			f32 a = s + p; a *= a;
 			f32 b = s + q; b *= b;
 			f32 c = s + r; c *= c;
@@ -34,7 +35,6 @@ namespace mage
 		}
 
 		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-		mage::Rotor Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
-
+		mage::Rotor Rotation;
 	};
 }

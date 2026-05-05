@@ -8,7 +8,7 @@
 
 namespace Vulkan
 {
-	Texture::Texture(Renderer const& inRenderer, TextureCreateInfo const& inCreateInfo)
+	Texture::Texture(Renderer const& inRenderer, Texture::CreateInfo const& inCreateInfo)
 	{
 		CreateImage(inRenderer, inCreateInfo);
 	}
@@ -20,9 +20,9 @@ namespace Vulkan
 		return result;
 	}
 
-	TextureCreateInfo Texture::LoadFromFile(mage::StringView inPath)
+	Texture::CreateInfo Texture::LoadFromFile(mage::StringView inPath)
 	{
-		TextureCreateInfo result;
+		Texture::CreateInfo result;
 		i32 bytesPerPixel;
 
 		stbi_uc* imageData = stbi_load(inPath.GetCString(), reinterpret_cast<i32*>(&result.Size.width), reinterpret_cast<i32*>(&result.Size.height), &bytesPerPixel, 4);
@@ -38,7 +38,7 @@ namespace Vulkan
 		return result;
 	}
 
-	void Texture::CreateImage(Renderer const& inRenderer, TextureCreateInfo const& inData)
+	void Texture::CreateImage(Renderer const& inRenderer, Texture::CreateInfo const& inData)
 	{
 		vk::DeviceSize dataSize = inData.Size.width * inData.Size.height * 4;
 

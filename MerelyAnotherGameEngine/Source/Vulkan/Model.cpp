@@ -9,12 +9,12 @@
 namespace std
 {
 	template<>
-	struct hash<Vulkan::Vertex>
+	struct hash<Vulkan::Model::Vertex>
 	{
-		u64 operator()(Vulkan::Vertex const& vertex) const
+		u64 operator()(Vulkan::Model::Vertex const& vertex) const
 		{
 			u64 seed = 0;
-			mage::HashCombine(seed, vertex.Position, vertex.Normal, vertex.UV);
+			mage::HashCombine(seed, vertex.Position, vertex.Normal, vertex.TextureCoords);
 			return seed;
 		}
 	};
@@ -22,7 +22,7 @@ namespace std
 
 namespace Vulkan
 {
-	mage::Array<vk::VertexInputBindingDescription> Vertex::GetBindingDescriptions()
+	mage::Array<vk::VertexInputBindingDescription> Model::Vertex::GetBindingDescriptions()
 	{
 		return
 		{
@@ -34,7 +34,7 @@ namespace Vulkan
 		};
 	}
 
-	mage::Array<vk::VertexInputAttributeDescription> Vertex::GetAttributeDescriptions()
+	mage::Array<vk::VertexInputAttributeDescription> Model::Vertex::GetAttributeDescriptions()
 	{
 		return
 		{
@@ -53,16 +53,16 @@ namespace Vulkan
 			{
 				.location = 2,
 				.binding = 0,
-				.format = vk::Format::eR32G32B32Sfloat,
-				.offset = offsetof(Vertex, UV)
+				.format = vk::Format::eR32G32Sfloat,
+				.offset = offsetof(Vertex, TextureCoords)
 			}
 		};
 	}
 
-	Model::Model(Renderer const& inRenderer, ModelCreateInfo const& inCreateInfo)
+	Model::Model(Renderer const& inRenderer, Model::CreateInfo const& inCreateInfo)
 	{
 		CreateVertexBuffer(inRenderer, inCreateInfo.Vertices);
-		CreateIndexBuffer(inRenderer, inCreateInfo.Indices);
+		CreateIndexBuffer(inRenderer, inCreateInfo.Faces);
 	}
 
 	void Model::Bind(vk::CommandBuffer inCommandBuffer) const
@@ -81,9 +81,9 @@ namespace Vulkan
 			inCommandBuffer.draw(mVertexCount, 1, 0, 0);
 	}
 
-	ModelCreateInfo Model::LoadFromFile(mage::StringView inPath)
+	Model::CreateInfo Model::LoadFromFile(mage::StringView inPath)
 	{
-		ModelCreateInfo result;
+		Model::CreateInfo result;
 
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -94,6 +94,7 @@ namespace Vulkan
 		mage_check(loadResult);
 
 		std::unordered_map<Vertex, u32> uniqueVertices;
+		mage::Array<u32> indices;
 
 		for (tinyobj::shape_t const& shape : shapes)
 		{
@@ -123,7 +124,7 @@ namespace Vulkan
 
 				if (index.texcoord_index >= 0)
 				{
-					vertex.UV =
+					vertex.TextureCoords =
 					{
 						attrib.texcoords[2 * index.texcoord_index + 0],
 						attrib.texcoords[2 * index.texcoord_index + 1]
@@ -136,545 +137,301 @@ namespace Vulkan
 					result.Vertices.Add(vertex);
 				}
 
-				result.Indices.Add(uniqueVertices[vertex]);
+				indices.Add(uniqueVertices[vertex]);
 			}
 		}
 
-		FixWindingOrders(result);
+		for (u32 i = 2; i < indices.GetSize(); i += 3)
+		{
+			Vertex& a = result.Vertices[indices[i]];
+			Vertex& b = result.Vertices[indices[i + 1]];
+			Vertex& c = result.Vertices[indices[i + 2]];
+
+			if (glm::dot(a.Normal, glm::cross(c.Position - a.Position, b.Position - a.Position)) >= 0.0f)
+				result.Faces.AddConstruct(indices[i - 2], indices[i - 1], indices[i]);
+			else
+				result.Faces.AddConstruct(indices[i - 2], indices[i], indices[i - 2]);
+		}
+
 		return result;
 	}
 
-	ModelCreateInfo Model::MakeCube(glm::vec3 inHalfExtent)
+	Model::CreateInfo Model::MakeBox(glm::vec3 inHalfExtent)
 	{
-		ModelCreateInfo result;
+		Model::CreateInfo result;
 
-		glm::vec3 positions[8]
-		{
-			{ -1.0f, -1.0f, -1.0f },
-			{  1.0f, -1.0f, -1.0f },
-			{ -1.0f,  1.0f, -1.0f },
-			{  1.0f,  1.0f, -1.0f },
-			{ -1.0f, -1.0f,  1.0f },
-			{  1.0f, -1.0f,  1.0f },
-			{ -1.0f,  1.0f,  1.0f },
-			{  1.0f,  1.0f,  1.0f }
-		};
+		glm::vec3 x = { inHalfExtent.x, 0.0f, 0.0f };
+		glm::vec3 y = { 0.0f, inHalfExtent.y, 0.0f };
+		glm::vec3 z = { 0.0f, 0.0f, inHalfExtent.z };
 
-		glm::vec3 normals[6]
-		{
-			{ -1.0f,  0.0f,  0.0f },
-			{  1.0f,  0.0f,  0.0f },
-			{  0.0f, -1.0f,  0.0f },
-			{  0.0f,  1.0f,  0.0f },
-			{  0.0f,  0.0f, -1.0f },
-			{  0.0f,  0.0f,  1.0f }
-		};
+		AddFlatSurface(result, { x, {} }, { inHalfExtent.y, inHalfExtent.z }, { 66.0f / 256.0f, 66.0f / 256.0f }, { 128.0f / 256.0f, 128.0f / 256.0f });
+		AddFlatSurface(result, { -x, mage::Rotor(z, glm::radians(180.0f)) }, { inHalfExtent.y, inHalfExtent.z }, { 190.0f / 256.0f, 66.0f / 256.0f }, { 252.0f / 256.0f, 128.0f / 256.0f });
+		AddFlatSurface(result, { -y, mage::Rotor(z, glm::radians(90.0f)) }, { inHalfExtent.x, inHalfExtent.z }, { 4.0f / 256.0f, 66.0f / 256.0f }, { 66.0f / 256.0f, 128.0f / 256.0f });
+		AddFlatSurface(result, { y, mage::Rotor(z, glm::radians(-90.0f)) }, { inHalfExtent.x, inHalfExtent.z }, { 128.0f / 256.0f, 66.0f / 256.0f }, { 190.0f / 256.0f, 128.0f / 256.0f });
+		AddFlatSurface(result, { z, mage::Rotor(y, glm::radians(90.0f)) }, { inHalfExtent.y, inHalfExtent.x }, { 66.0f / 256.0f, 4.0f / 256.0f }, { 128.0f / 256.0f, 66.0f / 256.0f });
+		AddFlatSurface(result, { -z, mage::Rotor(y, glm::radians(-90.0f)) }, { inHalfExtent.y, inHalfExtent.x }, { 66.0f / 256.0f, 128.0f / 256.0f }, { 128.0f / 256.0f, 190.0f / 256.0f });
 
-		for (u32 i = 0; i < 6; ++i)
-		{
-			for (u32 j = 0; j < 8; ++j)
-			{
-				glm::vec3 test = positions[j] * normals[i];
-
-				if (test.x < 0.0f)
-					continue;
-
-				if (test.y < 0.0f)
-					continue;
-
-				if (test.z < 0.0f)
-					continue;
-
-				result.Vertices.AddConstruct(inHalfExtent * positions[j], normals[i], glm::vec2(0.0f));
-			}
-
-			for (u32 j = 0; j < 6; ++j)
-				result.Indices.Add(4 * i + (j / 3) + (j % 3));
-		}
-
-		FixWindingOrders(result);
 		return result;
 	}
 
-	ModelCreateInfo Model::MakeSphere(f32 inRadius)
+	Model::CreateInfo Model::MakeBall(f32 inRadius)
 	{
-		ModelCreateInfo result;
+		Model::CreateInfo result;
 
-		mage::Array<std::pair<u32, u32>> edges;
-		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
-		auto SortEdges = [&edges]() { std::sort(edges.begin(), edges.end()); };
+		AddHemisphere(result, {}, inRadius, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 3);
+		AddInvertedCopy(result, { 53.0f / 128.0f, 1.0f });
 
-		f32 phi = glm::golden_ratio<f32>();
-		f32 factor = glm::inversesqrt(1.0f + phi * phi);
-
-		glm::vec3 baseIcosphere[12]
-		{
-			{ -1.0f, -phi, 0.0f },
-			{  1.0f, -phi, 0.0f },
-			{ -1.0f,  phi, 0.0f },
-			{  1.0f,  phi, 0.0f },
-
-			{ 0.0f, -1.0f, -phi },
-			{ 0.0f,  1.0f, -phi },
-			{ 0.0f, -1.0f,  phi },
-			{ 0.0f,  1.0f,  phi },
-
-			{ -phi, 0.0f, -1.0f },
-			{ -phi, 0.0f,  1.0f },
-			{  phi, 0.0f, -1.0f },
-			{  phi, 0.0f,  1.0f }
-		};
-
-		for (u32 i = 0; i < 12; ++i)
-		{
-			glm::vec3 pos = factor * baseIcosphere[i];
-			result.Vertices.AddConstruct(inRadius * pos, pos, glm::vec2(0.0f));
-
-			for (u32 j = i + 1; j < 12; ++j)
-			{
-				f32 threshold = phi - 0.01f;
-				if (glm::dot(baseIcosphere[i], baseIcosphere[j]) > threshold)
-					AddEdge(i, j);
-			}
-		}
-
-		for (u32 subdiv = 0; subdiv < 3; ++subdiv)
-		{
-			SortEdges();
-
-			mage::Array<std::pair<u32, u32>> oldEdges = edges;
-			edges.Empty();
-
-			u32 indexOffset = result.Vertices.GetSize();
-
-			for (u32 i = 0; i < oldEdges.GetSize(); ++i)
-			{
-				glm::vec3 pos = result.Vertices[oldEdges[i].first].Normal + result.Vertices[oldEdges[i].second].Normal;
-				pos /= glm::length(pos);
-
-				result.Vertices.AddConstruct(inRadius * pos, pos, glm::vec2(0.0f));
-
-				AddEdge(oldEdges[i].first, i + indexOffset);
-				AddEdge(oldEdges[i].second, i + indexOffset);
-
-				for (u32 j = 0; j < i; ++j)
-				{
-					if (oldEdges[j].second != oldEdges[i].first)
-						continue;
-
-					for (u32 k = j + 1; k < i; ++k)
-					{
-						if (oldEdges[k].first != oldEdges[j].first)
-							break;
-
-						if (oldEdges[k].second != oldEdges[i].second)
-							continue;
-
-						AddEdge(j + indexOffset, k + indexOffset);
-						AddEdge(j + indexOffset, i + indexOffset);
-						AddEdge(k + indexOffset, i + indexOffset);
-					}
-				}
-			}
-		}
-
-		SortEdges();
-		PopulateIndices(result, edges);
-		
-		FixWindingOrders(result);
 		return result;
 	}
 
-	ModelCreateInfo Model::MakeCylinder(f32 inRadius, f32 inHalfHeight)
+	Model::CreateInfo Model::MakeCylinder(f32 inRadius, f32 inHalfHeight)
 	{
-		ModelCreateInfo result;
+		Model::CreateInfo result;
 
-		mage::Array<std::pair<u32, u32>> edges;
-		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
-		auto SortEdges = [&edges]() { std::sort(edges.begin(), edges.end()); };
+		AddCircle(result, { glm::vec3(inHalfHeight, 0.0f, 0.0f), {} }, inRadius, glm::vec2(65.0f / 256.0f), 61.0f / 256.0f, 4);
+		AddInvertedCopy(result, { 126.0f / 256.0f, 130.0f / 256.0f });
+		AddCylindricSurface(result, {}, inRadius, inHalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 48);
 
-		using Subset = std::pair<u32, u32>;
-		
-		auto CreateRing = [&result, &edges, &AddEdge](u32 count, glm::vec3 base, glm::vec3 normal, glm::vec3 axis) -> Subset
-			{
-				u32 indexOffset = result.Vertices.GetSize();
-
-				for (u32 i = 0; i < count; ++i)
-				{
-					mage::Rotor rotor = mage::Rotor::FromAxisAndAngle(axis, glm::radians(i * (360.0f / count)));
-					glm::vec3 rotatedBase = rotor.Rotate(base);
-					glm::vec3 rotatedNormal = rotor.Rotate(normal);
-
-					result.Vertices.AddConstruct(rotatedBase, rotatedNormal, glm::vec2(0.0f));
-					AddEdge(indexOffset + i, indexOffset + (i + 1) % count);
-				}
-
-				return { indexOffset, count };
-			};
-
-		auto ConnectRings = [&edges, &AddEdge](Subset ringA, Subset ringB)
-			{
-				u32 indexA = 0;
-				u32 indexB = 0;
-				i32 distanceA = 0;
-				i32 distanceB = 0;
-
-				while (indexA < ringA.second && indexB < ringB.second)
-				{
-					if (glm::abs(distanceA + ringB.second - distanceB) <= glm::abs(distanceB + ringA.second - distanceA))
-					{
-						distanceA += ringB.second;
-						indexA++;
-					}
-					else
-					{
-						distanceB += ringA.second;
-						indexB++;
-					}
-
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-
-				while (indexA < ringA.second)
-				{
-					indexA++;
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-
-				while (indexB < ringB.second)
-				{
-					indexB++;
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-			};
-
-		mage::Array<std::pair<u32, f32>> ringData
-		{
-			{ 80, 1.0f },
-			{ 40, 0.9f },
-			{ 20, 0.75f },
-			{ 10, 0.55f },
-			{ 5, 0.3f },
-			{ 1, 0.0f }
-		};
-
-		glm::vec3 forward = glm::vec3(1.0f, 0.0f, 0.0f);
-		glm::vec3 right = glm::vec3(0.0f, 1.0f, 0.0f);
-
-		mage::Array<Subset> sideRings{ CreateRing(ringData[0].first, ringData[0].second * inRadius * right + inHalfHeight * forward, right, forward) };
-
-		u32 sideDivCount = 1 + u32(0.2f * ringData[0].first * inHalfHeight / inRadius);
-		for (u32 i = 1; i <= sideDivCount; ++i)
-		{
-			f32 ringHeight = inHalfHeight * (1.0f - 2.0f * i / sideDivCount);
-
-			sideRings.Add(CreateRing(ringData[0].first, ringData[0].second * inRadius * right + ringHeight * forward, right, forward));
-			ConnectRings(sideRings[i - 1], sideRings[i]);
-		}
-
-		mage::Array<Subset> topRings;
-		mage::Array<Subset> bottomRings;
-
-		for (u32 i = 0; i < ringData.GetSize(); ++i)
-		{
-			topRings.Add(CreateRing(ringData[i].first, ringData[i].second * inRadius * right + inHalfHeight * forward, forward, forward));
-			bottomRings.Add(CreateRing(ringData[i].first, ringData[i].second * inRadius * right - inHalfHeight * forward, -forward, forward));
-			if (i > 0)
-			{
-				ConnectRings(topRings[i - 1], topRings[i]);
-				ConnectRings(bottomRings[i - 1], bottomRings[i]);
-			}
-		}
-
-		std::sort(edges.begin(), edges.end());
-		PopulateIndices(result, edges);
-
-		FixWindingOrders(result);
 		return result;
 	}
 
-	ModelCreateInfo Model::MakeCapsule(f32 inRadius, f32 inHalfHeight)
+	Model::CreateInfo Model::MakeCapsule(f32 inRadius, f32 inHalfHeight)
 	{
-		ModelCreateInfo result;
+		Model::CreateInfo result;
 
-		mage::Array<std::pair<u32, u32>> edges;
-		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
-		auto SortEdges = [&edges]() { std::sort(edges.begin(), edges.end()); };
-		auto Reflect = [](glm::vec3 a, glm::vec3 b) -> glm::vec3 { return 2.0f * glm::dot(a, b) * b - a; };
+		AddHemisphere(result, { glm::vec3(inHalfHeight, 0.0f, 0.0f), {} }, inRadius, glm::vec2(65.0f / 256.0f), 61.0f / 256.0f, 3);
+		AddInvertedCopy(result, { 126.0f / 256.0f, 130.0f / 256.0f });
+		AddCylindricSurface(result, {}, inRadius, inHalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 40);
 
-		using Subset = std::pair<u32, u32>;
+		return result;
+	}
 
-		auto CreateRing = [&result, &edges, &AddEdge](u32 count, glm::vec3 base, glm::vec3 normal, glm::vec3 axis, bool connect) -> Subset
-			{
-				u32 indexOffset = result.Vertices.GetSize();
+	Model::CreateInfo Model::MakeCone(f32 inRadius, f32 inHeight)
+	{
+		Model::CreateInfo result;
 
-				for (u32 i = 0; i < count; ++i)
-				{
-					mage::Rotor rotor = mage::Rotor::FromAxisAndAngle(axis, glm::radians(i * (360.0f / count)));
-					glm::vec3 rotatedBase = rotor.Rotate(base);
-					glm::vec3 rotatedNormal = rotor.Rotate(normal);
+		AddConicSurface(result, { { -0.5f * inHeight, 0.0f, 0.0f }, {} }, inRadius, inHeight, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 48, 10);
+		AddCircle(result, { { -0.5f * inHeight, 0.0f, 0.0f }, mage::Rotor({ 0.0f, 0.0f, 1.0f }, glm::radians(180.0f)) }, inRadius, glm::vec2(181.0f / 256.0f), 71.0f / 256.0f, 4);
 
-					result.Vertices.AddConstruct(rotatedBase, rotatedNormal, glm::vec2(0.0f));
+		return result;
+	}
 
-					if (connect)
-						AddEdge(indexOffset + i, indexOffset + (i + 1) % count);
-				}
+	void Model::AddHemisphere(Model::CreateInfo& inOutResult, mage::Transform inTransform, f32 inRadius, glm::vec2 inUvCenter, f32 inUvRadius, u32 inSubdivisions)
+	{
+		u32 indexOffset = inOutResult.Vertices.GetSize();
 
-				return { indexOffset, count };
-			};
+		glm::vec3 x = inTransform.Rotation.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::vec3 y = inTransform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3 z = inTransform.Rotation.Rotate(glm::vec3(0.0f, 0.0f, 1.0f));
 
-		auto ConnectRings = [&edges, &AddEdge](Subset ringA, Subset ringB)
-			{
-				u32 indexA = 0;
-				u32 indexB = 0;
-				i32 distanceA = 0;
-				i32 distanceB = 0;
+		inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * x, x, inUvCenter);
 
-				while (indexA < ringA.second && indexB < ringB.second)
-				{
-					if (glm::abs(distanceA + ringB.second - distanceB) <= glm::abs(distanceB + ringA.second - distanceA))
-					{
-						distanceA += ringB.second;
-						indexA++;
-					}
-					else
-					{
-						distanceB += ringA.second;
-						indexB++;
-					}
-
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-
-				while (indexA < ringA.second)
-				{
-					indexA++;
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-
-				while (indexB < ringB.second)
-				{
-					indexB++;
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-			};
-
-		f32 phi = glm::golden_ratio<f32>();
-		glm::vec3 forward = glm::vec3(1.0f, 0.0f, 0.0f);
-		glm::vec3 right = glm::vec3(0.0f, 1.0f, 0.0f);
-
-		Subset ring0 = CreateRing(1, inRadius * forward, forward, forward, false);
-
-		glm::vec3 base1 = glm::vec3(glm::sqrt(1.0f - 1.0f / (glm::sqrt(5.0f) * phi)), 1.0f / glm::sqrt(glm::sqrt(5.0f) * phi), 0.0f);
-		Subset ring1 = CreateRing(5, inRadius * base1, base1, forward, true);
-		
-		glm::vec3 base2 = Reflect(forward, base1);
-		Subset ring2 = CreateRing(5, inRadius * base2, base2, forward, false);
-		
-		glm::vec3 base3 = glm::normalize(result.Vertices[6].Position + result.Vertices[7].Position);
-		Subset ring3 = CreateRing(5, inRadius * base3, base3, forward, false);
-
-		glm::vec3 base4 = mage::Rotor::FromAxisAndAngle(forward, glm::radians(18.0f)).Rotate(right);
-		Subset ring4 = CreateRing(10, inRadius * base4, base4, forward, true);
-
-		ConnectRings(ring0, ring1);
-		ConnectRings(ring1, ring3);
-		ConnectRings(ring2, ring3);
+		u32 vertexCountPerEdge = 2 * (inSubdivisions + 1);
+		f32 angle = glm::atan(2.0f) / vertexCountPerEdge;
 
 		for (u32 i = 0; i < 5; ++i)
 		{
-			edges.AddConstruct(ring1.first + i, ring2.first + i);
-			edges.AddConstruct(ring1.first + i, ring2.first + i);
+			glm::vec3 axisA = mage::Rotor(x, glm::radians(72.0f * i)).Rotate(z);
+			glm::vec3 axisB = mage::Rotor(x, glm::radians(72.0f * (i + 1))).Rotate(z);
 
-			edges.AddConstruct(ring2.first + i, ring4.first + 2 * i);
-			edges.AddConstruct(ring2.first + (i + 1) % 5, ring4.first + 2 * i + 1);
-			edges.AddConstruct(ring3.first + i, ring4.first + 2 * i);
-			edges.AddConstruct(ring3.first + i, ring4.first + 2 * i + 1);
-		}
+			glm::vec3 reflector = mage::Rotor(axisA, glm::atan(2.0f)).Rotate(x) + mage::Rotor(axisB, glm::atan(2.0f)).Rotate(x);
 
-		for (u32 subdiv = 0; subdiv < 3; ++subdiv)
-		{
-			std::sort(edges.begin(), edges.end());
-
-			mage::Array<std::pair<u32, u32>> oldEdges = edges;
-			edges.Empty();
-
-			u32 indexOffset = result.Vertices.GetSize();
-
-			for (u32 i = 0; i < oldEdges.GetSize(); ++i)
+			for (u32 a = 1; a <= vertexCountPerEdge; ++a)
 			{
-				glm::vec3 pos = result.Vertices[oldEdges[i].first].Normal + result.Vertices[oldEdges[i].second].Normal;
-				pos /= glm::length(pos);
+				glm::vec3 posA = mage::Rotor(axisA, a * angle).Rotate(x);
+				glm::vec3 posB = mage::Rotor(axisB, a * angle).Rotate(x);
 
-				result.Vertices.AddConstruct(inRadius * pos, pos, glm::vec2(0.0f));
+				glm::vec3 axisC = glm::normalize(glm::cross(posB, posA));
+				f32 angle2 = glm::acos(glm::dot(posB, posA)) / a;
 
-				edges.AddConstruct(oldEdges[i].first, i + indexOffset);
-				edges.AddConstruct(oldEdges[i].second, i + indexOffset);
-
-				for (u32 j = 0; j < i; ++j)
+				for (u32 b = 0; b < a; ++b)
 				{
-					if (oldEdges[j].second != oldEdges[i].first)
-						continue;
+					glm::vec3 pos = mage::Rotor(axisC, b * angle2).Rotate(posA);
+					glm::vec3 uv = { glm::pow(1.0f - glm::pow(glm::dot(x, pos), 0.75f), 0.2f), glm::dot(y, pos), glm::dot(z, pos), };
+					inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * pos, pos, inUvCenter + inUvRadius * uv.x * glm::vec2(uv.y, -uv.z));
 
-					for (u32 k = j + 1; k < i; ++k)
+					if (a < vertexCountPerEdge)
 					{
-						if (oldEdges[k].first != oldEdges[j].first)
-							break;
+						glm::vec3 rpos = 2.0f * glm::dot(pos, reflector) / glm::dot(reflector, reflector) * reflector - pos;
+						if (rpos.x < 0.0f)
+							rpos = -rpos;
 
-						if (oldEdges[k].second != oldEdges[i].second)
-							continue;
+						{
+							glm::vec3 ruv = { glm::pow(1.0f - glm::pow(glm::dot(x, rpos), 0.75f), 0.2f), glm::dot(y, rpos), glm::dot(z, rpos), };
+							inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * rpos, rpos, inUvCenter + inUvRadius * ruv.x * glm::vec2(ruv.y, -ruv.z));
+						}
 
-						edges.AddConstruct(j + indexOffset, k + indexOffset);
-						edges.AddConstruct(j + indexOffset, i + indexOffset);
-						edges.AddConstruct(k + indexOffset, i + indexOffset);
+						if (rpos.x < 0.0001f)
+						{
+							rpos = -rpos;
+							glm::vec3 ruv = { glm::pow(1.0f - glm::pow(glm::dot(-x, rpos), 0.75f), 0.2f), glm::dot(y, rpos), glm::dot(z, rpos), };
+							inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * rpos, rpos, inUvCenter + inUvRadius * ruv.x * glm::vec2(ruv.y, -ruv.z));
+						}
 					}
 				}
 			}
 		}
 
-		std::sort(edges.begin(), edges.end());
+		f32 threshold = 0.995f * glm::dot(inOutResult.Vertices[indexOffset + 1].Normal, inOutResult.Vertices[indexOffset + 1 + vertexCountPerEdge * (2 * vertexCountPerEdge + 1) / 2].Normal);
 
-		u32 hemisphereVertexCount = result.Vertices.GetSize();
-		u32 hemisphereEdgeCount = edges.GetSize();
+		for (u32 a = indexOffset + 2; a < inOutResult.Vertices.GetSize(); ++a)
+			for (u32 b = indexOffset + 1; b < a; ++b)
+			{
+				glm::vec3 normA = inOutResult.Vertices[a].Normal;
+				glm::vec3 normB = inOutResult.Vertices[b].Normal;
 
-		for (u32 i = 0; i < hemisphereEdgeCount; ++i)
-			edges.AddConstruct(edges[i].first + hemisphereVertexCount, edges[i].second + hemisphereVertexCount);
+				if (glm::dot(normA, normB) < threshold)
+					continue;
 
-		for (u32 i = 0; i < hemisphereVertexCount; ++i)
-		{
-			if (result.Vertices[i].Position.x < 1.0e-4f)
-				edges.AddConstruct(i, i + hemisphereVertexCount);
+				for (u32 c = indexOffset; c < b; ++c)
+				{
+					glm::vec3 normC = inOutResult.Vertices[c].Normal;
 
-			result.Vertices[i].Position.x += inHalfHeight;
-			result.Vertices.Add(result.Vertices[i]);
-			result.Vertices[i + hemisphereVertexCount].Position.x = -result.Vertices[i].Position.x;
-			result.Vertices[i + hemisphereVertexCount].Normal.x = -result.Vertices[i].Normal.x;
-		}
+					if (glm::dot(normA, normC) < threshold)
+						continue;
 
-		u32 ringSize = 80;
+					if (glm::dot(normB, normC) < threshold)
+						continue;
 
-		mage::Array<Subset> sideRings{ CreateRing(ringSize, inRadius * right + inHalfHeight * forward, right, forward, true) };
-		
-		u32 sideDivCount = 1 + u32(0.2f * ringSize * inHalfHeight / inRadius);
-		for (u32 i = 1; i <= sideDivCount; ++i)
-		{
-			f32 ringHeight = inHalfHeight * (1.0f - 2.0f * i / sideDivCount);
-		
-			sideRings.Add(CreateRing(ringSize, inRadius * right + ringHeight * forward, right, forward, true));
-			ConnectRings(sideRings[i - 1], sideRings[i]);
-		}
-
-		std::sort(edges.begin(), edges.end());
-		PopulateIndices(result, edges);
-
-		FixWindingOrders(result);
-		return result;
+					if (glm::dot(normA, glm::cross(normC - normA, normB - normA)) > 0.0f)
+						inOutResult.Faces.AddConstruct(a, b, c);
+					else
+						inOutResult.Faces.AddConstruct(a, c, b);
+				}
+			}
 	}
 
-	ModelCreateInfo Model::MakeCone(f32 inRadius, f32 inHeight)
+	void Model::AddCircle(Model::CreateInfo& inOutResult, mage::Transform inTransform, f32 inRadius, glm::vec2 inUvCenter, f32 inUvRadius, u32 inSubdivisions)
 	{
-		ModelCreateInfo result;
+		glm::vec3 x = inTransform.Rotation.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::vec3 y = inTransform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3 z = inTransform.Rotation.Rotate(glm::vec3(0.0f, 0.0f, 1.0f));
 
-		mage::Array<std::pair<u32, u32>> edges;
-		auto AddEdge = [&edges](u32 a, u32 b) { (a < b) ? edges.AddConstruct(a, b) : edges.AddConstruct(b, a); };
-		auto SortEdges = [&edges]() { std::sort(edges.begin(), edges.end()); };
+		u32 vertexCount = 3 << inSubdivisions;
+		u32 indexOffset = inOutResult.Vertices.GetSize();
 
-		using Subset = std::pair<u32, u32>;
-
-		auto CreateRing = [&result, &edges, &AddEdge](u32 count, glm::vec3 base, glm::vec3 normal, glm::vec3 axis) -> Subset
-			{
-				u32 indexOffset = result.Vertices.GetSize();
-
-				for (u32 i = 0; i < count; ++i)
-				{
-					mage::Rotor rotor = mage::Rotor::FromAxisAndAngle(axis, glm::radians(i * (360.0f / count)));
-					glm::vec3 rotatedBase = rotor.Rotate(base);
-					glm::vec3 rotatedNormal = rotor.Rotate(normal);
-
-					result.Vertices.AddConstruct(rotatedBase, rotatedNormal, glm::vec2(0.0f));
-					AddEdge(indexOffset + i, indexOffset + (i + 1) % count);
-				}
-
-				return { indexOffset, count };
-			};
-
-		auto ConnectRings = [&edges, &AddEdge](Subset ringA, Subset ringB)
-			{
-				u32 indexA = 0;
-				u32 indexB = 0;
-				i32 distanceA = 0;
-				i32 distanceB = 0;
-
-				while (indexA < ringA.second && indexB < ringB.second)
-				{
-					if (glm::abs(distanceA + ringB.second - distanceB) <= glm::abs(distanceB + ringA.second - distanceA))
-					{
-						distanceA += ringB.second;
-						indexA++;
-					}
-					else
-					{
-						distanceB += ringA.second;
-						indexB++;
-					}
-
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-
-				while (indexA < ringA.second)
-				{
-					indexA++;
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-
-				while (indexB < ringB.second)
-				{
-					indexB++;
-					AddEdge(ringA.first + indexA % ringA.second, ringB.first + indexB % ringB.second);
-				}
-			};
-
-		mage::Array<std::pair<u32, f32>> ringData
+		for (u32 i = 0; i < vertexCount; ++i)
 		{
-			{ 80, 1.0f },
-			{ 40, 0.9f },
-			{ 20, 0.75f },
-			{ 10, 0.55f },
-			{ 5, 0.3f },
-			{ 1, 0.0f }
-		};
+			glm::vec3 pos = mage::Rotor(x, glm::radians(360.0f * f32(i) / f32(vertexCount))).Rotate(y);
+			glm::vec2 uv = inUvCenter + inUvRadius * glm::vec2{ glm::dot(y, pos), -glm::dot(z, pos) };
 
-		glm::vec3 forward = glm::vec3(1.0f, 0.0f, 0.0f);
-		glm::vec3 right = glm::vec3(0.0f, 1.0f, 0.0f);
-
-		glm::vec3 normal = glm::normalize(forward + inHeight * right);
-
-		mage::Array<Subset> rings{ CreateRing(80, inRadius * right, normal, forward) };
-
-		u32 divCount = 1 + u32(0.5f * ringData[0].first * inHeight / inRadius);
-		for (u32 i = 1; i <= divCount; ++i)
-		{
-			f32 ratio = glm::pow(f32(divCount - i) / divCount, 3.0f);
-			u32 shift = 4 - std::min(4u, divCount - i);
-
-			rings.Add(CreateRing(ringData[0].first >> shift, ratio * inRadius * right + (1.0f - ratio) * inHeight * forward, normal, forward));
-			ConnectRings(rings[i - 1], rings[i]);
+			inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * pos, x, uv);
 		}
 
-		mage::Array<Subset> bottomRings;
-		for (u32 i = 0; i < ringData.GetSize(); ++i)
+		inOutResult.Faces.AddConstruct(indexOffset, indexOffset + (1 << inSubdivisions), indexOffset + (2 << inSubdivisions));
+
+		for (u32 i = 1; i <= inSubdivisions; ++i)
 		{
-			bottomRings.Add(CreateRing(ringData[i].first, ringData[i].second * inRadius * right, -forward, forward));
+			u32 stepSize = 1 << (inSubdivisions - i);
+			u32 stepCount = 3 << i;
+
+			for (u32 j = 2; j < stepCount; j += 2)
+				inOutResult.Faces.AddConstruct(indexOffset + stepSize * (j - 2), indexOffset + stepSize * (j - 1), indexOffset + stepSize * j);
+
+			inOutResult.Faces.AddConstruct(indexOffset, indexOffset + stepSize * (stepCount - 2), indexOffset + stepSize * (stepCount - 1));
+		}
+	}
+
+	void Model::AddCylindricSurface(Model::CreateInfo& inOutResult, mage::Transform inTransform, f32 inRadius, f32 inHalfHeight, glm::vec2 inUvMin, glm::vec2 inUvMax, u32 inRadialVertexCount)
+	{
+		glm::vec3 x = inTransform.Rotation.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::vec3 y = inTransform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
+
+		for (u32 i = 0; i <= inRadialVertexCount; ++i)
+		{
+			glm::vec3 pos = mage::Rotor(x, glm::radians(360.0f * f32(i) / f32(inRadialVertexCount))).Rotate(y);
+			f32 uvX = inUvMax.x - (inUvMax.x - inUvMin.x) * f32(i) / f32(inRadialVertexCount);
 
 			if (i > 0)
-				ConnectRings(bottomRings[i - 1], bottomRings[i]);
+			{
+				u32 indexOffset = inOutResult.Vertices.GetSize();
+				
+				inOutResult.Faces.AddConstruct(indexOffset - 2, indexOffset, indexOffset + 1);
+				inOutResult.Faces.AddConstruct(indexOffset - 2, indexOffset + 1, indexOffset - 1);
+			}
+
+			inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * pos - inHalfHeight * x, pos, glm::vec2(uvX, inUvMax.y));
+			inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * pos + inHalfHeight * x, pos, glm::vec2(uvX, inUvMin.y));
+		}
+	}
+
+	void Model::AddFlatSurface(Model::CreateInfo& inOutResult, mage::Transform inTransform, glm::vec2 inHalfExtent, glm::vec2 inUvMin, glm::vec2 inUvMax)
+	{
+		glm::vec3 normal = inTransform.Rotation.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::vec3 x = inTransform.Rotation.Rotate(glm::vec3(0.0f, inHalfExtent.x, 0.0f));
+		glm::vec3 y = inTransform.Rotation.Rotate(glm::vec3(0.0f, 0.0f, inHalfExtent.y));
+
+		u32 indexOffset = inOutResult.Vertices.GetSize();
+
+		inOutResult.Faces.AddConstruct(indexOffset, indexOffset + 2, indexOffset + 3);
+		inOutResult.Faces.AddConstruct(indexOffset, indexOffset + 3, indexOffset + 1);
+
+		inOutResult.Vertices.AddConstruct(inTransform.Position - x - y, normal, glm::vec2(inUvMin.x, inUvMax.y));
+		inOutResult.Vertices.AddConstruct(inTransform.Position + x - y, normal, glm::vec2(inUvMax.x, inUvMax.y));
+		inOutResult.Vertices.AddConstruct(inTransform.Position - x + y, normal, glm::vec2(inUvMin.x, inUvMin.y));
+		inOutResult.Vertices.AddConstruct(inTransform.Position + x + y, normal, glm::vec2(inUvMax.x, inUvMin.y));
+	}
+
+	void Model::AddConicSurface(Model::CreateInfo& inOutResult, mage::Transform inTransform, f32 inRadius, f32 inHeight, glm::vec2 inUvCenter, f32 inUvRadius, u32 inRadialVertexCount, u32 inLateralVertexCount)
+	{
+		glm::vec3 x = inTransform.Rotation.Rotate(glm::vec3(1.0f, 0.0f, 0.0f));
+		glm::vec3 y = inTransform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3 z = inTransform.Rotation.Rotate(glm::vec3(0.0f, 0.0f, 1.0f));
+
+		for (u32 i = 0; i <= inRadialVertexCount; ++i)
+		{
+			glm::vec3 pos = mage::Rotor(x, glm::radians(360.0f * f32(i) / f32(inRadialVertexCount))).Rotate(y);
+
+			f32 offset = 1.0f;
+
+			for (u32 j = 0; j < inLateralVertexCount; ++j)
+			{
+				if (i > 0 && j > 0)
+				{
+					u32 a = inOutResult.Vertices.GetSize();
+					u32 b = a - 1;
+					u32 c = b - inLateralVertexCount;
+					u32 d = c - 1;
+
+					inOutResult.Faces.AddConstruct(d, b, a);
+					inOutResult.Faces.AddConstruct(d, a, c);
+				}
+
+				glm::vec2 uv = inUvCenter + inUvRadius * offset * glm::vec2{ glm::dot(y, pos), -glm::dot(z, pos) };
+				inOutResult.Vertices.AddConstruct(inTransform.Position + inRadius * offset * pos + inHeight * (1.0f - offset) * x, pos, uv);
+
+				offset *= 0.75f;
+			}
+
+			if (i > 0)
+			{
+				u32 a = inOutResult.Vertices.GetSize();
+				u32 b = a - 1;
+				u32 c = b - 1 - inLateralVertexCount;
+
+				inOutResult.Faces.AddConstruct(a, c, b);
+			}
+			
+			inOutResult.Vertices.AddConstruct(inTransform.Position + inHeight * x, pos, inUvCenter);
+		}
+	}
+
+	void Model::AddInvertedCopy(Model::CreateInfo& inOutResult, glm::vec2 inUvOffset)
+	{
+		u32 vertexCount = inOutResult.Vertices.GetSize();
+		u32 faceCount = inOutResult.Faces.GetSize();
+
+		for (u32 i = 0; i < vertexCount; ++i)
+		{
+			Vertex const& vertex = inOutResult.Vertices[i];
+			inOutResult.Vertices.AddConstruct(-vertex.Position, -vertex.Normal, inUvOffset + glm::vec2(vertex.TextureCoords.x, -vertex.TextureCoords.y));
 		}
 
-		std::sort(edges.begin(), edges.end());
-		PopulateIndices(result, edges);
-
-		FixWindingOrders(result);
-		return result;
+		for (u32 i = 0; i < faceCount; ++i)
+		{
+			Triangle const& face = inOutResult.Faces[i];
+			inOutResult.Faces.AddConstruct(vertexCount + face.Index[0], vertexCount + face.Index[2], vertexCount + face.Index[1]);
+		}
 	}
 
 	void Model::CreateVertexBuffer(Renderer const& inRenderer, mage::Array<Vertex> const& inVertices)
@@ -711,13 +468,13 @@ namespace Vulkan
 			});
 	}
 
-	void Model::CreateIndexBuffer(Renderer const& inRenderer, mage::Array<u32> const& inIndices)
+	void Model::CreateIndexBuffer(Renderer const& inRenderer, mage::Array<Triangle> const& inFaces)
 	{
-		mIndexCount = inIndices.GetSize();
+		mIndexCount = 3 * inFaces.GetSize();
 		if (mIndexCount == 0)
 			return;
 
-		mage_ensure(mIndexCount >= 3);
+		mage_ensure(mIndexCount);
 
 		vk::DeviceSize dataSize = mIndexCount * sizeof(u32);
 
@@ -731,7 +488,7 @@ namespace Vulkan
 		Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
 
 		stagingBuffer.Map();
-		stagingBuffer.Write(inIndices.GetData(), dataSize);
+		stagingBuffer.Write(inFaces.GetData(), dataSize);
 
 		BufferCreateInfo indexBufferCreateInfo
 		{
@@ -746,50 +503,5 @@ namespace Vulkan
 			{
 				mIndexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 			});
-	}
-
-	void Model::PopulateIndices(ModelCreateInfo& inModelInfo, mage::Array<std::pair<u32, u32>> const& inSortedEdges)
-	{
-		for (u32 i = 0; i < inSortedEdges.GetSize(); ++i)
-			for (u32 j = i + 1; j < inSortedEdges.GetSize(); ++j)
-			{
-				if (inSortedEdges[i].first != inSortedEdges[j].first)
-					continue;
-
-				if (!std::binary_search(inSortedEdges.begin(), inSortedEdges.end(), std::make_pair(inSortedEdges[i].second, inSortedEdges[j].second)))
-					continue;
-
-				inModelInfo.Indices.Add(inSortedEdges[i].first);
-				inModelInfo.Indices.Add(inSortedEdges[i].second);
-				inModelInfo.Indices.Add(inSortedEdges[j].second);
-			}
-	}
-
-	void Model::FixWindingOrders(ModelCreateInfo& inModelInfo)
-	{
-		if (inModelInfo.Indices.GetSize() > 0)
-		{
-			for (u32 i = 0; i < inModelInfo.Indices.GetSize(); i += 3)
-			{
-				Vertex& a = inModelInfo.Vertices[inModelInfo.Indices[i]];
-				Vertex& b = inModelInfo.Vertices[inModelInfo.Indices[i + 1]];
-				Vertex& c = inModelInfo.Vertices[inModelInfo.Indices[i + 2]];
-
-				if (glm::dot(a.Normal, glm::cross(b.Position - a.Position, c.Position - a.Position)) > 0.0f)
-					std::swap(inModelInfo.Indices[i + 1], inModelInfo.Indices[i + 2]);
-			}
-		}
-		else
-		{
-			for (u32 i = 0; i < inModelInfo.Vertices.GetSize(); i += 3)
-			{
-				Vertex& a = inModelInfo.Vertices[i];
-				Vertex& b = inModelInfo.Vertices[i + 1];
-				Vertex& c = inModelInfo.Vertices[i + 2];
-
-				if (glm::dot(a.Normal, glm::cross(b.Position - a.Position, c.Position - a.Position)) > 0.0f)
-					std::swap(inModelInfo.Vertices[i + 1], inModelInfo.Vertices[i + 2]);
-			}
-		}
 	}
 }

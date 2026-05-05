@@ -32,7 +32,6 @@ private:
 	physx::PxPhysics* mPhysics = nullptr;
 	physx::PxDefaultCpuDispatcher* mDispatcher = nullptr;
 	physx::PxScene* mScene = nullptr;
-	physx::PxPvd* mPvd = nullptr;
 };
 
 struct PhysicsSystemMaterial : public NonCopyableStruct

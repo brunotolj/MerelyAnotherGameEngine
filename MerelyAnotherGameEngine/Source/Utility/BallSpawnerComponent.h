@@ -13,7 +13,7 @@ struct ComponentTemplate<class BallSpawnerComponent>
 {
 	PhysicsRigidBodyParams RigidBodyParams;
 	std::shared_ptr<Vulkan::Model> Model = nullptr;
-	glm::vec3 Color = glm::vec3(1.0f);
+	u32 TextureIndex = 0;
 	f32 Speed = 10.0f;
 	i32 InputSpawn = 70; // #FixMe: GLFW_KEY_F
 };
@@ -31,7 +31,7 @@ protected:
 private:
 	PhysicsRigidBodyParams mRigidBodyParams;
 	std::shared_ptr<Vulkan::Model> mModel;
-	glm::vec3 mColor;
+	u32 mTextureIndex;
 	f32 mSpeed;
 	i32 mInputSpawn;
 

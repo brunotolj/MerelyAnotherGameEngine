@@ -12,8 +12,7 @@ template<>
 struct ComponentTemplate<class StaticMeshObjectComponent>
 {
 	std::shared_ptr<Vulkan::Model> Model = nullptr;
-
-	glm::vec3 Color = glm::vec3(1.0f);
+	u32 TextureIndex = 0;
 };
 
 class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject>
@@ -25,10 +24,9 @@ public:
 
 	mage::Transform const& GetTransform() const { return mOwner.Transform; }
 
-	glm::vec3 GetColor() const { return mColor; }
+	u32 GetTextureIndex() const { return mTextureIndex; }
 
 private:
 	std::shared_ptr<Vulkan::Model> mModel;
-
-	glm::vec3 mColor;
+	u32 mTextureIndex;
 };

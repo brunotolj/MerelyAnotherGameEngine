@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <initializer_list>
 #include <malloc.h>
@@ -311,6 +312,11 @@ namespace mage
 			return Find(std::move(inPredicate)) != nullptr;
 		}
 
+		void Sort()
+		{
+			std::sort(begin(), end());
+		}
+
 		T* begin() const { return mElements; }
 		T* end() const { return mElements + mSize; }
 
@@ -345,7 +351,7 @@ namespace mage
 			}
 		}
 
-		void InitFrom_Copy(const T* inFirst, u32 inSize)
+		void InitFrom_Copy(T const* inFirst, u32 inSize)
 		{
 			Empty();
 			Reserve(inSize);

@@ -11,16 +11,10 @@ namespace mage
 	class StringView
 	{
 	public:
-		constexpr StringView(const cstr inCstr)
+		constexpr StringView(cstr inCstr)
 		{
 			mData = inCstr;
 			mLength = CalcLength(inCstr);
-		}
-
-		StringView(const String& inString)
-		{
-			mData = inString.GetData();
-			mLength = inString.GetSize();
 		}
 
 		cstr GetCString() const { return mData; }

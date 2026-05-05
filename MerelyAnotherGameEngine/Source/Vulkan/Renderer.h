@@ -15,7 +15,6 @@ namespace Vulkan
 	struct BufferCreateInfo;
 	struct ImageCreateInfo;
 	struct PipelineCreateInfo;
-	struct TextureCreateInfo;
 
 	struct RenderFrameData
 	{

@@ -89,7 +89,6 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 	{
 		PushConstantData push;
 		push.Transform = meshData.Transform;
-		push.Color = glm::vec4(meshData.Color, 1.0f);
 
 		mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.GetSize());
 
@@ -145,8 +144,8 @@ Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& 
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
-		.BindingDescriptions = Vulkan::Vertex::GetBindingDescriptions(),
-		.AttributeDescriptions = Vulkan::Vertex::GetAttributeDescriptions(),
+		.BindingDescriptions = Vulkan::Model::Vertex::GetBindingDescriptions(),
+		.AttributeDescriptions = Vulkan::Model::Vertex::GetAttributeDescriptions(),
 		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleList },
 		.DescriptorSetLayouts { layoutInfo0, layoutInfo1 },
 		.DescriptorPoolSizes

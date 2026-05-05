@@ -101,7 +101,7 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 {
 	SceneRenderData sceneData;
 
-	sceneData.LightDirection = glm::vec3(3.0f, 2.0f, -2.5f);
+	sceneData.LightDirection = glm::vec3(-3.0f, 2.0f, -2.5f);
 	sceneData.AmbientLightIntensity = 0.05f;
 
 	bool foundCamera = false;
@@ -111,8 +111,7 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 		{
 			sceneData.Meshes.emplace_back(staticMeshComp->GetModel().get(),
 				staticMeshComp->GetTransform().Matrix(),
-				staticMeshComp->GetColor(),
-				0);
+				staticMeshComp->GetTextureIndex());
 		}
 
 		if (!foundCamera)

@@ -8,23 +8,23 @@ namespace Vulkan
 {
 	class Renderer;
 
-	struct TextureCreateInfo
-	{
-		mage::Array<u8> Data;
-		vk::Extent3D Size;
-	};
-
 	class Texture : public NonMovableClass
 	{
 	public:
-		Texture(Renderer const& inRenderer, TextureCreateInfo const& inCreateInfo);
+		struct CreateInfo
+		{
+			mage::Array<u8> Data;
+			vk::Extent3D Size;
+		};
+
+		Texture(Renderer const& inRenderer, CreateInfo const& inCreateInfo);
 
 		vk::DescriptorImageInfo GetDescriptorInfo() const;
 
-		static TextureCreateInfo LoadFromFile(mage::StringView inPath);
+		static CreateInfo LoadFromFile(mage::StringView inPath);
 
 	private:
-		void CreateImage(Renderer const& inRenderer, TextureCreateInfo const& inData);
+		void CreateImage(Renderer const& inRenderer, CreateInfo const& inData);
 
 		Image mImage = nullptr;
 

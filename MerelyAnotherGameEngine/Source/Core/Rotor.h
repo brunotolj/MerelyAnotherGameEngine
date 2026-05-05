@@ -1,55 +1,58 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-
-#include <cmath>
+#include <glm/glm.hpp>
 
 namespace mage
 {
 	struct Rotor
 	{
+		Rotor() : S(1.0f), XY(0.0f), YZ(0.0f), ZX(0.0f) {};
+
+		Rotor(glm::vec3 inAxis, f32 inAngleRad)
+		{
+			f32 invSqrt = 1.0f / glm::sqrt(inAxis.x * inAxis.x + inAxis.y * inAxis.y + inAxis.z * inAxis.z);
+			f32 halfAngle = 0.5f * inAngleRad;
+			f32 sine = glm::sin(halfAngle);
+			f32 factor = invSqrt * sine;
+
+			S = glm::cos(halfAngle);
+			XY = factor * inAxis.z;
+			YZ = factor * inAxis.x;
+			ZX = factor * inAxis.y;
+		}
+
 		glm::vec3 Rotate(glm::vec3 inVector) const
 		{
-			const f32 x = S * inVector.x + XY * inVector.y - ZX * inVector.z;
-			const f32 y = S * inVector.y + YZ * inVector.z - XY * inVector.x;
-			const f32 z = S * inVector.z + ZX * inVector.x - YZ * inVector.y;
-			const f32 xyz = XY * inVector.z + YZ * inVector.x + ZX * inVector.y;
+			f32 x = S * inVector.x + XY * inVector.y - ZX * inVector.z;
+			f32 y = S * inVector.y + YZ * inVector.z - XY * inVector.x;
+			f32 z = S * inVector.z + ZX * inVector.x - YZ * inVector.y;
+			f32 xyz = XY * inVector.z + YZ * inVector.x + ZX * inVector.y;
 
 			return
 			{
-				x * S + y * XY + xyz * YZ - z * ZX,
-				y * S - x * XY + z * YZ + xyz * ZX,
-				z * S + xyz * XY - y * YZ + x * ZX
+				x * S + xyz * YZ + y * XY - z * ZX,
+				y * S + xyz * ZX + z * YZ - x * XY,
+				z * S + xyz * XY + x * ZX - y * YZ
 			};
 		}
 
-		static Rotor Identity()
+		static Rotor Invert(Rotor inRotor)
 		{
-			return { 1.0f, 0.0f, 0.0f, 0.0f };
-		}
-
-		static Rotor FromAxisAndAngle(glm::vec3 inAxis, f32 inAngleRad)
-		{
-			const f32 invSqrt = 1.0f / std::sqrtf(inAxis.x * inAxis.x + inAxis.y * inAxis.y + inAxis.z * inAxis.z);
-			const f32 halfAngle = 0.5f * inAngleRad;
-			const f32 sine = std::sinf(halfAngle);
-			const f32 factor = invSqrt * sine;
-
 			Rotor result;
-			result.S = std::cosf(halfAngle);
-			result.XY = factor * inAxis.z;
-			result.YZ = factor * inAxis.x;
-			result.ZX = factor * inAxis.y;
+			result.S = inRotor.S;
+			result.XY = -inRotor.XY;
+			result.YZ = -inRotor.YZ;
+			result.ZX = -inRotor.ZX;
 			return result;
 		}
 
-		static Rotor Combine(Rotor lhs, Rotor rhs)
+		static Rotor Combine(Rotor inLhs, Rotor inRhs)
 		{
 			Rotor result;
-			result.S = lhs.S * rhs.S - lhs.XY * rhs.XY - lhs.YZ * rhs.YZ - lhs.ZX * rhs.ZX;
-			result.XY = lhs.S * rhs.XY + lhs.XY * rhs.S - lhs.YZ * rhs.ZX + lhs.ZX * rhs.YZ;
-			result.YZ = lhs.S * rhs.YZ + lhs.XY * rhs.ZX + lhs.YZ * rhs.S - lhs.ZX * rhs.XY;
-			result.ZX = lhs.S * rhs.ZX - lhs.XY * rhs.YZ + lhs.YZ * rhs.XY + lhs.ZX * rhs.S;
+			result.S = inLhs.S * inRhs.S - inLhs.XY * inRhs.XY - inLhs.YZ * inRhs.YZ - inLhs.ZX * inRhs.ZX;
+			result.XY = inLhs.S * inRhs.XY + inLhs.XY * inRhs.S - inLhs.YZ * inRhs.ZX + inLhs.ZX * inRhs.YZ;
+			result.YZ = inLhs.S * inRhs.YZ + inLhs.XY * inRhs.ZX + inLhs.YZ * inRhs.S - inLhs.ZX * inRhs.XY;
+			result.ZX = inLhs.S * inRhs.ZX - inLhs.XY * inRhs.YZ + inLhs.YZ * inRhs.XY + inLhs.ZX * inRhs.S;
 			return result;
 		}
 
@@ -58,4 +61,14 @@ namespace mage
 		f32 YZ;
 		f32 ZX;
 	};
+
+	inline Rotor operator-(Rotor inRotor)
+	{
+		return Rotor::Invert(inRotor);
+	}
+
+	inline Rotor operator*(Rotor inLhs, Rotor inRhs)
+	{
+		return Rotor::Combine(inLhs, inRhs);
+	}
 }

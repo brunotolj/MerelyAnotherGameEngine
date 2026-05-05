@@ -21,7 +21,6 @@ struct MeshRenderData
 {
 	const Vulkan::Model* Mesh;
 	glm::mat4 Transform;
-	glm::vec3 Color;
 	u32 TextureIndex;
 };
 
@@ -41,7 +40,6 @@ class MeshRenderSystem : public NonCopyableClass
 	struct PushConstantData
 	{
 		alignas(16) glm::mat4 Transform{ 1.0f };
-		alignas(16) glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 0.0f };
 	};
 
 public:

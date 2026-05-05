@@ -30,8 +30,8 @@ void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
 	mCursorMovement = glm::dvec2(0.0f);
 
 	mOwner.Transform.Rotation = mage::Rotor::Combine(
-		mage::Rotor::FromAxisAndAngle({ 0.0f, 0.0f, 1.0f }, mRotation.x),
-		mage::Rotor::FromAxisAndAngle({ 1.0f, 0.0f, 0.0f }, mRotation.y));
+		mage::Rotor({ 0.0f, 0.0f, 1.0f }, mRotation.x),
+		mage::Rotor({ 1.0f, 0.0f, 0.0f }, mRotation.y));
 
 	if (inputSystem.GetKeyState(GLFW_KEY_D) == GLFW_PRESS) movement.x += 1.0f;
 	if (inputSystem.GetKeyState(GLFW_KEY_A) == GLFW_PRESS) movement.x -= 1.0f;
