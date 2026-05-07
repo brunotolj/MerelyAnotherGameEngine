@@ -14,20 +14,13 @@ namespace Vulkan
 {
 	using SpirVBinary = mage::Array<u32>;
 
-	struct DescriptorSetLayoutInfo
-	{
-		mage::Array<vk::DescriptorSetLayoutBinding> Bindings;
-		u32 Count = 1;
-	};
-
 	struct PipelineCreateInfo
 	{
 		SpirVBinary ShaderCode;
 		mage::Array<vk::VertexInputBindingDescription> BindingDescriptions;
 		mage::Array<vk::VertexInputAttributeDescription> AttributeDescriptions;
 		vk::PipelineInputAssemblyStateCreateInfo InputAssemblyInfo;
-		mage::Array<DescriptorSetLayoutInfo> DescriptorSetLayouts;
-		mage::Array<vk::DescriptorPoolSize> DescriptorPoolSizes;
+		mage::Array<vk::DescriptorSetLayoutBinding> DescriptorSetLayout;
 		mage::Array<vk::PushConstantRange> PushConstantRanges;
 	};
 
@@ -40,18 +33,13 @@ namespace Vulkan
 		Pipeline& operator=(Pipeline&& inPipeline);
 
 		void Bind(vk::CommandBuffer inCommandBuffer) const;
-		void BindDescriptorSet(vk::CommandBuffer inCommandBuffer, vk::BindDescriptorSetsInfo inBindInfo, u32 inDescriptorSetIndex) const;
 		void PushConstants(vk::CommandBuffer inCommandBuffer, vk::PushConstantsInfo inPushInfo) const;
-
-		void UpdateDescriptorSet(vk::WriteDescriptorSet inWrite, u32 inDescriptorSetIndex) const;
+		void PushDescriptorSet(vk::CommandBuffer inCommandBuffer, vk::PushDescriptorSetInfo inPushInfo) const;
 
 	private:
 		Pipeline() {}
 
-		mage::Array<vk::raii::DescriptorSetLayout> mDescriptorSetLayouts;
-		vk::raii::DescriptorPool mDescriptorPool = nullptr;
-		mage::Array<vk::raii::DescriptorSet> mDescriptorSets;
-
+		vk::raii::DescriptorSetLayout mDescriptorSetLayout = nullptr;
 		vk::raii::PipelineLayout mPipelineLayout = nullptr;
 		vk::raii::Pipeline mVkPipeline = nullptr;
 	};

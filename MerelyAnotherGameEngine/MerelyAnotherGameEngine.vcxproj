@@ -69,7 +69,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
     </ClCompile>
@@ -97,7 +97,7 @@
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
     </ClCompile>
@@ -125,7 +125,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
     </ClCompile>
@@ -144,6 +144,11 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\_PCH.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Test|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Source\Game\CameraComponent.cpp" />
     <ClCompile Include="Source\Game\GameObject.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />

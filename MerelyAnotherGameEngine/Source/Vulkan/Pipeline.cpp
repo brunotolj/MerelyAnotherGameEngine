@@ -7,9 +7,7 @@ namespace Vulkan
 {
 	Pipeline& Pipeline::operator=(Pipeline&& inPipeline)
 	{
-		mDescriptorSetLayouts = std::move(inPipeline.mDescriptorSetLayouts);
-		mDescriptorPool = std::move(inPipeline.mDescriptorPool);
-		mDescriptorSets = std::move(inPipeline.mDescriptorSets);
+		mDescriptorSetLayout = std::move(inPipeline.mDescriptorSetLayout);
 		mPipelineLayout = std::move(inPipeline.mPipelineLayout);
 		mVkPipeline = std::move(inPipeline.mVkPipeline);
 
@@ -21,24 +19,16 @@ namespace Vulkan
 		inCommandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, mVkPipeline);
     }
 
-	void Pipeline::BindDescriptorSet(vk::CommandBuffer inCommandBuffer, vk::BindDescriptorSetsInfo inBindInfo, u32 inDescriptorIndex) const
-	{
-		inBindInfo.layout = mPipelineLayout;
-		inBindInfo.descriptorSetCount = 1;
-		inBindInfo.pDescriptorSets = &*mDescriptorSets[inDescriptorIndex];
-		inCommandBuffer.bindDescriptorSets2(inBindInfo);
-	}
-
 	void Pipeline::PushConstants(vk::CommandBuffer inCommandBuffer, vk::PushConstantsInfo inPushInfo) const
 	{
 		inPushInfo.layout = mPipelineLayout;
 		inCommandBuffer.pushConstants2(inPushInfo);
 	}
 
-	void Pipeline::UpdateDescriptorSet(vk::WriteDescriptorSet inWrite, u32 inDescriptorSetIndex) const
+	void Pipeline::PushDescriptorSet(vk::CommandBuffer inCommandBuffer, vk::PushDescriptorSetInfo inPushInfo) const
 	{
-		inWrite.dstSet = mDescriptorSets[inDescriptorSetIndex];
-		mVkPipeline.getDevice().updateDescriptorSets(inWrite, {});
+		inPushInfo.layout = mPipelineLayout;
+		inCommandBuffer.pushDescriptorSet2(inPushInfo);
 	}
 
 	ShaderCompiler::ShaderCompiler()

@@ -242,58 +242,22 @@ namespace Vulkan
 
 		mage_check(inPipelineCreateInfo.ShaderCode.GetSize());
 
-		for (DescriptorSetLayoutInfo const& layout : inPipelineCreateInfo.DescriptorSetLayouts)
 		{
 			vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo
 			{
-				.bindingCount = layout.Bindings.GetSize(),
-				.pBindings = layout.Bindings.GetData()
+				.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptor,
+				.bindingCount = inPipelineCreateInfo.DescriptorSetLayout.GetSize(),
+				.pBindings = inPipelineCreateInfo.DescriptorSetLayout.GetData()
 			};
 
-			result.mDescriptorSetLayouts.Add(mDevice.createDescriptorSetLayout(descriptorSetLayoutCreateInfo));
-		}
-
-		u32 descriptorSetCount = 0;
-		for (vk::DescriptorPoolSize const& poolSize : inPipelineCreateInfo.DescriptorPoolSizes)
-			descriptorSetCount += poolSize.descriptorCount;
-
-		vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo
-		{
-			.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
-			.maxSets = descriptorSetCount,
-			.poolSizeCount = inPipelineCreateInfo.DescriptorPoolSizes.GetSize(),
-			.pPoolSizes = inPipelineCreateInfo.DescriptorPoolSizes.GetData()
-		};
-
-		result.mDescriptorPool = mDevice.createDescriptorPool(descriptorPoolCreateInfo);
-
-		{
-			mage::Array<vk::DescriptorSetLayout> layouts;
-			layouts.Reserve(descriptorSetCount);
-
-			for (u32 i = 0; i < inPipelineCreateInfo.DescriptorSetLayouts.GetSize(); ++i)
-				for (u32 j = 0; j < inPipelineCreateInfo.DescriptorSetLayouts[i].Count; ++j)
-					layouts.Add(result.mDescriptorSetLayouts[i]);
-
-			vk::DescriptorSetAllocateInfo descriptorSetAllocInfo
-			{
-				.descriptorPool = result.mDescriptorPool,
-				.descriptorSetCount = layouts.GetSize(),
-				.pSetLayouts = layouts.GetData()
-			};
-
-			result.mDescriptorSets = mDevice.allocateDescriptorSets(descriptorSetAllocInfo);
+			result.mDescriptorSetLayout = mDevice.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 		}
 
 		{
-			mage::Array<vk::DescriptorSetLayout> layouts(result.mDescriptorSetLayouts.GetSize());
-			for (u32 i = 0; i < layouts.GetSize(); ++i)
-				layouts[i] = result.mDescriptorSetLayouts[i];
-
 			vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo
 			{
-				.setLayoutCount = layouts.GetSize(),
-				.pSetLayouts = layouts.GetData(),
+				.setLayoutCount = 1,
+				.pSetLayouts = &*result.mDescriptorSetLayout,
 				.pushConstantRangeCount = inPipelineCreateInfo.PushConstantRanges.GetSize(),
 				.pPushConstantRanges = inPipelineCreateInfo.PushConstantRanges.GetData()
 			};
@@ -563,6 +527,7 @@ namespace Vulkan
 				auto features = inDevice.getFeatures2<
 					vk::PhysicalDeviceFeatures2,
 					vk::PhysicalDeviceVulkan13Features,
+					vk::PhysicalDeviceVulkan14Features,
 					vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
 					vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR>();
 
@@ -576,6 +541,11 @@ namespace Vulkan
 					auto& f = features.get<vk::PhysicalDeviceVulkan13Features>();
 					if (!f.synchronization2) return 0;
 					if (!f.dynamicRendering) return 0;
+				}
+
+				{
+					auto& f = features.get<vk::PhysicalDeviceVulkan14Features>();
+					if (!f.pushDescriptor) return 0;
 				}
 
 				{
@@ -616,6 +586,7 @@ namespace Vulkan
 		using FeatureChain = vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
 			vk::PhysicalDeviceVulkan13Features,
+			vk::PhysicalDeviceVulkan14Features,
 			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
 			vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR>;
 
@@ -628,6 +599,9 @@ namespace Vulkan
 			{
 				.synchronization2 = true,
 				.dynamicRendering = true
+			},
+			{
+				.pushDescriptor = true
 			},
 			{
 				.extendedDynamicState = true

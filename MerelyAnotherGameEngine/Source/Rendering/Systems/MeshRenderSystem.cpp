@@ -26,42 +26,6 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::Sha
 	mTextures.Reserve(textureCount);
 	for (u32 i = 0; i < textureCount; ++i)
 		mTextures.AddConstruct(mRenderer, Vulkan::Texture::LoadFromFile(texturePaths[i]));
-
-	for (u32 i = 0; i < uniformBufferCount; ++i)
-	{
-		vk::DescriptorBufferInfo bufferInfo = mUniformBuffers[i].GetDescriptorInfo();
-
-		vk::WriteDescriptorSet descriptorWrite
-		{
-			.dstBinding = 0,
-			.dstArrayElement = 0,
-			.descriptorCount = 1,
-			.descriptorType = vk::DescriptorType::eUniformBuffer,
-			.pBufferInfo = &bufferInfo
-		};
-
-		mPipeline.UpdateDescriptorSet(descriptorWrite, i);
-	}
-
-	for (u32 i = 0; i < textureCount; ++i)
-	{
-		vk::DescriptorImageInfo imageInfo = mTextures[i].GetDescriptorInfo();
-
-		vk::WriteDescriptorSet descriptorWrite
-		{
-			.dstBinding = 0,
-			.dstArrayElement = 0,
-			.descriptorCount = 1,
-			.descriptorType = vk::DescriptorType::eCombinedImageSampler,
-			.pImageInfo = &imageInfo
-		};
-
-		mPipeline.UpdateDescriptorSet(descriptorWrite, uniformBufferCount + i);
-	}
-}
-
-MeshRenderSystem::~MeshRenderSystem()
-{
 }
 
 void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data)
@@ -77,38 +41,57 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 	uniformBuffer.Write(&ubo, sizeof(ubo));
 	uniformBuffer.Flush();
 
-	vk::BindDescriptorSetsInfo bindInfo
-	{
-		.stageFlags = vk::ShaderStageFlagBits::eVertex,
-		.firstSet = 0
-	};
-
-	mPipeline.BindDescriptorSet(frameData.CommandBuffer, bindInfo, frameData.Index);
-
 	for (const MeshRenderData& meshData : data.Meshes)
 	{
-		PushConstantData push;
-		push.Transform = meshData.Transform;
-
-		mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.GetSize());
-
-		vk::BindDescriptorSetsInfo bindInfo
 		{
-			.stageFlags = vk::ShaderStageFlagBits::eFragment,
-			.firstSet = 1
-		};
+			PushConstantData push;
+			push.Transform = meshData.Transform;
 
-		mPipeline.BindDescriptorSet(frameData.CommandBuffer, bindInfo, mRenderer.cMaxFramesInFlight + meshData.TextureIndex);
+			vk::PushConstantsInfo pushInfo
+			{
+				.stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+				.offset = 0,
+				.size = sizeof(PushConstantData),
+				.pValues = &push
+			};
 
-		vk::PushConstantsInfo pushInfo
+			mPipeline.PushConstants(frameData.CommandBuffer, pushInfo);
+		}
+
 		{
-			.stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-			.offset = 0,
-			.size = sizeof(PushConstantData),
-			.pValues = &push
-		};
+			mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.GetSize());
 
-		mPipeline.PushConstants(frameData.CommandBuffer, pushInfo);
+			vk::DescriptorBufferInfo bufferInfo = uniformBuffer.GetDescriptorInfo();
+			vk::DescriptorImageInfo imageInfo = mTextures[meshData.TextureIndex].GetDescriptorInfo();
+
+			mage::Array<vk::WriteDescriptorSet> descriptorWrites
+			{
+				{
+					.dstBinding = 0,
+					.dstArrayElement = 0,
+					.descriptorCount = 1,
+					.descriptorType = vk::DescriptorType::eUniformBuffer,
+					.pBufferInfo = &bufferInfo
+				},
+				{
+					.dstBinding = 1,
+					.dstArrayElement = 0,
+					.descriptorCount = 1,
+					.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+					.pImageInfo = &imageInfo
+				}
+			};
+
+			vk::PushDescriptorSetInfo pushInfo
+			{
+				.stageFlags = vk::ShaderStageFlagBits::eFragment,
+				.set = 0,
+				.descriptorWriteCount = descriptorWrites.GetSize(),
+				.pDescriptorWrites = descriptorWrites.GetData()
+			};
+
+			mPipeline.PushDescriptorSet(frameData.CommandBuffer, pushInfo);
+		}
 
 		meshData.Mesh->Bind(frameData.CommandBuffer);
 		meshData.Mesh->Draw(frameData.CommandBuffer);
@@ -117,41 +100,26 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 
 Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount)
 {
-	Vulkan::DescriptorSetLayoutInfo layoutInfo0
-	{
-		.Bindings
-		{{
-				.binding = 0,
-				.descriptorType = vk::DescriptorType::eUniformBuffer,
-				.descriptorCount = 1,
-				.stageFlags = vk::ShaderStageFlagBits::eVertex
-		}},
-		.Count = mRenderer.cMaxFramesInFlight
-	};
-
-	Vulkan::DescriptorSetLayoutInfo layoutInfo1
-	{
-		.Bindings
-		{{
-				.binding = 0,
-				.descriptorType = vk::DescriptorType::eCombinedImageSampler,
-				.descriptorCount = 1,
-				.stageFlags = vk::ShaderStageFlagBits::eFragment
-		}},
-		.Count = inTextureCount
-	};
-
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
 		.BindingDescriptions = Vulkan::Model::Vertex::GetBindingDescriptions(),
 		.AttributeDescriptions = Vulkan::Model::Vertex::GetAttributeDescriptions(),
 		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleList },
-		.DescriptorSetLayouts { layoutInfo0, layoutInfo1 },
-		.DescriptorPoolSizes
+		.DescriptorSetLayout
 		{
-			{ .type = vk::DescriptorType::eUniformBuffer, .descriptorCount = mRenderer.cMaxFramesInFlight },
-			{ .type = vk::DescriptorType::eCombinedImageSampler, .descriptorCount = inTextureCount }
+			{
+				.binding = 0,
+				.descriptorType = vk::DescriptorType::eUniformBuffer,
+				.descriptorCount = 1,
+				.stageFlags = vk::ShaderStageFlagBits::eVertex
+			},
+			{
+				.binding = 1,
+				.descriptorType = vk::DescriptorType::eCombinedImageSampler,
+				.descriptorCount = 1,
+				.stageFlags = vk::ShaderStageFlagBits::eFragment
+			}
 		},
 		.PushConstantRanges
 		{{

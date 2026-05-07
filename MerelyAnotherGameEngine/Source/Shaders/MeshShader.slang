@@ -28,7 +28,7 @@ struct UniformBuffer
 
 [[vk::binding(0, 0)]] ConstantBuffer<UniformBuffer> ubo;
 
-[[vk::binding(0, 1)]] Sampler2D texture;
+[[vk::binding(1, 0)]] Sampler2D texture;
 
 [shader("vertex")]
 VSOutput vertMain(VSInput input)

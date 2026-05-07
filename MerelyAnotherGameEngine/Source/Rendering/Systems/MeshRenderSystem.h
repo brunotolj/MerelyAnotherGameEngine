@@ -44,7 +44,6 @@ class MeshRenderSystem : public NonCopyableClass
 
 public:
 	MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths);
-	~MeshRenderSystem();
 
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data);
 

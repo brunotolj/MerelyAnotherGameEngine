@@ -34,7 +34,6 @@ class SpriteRenderSystem : public NonCopyableClass
 
 public:
 	SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths);
-	~SpriteRenderSystem();
 
 	void RenderSprites(Vulkan::RenderFrameData const& frameData, const std::vector<SpriteRenderData>& data);
 
