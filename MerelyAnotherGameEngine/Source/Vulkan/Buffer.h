@@ -27,7 +27,7 @@ namespace Vulkan
 		void Write(void* inData, vk::DeviceSize inSize) const;
 		void Flush() const;
 
-		vk::DescriptorBufferInfo GetDescriptorInfo() const;
+		vk::DeviceAddress GetDeviceAddress() const;
 
 		void CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const;
 		void BindVertexBuffer(vk::CommandBuffer inCommandBuffer) const;
@@ -39,5 +39,6 @@ namespace Vulkan
 
 		void* mMappedMemory = nullptr;
 		vk::DeviceSize mBufferSize = 0;
+		vk::DeviceAddress mDeviceAddress = 0;
 	};
 }

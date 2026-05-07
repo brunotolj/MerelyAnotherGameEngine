@@ -41,6 +41,8 @@ namespace Vulkan
 		Image CreateImage(ImageCreateInfo const& inImageCreateInfo) const;
 		vk::raii::Sampler CreateImageSampler(vk::SamplerCreateInfo inSamplerCreateInfo) const;
 
+		void CopyMemoryToImage(void* inSrcMemory, Image& inDstImage, vk::ImageLayout inImageLayout) const;
+
 		mage::Array<cstr> GetRequiredDeviceExtensions() const;
 
 		u32 SelectMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) const;

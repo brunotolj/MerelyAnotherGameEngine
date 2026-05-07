@@ -390,7 +390,7 @@ namespace Vulkan
 		vk::BufferCreateInfo bufferCreateInfo
 		{
 			.size = inBufferCreateInfo.Size,
-			.usage = inBufferCreateInfo.UsageFlags,
+			.usage = inBufferCreateInfo.UsageFlags | vk::BufferUsageFlagBits::eShaderDeviceAddress,
 			.sharingMode = vk::SharingMode::eExclusive
 		};
 
@@ -399,15 +399,20 @@ namespace Vulkan
 
 		vk::MemoryRequirements memRequirements = result.mVkBuffer.getMemoryRequirements();
 		u32 memoryTypeIndex = SelectMemoryType(memRequirements.memoryTypeBits, inBufferCreateInfo.MemoryFlags);
-			
+		
+		vk::MemoryAllocateFlagsInfo memoryAllocFlagsInfo{ .flags = vk::MemoryAllocateFlagBits::eDeviceAddress };
+
 		vk::MemoryAllocateInfo memoryAllocInfo
 		{
+			.pNext = memoryAllocFlagsInfo,
 			.allocationSize = memRequirements.size,
 			.memoryTypeIndex = memoryTypeIndex
 		};
 
 		result.mDeviceMemory = mDevice.allocateMemory(memoryAllocInfo);
 		result.mVkBuffer.bindMemory(result.mDeviceMemory, 0);
+
+		result.mDeviceAddress = mDevice.getBufferAddress({ .buffer = result.mVkBuffer });
 
 		return result;
 	}
@@ -469,6 +474,50 @@ namespace Vulkan
 		return mDevice.createSampler(inSamplerCreateInfo);
 	}
 
+	void Renderer::CopyMemoryToImage(void* inSrcMemory, Image& inDstImage, vk::ImageLayout inImageLayout) const
+	{
+		vk::HostImageLayoutTransitionInfo layoutTransitionInfo
+		{
+			.image = inDstImage.mVkImage,
+			.oldLayout = vk::ImageLayout::eUndefined,
+			.newLayout = inImageLayout,
+			.subresourceRange
+			{
+				   .aspectMask = inDstImage.mAspectMask,
+				   .baseMipLevel = 0,
+				   .levelCount = 1,
+				   .baseArrayLayer = 0,
+				   .layerCount = 1
+			}
+		};
+
+		mDevice.transitionImageLayout(layoutTransitionInfo);
+		inDstImage.mImageLayout = inImageLayout;
+
+		vk::MemoryToImageCopy copy
+		{
+			.pHostPointer = inSrcMemory,
+			.imageSubresource
+			{
+				   .aspectMask = inDstImage.mAspectMask,
+				   .mipLevel = 0,
+				   .baseArrayLayer = 0,
+				   .layerCount = 1
+			},
+			.imageExtent = inDstImage.mImageSize,
+		};
+
+		vk::CopyMemoryToImageInfo copyInfo
+		{
+			.dstImage = inDstImage.mVkImage,
+			.dstImageLayout = inImageLayout,
+			.regionCount = 1,
+			.pRegions = &copy
+		};
+
+		mDevice.copyMemoryToImage(copyInfo);
+	}
+
 	mage::Array<cstr> Renderer::GetRequiredDeviceExtensions() const
 	{
 		mage::Array<cstr> result;
@@ -526,6 +575,7 @@ namespace Vulkan
 
 				auto features = inDevice.getFeatures2<
 					vk::PhysicalDeviceFeatures2,
+					vk::PhysicalDeviceVulkan12Features,
 					vk::PhysicalDeviceVulkan13Features,
 					vk::PhysicalDeviceVulkan14Features,
 					vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
@@ -538,6 +588,11 @@ namespace Vulkan
 				}
 
 				{
+					auto& f = features.get<vk::PhysicalDeviceVulkan12Features>();
+					if (!f.bufferDeviceAddress) return 0;
+				}
+
+				{
 					auto& f = features.get<vk::PhysicalDeviceVulkan13Features>();
 					if (!f.synchronization2) return 0;
 					if (!f.dynamicRendering) return 0;
@@ -545,6 +600,7 @@ namespace Vulkan
 
 				{
 					auto& f = features.get<vk::PhysicalDeviceVulkan14Features>();
+					if (!f.hostImageCopy) return 0;
 					if (!f.pushDescriptor) return 0;
 				}
 
@@ -585,6 +641,7 @@ namespace Vulkan
 
 		using FeatureChain = vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,
+			vk::PhysicalDeviceVulkan12Features,
 			vk::PhysicalDeviceVulkan13Features,
 			vk::PhysicalDeviceVulkan14Features,
 			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
@@ -597,10 +654,14 @@ namespace Vulkan
 				.samplerAnisotropy = true
 			}},
 			{
+				.bufferDeviceAddress = true
+			},
+			{
 				.synchronization2 = true,
 				.dynamicRendering = true
 			},
 			{
+				.hostImageCopy = true,
 				.pushDescriptor = true
 			},
 			{

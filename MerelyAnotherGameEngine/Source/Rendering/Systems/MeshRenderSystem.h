@@ -40,6 +40,7 @@ class MeshRenderSystem : public NonCopyableClass
 	struct PushConstantData
 	{
 		alignas(16) glm::mat4 Transform{ 1.0f };
+		alignas(8) vk::DeviceAddress UniformBuffer;
 	};
 
 public:

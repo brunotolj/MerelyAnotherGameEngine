@@ -49,54 +49,18 @@ namespace Vulkan
 			.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 		};
 
-		Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
-		stagingBuffer.Map();
-		stagingBuffer.Write(inData.Data.GetData(), dataSize);
-
 		ImageCreateInfo imageCreateInfo
 		{
 			.Size = inData.Size,
 			.Format = vk::Format::eR8G8B8A8Srgb,
 			.AspectFlags = vk::ImageAspectFlagBits::eColor,
-			.UsageFlags = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+			.UsageFlags = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eHostTransfer,
 			.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
 			.SampleCount = vk::SampleCountFlagBits::e1
 		};
 
 		mImage = inRenderer.CreateImage(imageCreateInfo);
-
-		inRenderer.SubmitSingleTimeCommands([this, &stagingBuffer, &inData](vk::CommandBuffer inCommandBuffer)
-			{
-				{
-					Image::TransitionLayoutParams transitionParams
-					{
-						.SrcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe,
-						.SrcAccessMask = {},
-						.DstStageMask = vk::PipelineStageFlagBits2::eTransfer,
-						.DstAccessMask = vk::AccessFlagBits2::eTransferWrite,
-						.OldLayout = vk::ImageLayout::eUndefined,
-						.NewLayout = vk::ImageLayout::eTransferDstOptimal
-					};
-		
-					mImage.TransitionLayout(inCommandBuffer, transitionParams);
-				}
-		
-				mImage.CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		
-				{
-					Image::TransitionLayoutParams transitionParams
-					{
-						.SrcStageMask = vk::PipelineStageFlagBits2::eTransfer,
-						.SrcAccessMask = vk::AccessFlagBits2::eTransferWrite,
-						.DstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
-						.DstAccessMask = vk::AccessFlagBits2::eShaderRead,
-						.OldLayout = vk::ImageLayout::eTransferDstOptimal,
-						.NewLayout = vk::ImageLayout::eShaderReadOnlyOptimal
-					};
-
-					mImage.TransitionLayout(inCommandBuffer, transitionParams);
-				}
-			});
+		inRenderer.CopyMemoryToImage(inData.Data.GetData(), mImage, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		vk::SamplerCreateInfo samplerCreateInfo
 		{

@@ -30,6 +30,7 @@ class SpriteRenderSystem : public NonCopyableClass
 	{
 		alignas(16) glm::vec4 ScreenCoords{ 0.0f, 0.0f, 1.0f, 1.0f };
 		alignas(16) glm::vec4 TextureCoords{ 0.0f, 0.0f, 1.0f, 1.0f };
+		alignas(8) vk::DeviceAddress UniformBuffer;
 	};
 
 public:

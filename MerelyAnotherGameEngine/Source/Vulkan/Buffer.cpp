@@ -8,6 +8,7 @@ namespace Vulkan
 		mDeviceMemory = std::move(inBuffer.mDeviceMemory);
 		std::swap(mMappedMemory, inBuffer.mMappedMemory);
 		std::swap(mBufferSize, inBuffer.mBufferSize);
+		std::swap(mDeviceAddress, inBuffer.mDeviceAddress);
 
 		return *this;
     }
@@ -45,13 +46,9 @@ namespace Vulkan
 		mVkBuffer.getDevice().flushMappedMemoryRanges(memoryRange);
     }
 
-	vk::DescriptorBufferInfo Buffer::GetDescriptorInfo() const
+	vk::DeviceAddress Buffer::GetDeviceAddress() const
 	{
-		return vk::DescriptorBufferInfo
-		{
-			.buffer = mVkBuffer,
-			.range = mBufferSize
-		};
+		return mDeviceAddress;
 	}
 
 	void Buffer::CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const

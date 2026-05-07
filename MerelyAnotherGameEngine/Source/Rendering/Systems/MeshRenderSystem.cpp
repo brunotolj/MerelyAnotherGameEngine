@@ -46,6 +46,7 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 		{
 			PushConstantData push;
 			push.Transform = meshData.Transform;
+			push.UniformBuffer = uniformBuffer.GetDeviceAddress();
 
 			vk::PushConstantsInfo pushInfo
 			{
@@ -61,20 +62,12 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 		{
 			mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.GetSize());
 
-			vk::DescriptorBufferInfo bufferInfo = uniformBuffer.GetDescriptorInfo();
 			vk::DescriptorImageInfo imageInfo = mTextures[meshData.TextureIndex].GetDescriptorInfo();
 
 			mage::Array<vk::WriteDescriptorSet> descriptorWrites
 			{
 				{
 					.dstBinding = 0,
-					.dstArrayElement = 0,
-					.descriptorCount = 1,
-					.descriptorType = vk::DescriptorType::eUniformBuffer,
-					.pBufferInfo = &bufferInfo
-				},
-				{
-					.dstBinding = 1,
 					.dstArrayElement = 0,
 					.descriptorCount = 1,
 					.descriptorType = vk::DescriptorType::eCombinedImageSampler,
@@ -110,12 +103,6 @@ Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& 
 		{
 			{
 				.binding = 0,
-				.descriptorType = vk::DescriptorType::eUniformBuffer,
-				.descriptorCount = 1,
-				.stageFlags = vk::ShaderStageFlagBits::eVertex
-			},
-			{
-				.binding = 1,
 				.descriptorType = vk::DescriptorType::eCombinedImageSampler,
 				.descriptorCount = 1,
 				.stageFlags = vk::ShaderStageFlagBits::eFragment

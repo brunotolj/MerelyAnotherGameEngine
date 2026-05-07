@@ -10,22 +10,21 @@ struct VSOutput
     float2 FragUV;
 };
 
-struct PushConstants
-{
-    float4 ScreenCoords;
-    float4 TextureCoords;
-};
-
 struct UniformBuffer
 {
     float4 ScreenTransform;
 };
 
+struct PushConstants
+{
+    float4 ScreenCoords;
+    float4 TextureCoords;
+    UniformBuffer* UniformBuffer;
+};
+
 [[vk::push_constant]] PushConstants push;
 
-[[vk::binding(0, 0)]] ConstantBuffer<UniformBuffer> ubo;
-
-[[vk::binding(1, 0)]] Sampler2D texture;
+[[vk::binding(0, 0)]] Sampler2D texture;
 
 [shader("vertex")]
 VSOutput vertMain(VSInput input)
@@ -35,7 +34,7 @@ VSOutput vertMain(VSInput input)
     float2 localCoords = float2(fmod(input.Index, 2.0), floor(input.Index / 2.0));
     float2 screenCoords = push.ScreenCoords.xy + localCoords * push.ScreenCoords.zw;
 
-    output.Position.xy = ubo.ScreenTransform.xy + screenCoords * ubo.ScreenTransform.zw;
+    output.Position.xy = push.UniformBuffer->ScreenTransform.xy + screenCoords * push.UniformBuffer->ScreenTransform.zw;
     output.Position.z = 0.0;
     output.Position.w = 1.0;
 
