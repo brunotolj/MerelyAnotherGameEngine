@@ -39,6 +39,8 @@ public:
 	void RenderSprites(Vulkan::RenderFrameData const& frameData, const std::vector<SpriteRenderData>& data);
 
 private:
+	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
+
 	Vulkan::Renderer const& mRenderer;
 
 	Vulkan::Pipeline mPipeline;
@@ -49,7 +51,7 @@ private:
 
 	Vulkan::Buffer mVertexBuffer = nullptr;
 
-	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount);
+	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler);
 
 	void CreateVertexBuffer();
 };

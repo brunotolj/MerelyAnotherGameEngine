@@ -141,8 +141,7 @@ namespace Vulkan
 
 		commandBuffer.beginRendering(renderingInfo);
 
-		commandBuffer.setViewport(0, vk::Viewport(0.0f, 0.0f, f32(mSwapchainExtent.width), f32(mSwapchainExtent.height), 0.0f, 1.0f));
-		commandBuffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), mSwapchainExtent));
+		InitializeDynamicState(commandBuffer);
 
 		inFunction({ commandBuffer, mSwapchainExtent, mCurrentFrameIndex });
 
@@ -242,28 +241,24 @@ namespace Vulkan
 
 		mage_check(inPipelineCreateInfo.ShaderCode.GetSize());
 
+		vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo
 		{
-			vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo
-			{
-				.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptor,
-				.bindingCount = inPipelineCreateInfo.DescriptorSetLayout.GetSize(),
-				.pBindings = inPipelineCreateInfo.DescriptorSetLayout.GetData()
-			};
+			.flags = vk::DescriptorSetLayoutCreateFlagBits::ePushDescriptor,
+			.bindingCount = inPipelineCreateInfo.DescriptorSetBindings.GetSize(),
+			.pBindings = inPipelineCreateInfo.DescriptorSetBindings.GetData()
+		};
 
-			result.mDescriptorSetLayout = mDevice.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
-		}
+		result.mDescriptorSetLayout = mDevice.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
+		vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo
 		{
-			vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo
-			{
-				.setLayoutCount = 1,
-				.pSetLayouts = &*result.mDescriptorSetLayout,
-				.pushConstantRangeCount = inPipelineCreateInfo.PushConstantRanges.GetSize(),
-				.pPushConstantRanges = inPipelineCreateInfo.PushConstantRanges.GetData()
-			};
+			.setLayoutCount = 1,
+			.pSetLayouts = &*result.mDescriptorSetLayout,
+			.pushConstantRangeCount = inPipelineCreateInfo.PushConstantRanges.GetSize(),
+			.pPushConstantRanges = inPipelineCreateInfo.PushConstantRanges.GetData()
+		};
 
-			result.mPipelineLayout = mDevice.createPipelineLayout(pipelineLayoutCreateInfo);
-		}
+		result.mPipelineLayout = mDevice.createPipelineLayout(pipelineLayoutCreateInfo);
 
 		vk::ShaderModuleCreateInfo shaderModuleCreateInfo
 		{
@@ -273,48 +268,36 @@ namespace Vulkan
 
 		vk::raii::ShaderModule shaderModule{ mDevice, shaderModuleCreateInfo };
 
-		mage::Array<vk::PipelineShaderStageCreateInfo> shaderStageCreateInfos
-		{
-			{
-				.stage = vk::ShaderStageFlagBits::eVertex,
+		mage::Array<vk::PipelineShaderStageCreateInfo> shaderStageCreateInfos;
+
+		for (PipelineShaderStageInfo const& shaderStageInfo : inPipelineCreateInfo.ShaderStages)
+			shaderStageCreateInfos.Add
+			({
+				.stage = shaderStageInfo.Stage,
 				.module = shaderModule,
-				.pName = "vertMain"
-			},
-			{
-				.stage = vk::ShaderStageFlagBits::eFragment,
-				.module = shaderModule,
-				.pName = "fragMain"
-			}
-		};
+				.pName = shaderStageInfo.EntryPoint.GetCString()
+			});
 
 		vk::PipelineVertexInputStateCreateInfo vertexInputInfo
 		{
-			.vertexBindingDescriptionCount = inPipelineCreateInfo.BindingDescriptions.GetSize(),
-			.pVertexBindingDescriptions = inPipelineCreateInfo.BindingDescriptions.GetData(),
-			.vertexAttributeDescriptionCount = inPipelineCreateInfo.AttributeDescriptions.GetSize(),
-			.pVertexAttributeDescriptions = inPipelineCreateInfo.AttributeDescriptions.GetData()
+			.vertexBindingDescriptionCount = inPipelineCreateInfo.InputBindingDescriptions.GetSize(),
+			.pVertexBindingDescriptions = inPipelineCreateInfo.InputBindingDescriptions.GetData(),
+			.vertexAttributeDescriptionCount = inPipelineCreateInfo.InputAttributeDescriptions.GetSize(),
+			.pVertexAttributeDescriptions = inPipelineCreateInfo.InputAttributeDescriptions.GetData()
 		};
 
-		vk::PipelineViewportStateCreateInfo viewportInfo
-		{
-			.viewportCount = 1,
-			.scissorCount = 1
-		};
+		vk::PipelineInputAssemblyStateCreateInfo inputAssemblyInfo {};
+
+		vk::PipelineViewportStateCreateInfo viewportInfo {};
 
 		vk::PipelineRasterizationStateCreateInfo rasterizationInfo
 		{
-			.depthClampEnable = vk::False,
-			.rasterizerDiscardEnable = vk::False,
-			.polygonMode = vk::PolygonMode::eFill,
-			.cullMode = vk::CullModeFlagBits::eBack,
 			.frontFace = vk::FrontFace::eClockwise,
-			.depthBiasEnable = vk::False,
 			.lineWidth = 1.0f
 		};
 
 		vk::PipelineMultisampleStateCreateInfo multisampleInfo
 		{
-			.rasterizationSamples = msaaSamples,
 			.sampleShadingEnable = vk::True,
 			.minSampleShading = 0.2f
 		};
@@ -333,22 +316,28 @@ namespace Vulkan
 
 		vk::PipelineDepthStencilStateCreateInfo depthStencilInfo
 		{
-			.depthTestEnable = vk::True,
-			.depthWriteEnable = vk::True,
-			.depthCompareOp = vk::CompareOp::eLess,
-			.depthBoundsTestEnable = vk::False,
-			.stencilTestEnable = vk::False
+			.depthCompareOp = vk::CompareOp::eLess
 		};
 
 		vk::PipelineColorBlendStateCreateInfo colorBlendInfo
 		{
-			.logicOpEnable = vk::False,
-			.logicOp = vk::LogicOp::eCopy,
 			.attachmentCount = 1,
 			.pAttachments = &colorBlendAttachmentState
 		};
 
-		mage::Array<vk::DynamicState> dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+		mage::Array<vk::DynamicState> dynamicStates
+		{
+			vk::DynamicState::eCullMode,
+			vk::DynamicState::eFrontFace,
+			vk::DynamicState::ePrimitiveTopology,
+			vk::DynamicState::eViewportWithCount,
+			vk::DynamicState::eScissorWithCount,
+			vk::DynamicState::eDepthTestEnable,
+			vk::DynamicState::eDepthWriteEnable,
+			vk::DynamicState::ePolygonModeEXT,
+			vk::DynamicState::eRasterizationSamplesEXT
+		};
+
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo
 		{
 			.dynamicStateCount = dynamicStates.GetSize(),
@@ -361,7 +350,7 @@ namespace Vulkan
 				.stageCount = shaderStageCreateInfos.GetSize(),
 				.pStages = shaderStageCreateInfos.GetData(),
 				.pVertexInputState = &vertexInputInfo,
-				.pInputAssemblyState = &inPipelineCreateInfo.InputAssemblyInfo,
+				.pInputAssemblyState = &inputAssemblyInfo,
 				.pViewportState = &viewportInfo,
 				.pRasterizationState = &rasterizationInfo,
 				.pMultisampleState = &multisampleInfo,
@@ -524,15 +513,16 @@ namespace Vulkan
 
 		result.Add(vk::KHRSwapchainExtensionName);
 		result.Add(vk::KHRSwapchainMaintenance1ExtensionName);
+		result.Add(vk::EXTShaderObjectExtensionName);
 
 		return result;
 	}
 
-	u32 Renderer::SelectMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) const
+	u32 Renderer::SelectMemoryType(u32 inTypeFilter, vk::MemoryPropertyFlags inProperties) const
 	{
 		vk::PhysicalDeviceMemoryProperties memProperties = mPhysicalDevice.getMemoryProperties();
 		for (u32 i = 0; i < memProperties.memoryTypeCount; ++i)
-			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+			if ((inTypeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & inProperties) == inProperties)
 				return i;
 
 		mage_check(false);
@@ -579,6 +569,7 @@ namespace Vulkan
 					vk::PhysicalDeviceVulkan13Features,
 					vk::PhysicalDeviceVulkan14Features,
 					vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
+					vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT,
 					vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR>();
 
 				{
@@ -607,6 +598,12 @@ namespace Vulkan
 				{
 					auto& f = features.get<vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT>();
 					if (!f.extendedDynamicState) return 0;
+				}
+
+				{
+					auto& f = features.get<vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT>();
+					if (!f.extendedDynamicState3PolygonMode) return 0;
+					if (!f.extendedDynamicState3RasterizationSamples) return 0;
 				}
 
 				{
@@ -645,6 +642,7 @@ namespace Vulkan
 			vk::PhysicalDeviceVulkan13Features,
 			vk::PhysicalDeviceVulkan14Features,
 			vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT,
+			vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT,
 			vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR>;
 
 		FeatureChain featureChain
@@ -666,6 +664,10 @@ namespace Vulkan
 			},
 			{
 				.extendedDynamicState = true
+			},
+			{
+				.extendedDynamicState3PolygonMode = true,
+				.extendedDynamicState3RasterizationSamples = true
 			},
 			{
 				.swapchainMaintenance1 = true
@@ -793,6 +795,21 @@ namespace Vulkan
 		};
 
 		mDepthImage = CreateImage(depthImageCreateInfo);
+	}
+
+	void Renderer::InitializeDynamicState(vk::CommandBuffer inCommandBuffer)
+	{
+		inCommandBuffer.setCullMode(vk::CullModeFlagBits::eBack);
+		inCommandBuffer.setFrontFace(vk::FrontFace::eClockwise);
+		
+		inCommandBuffer.setViewportWithCount(vk::Viewport(0.0f, 0.0f, f32(mSwapchainExtent.width), f32(mSwapchainExtent.height), 0.0f, 1.0f));
+		inCommandBuffer.setScissorWithCount(vk::Rect2D(vk::Offset2D(0, 0), mSwapchainExtent));
+
+		inCommandBuffer.setDepthTestEnable(vk::True);
+		inCommandBuffer.setDepthWriteEnable(vk::True);
+
+		inCommandBuffer.setPolygonModeEXT(vk::PolygonMode::eFill);
+		inCommandBuffer.setRasterizationSamplesEXT(msaaSamples);
 	}
 
 	vk::SurfaceFormatKHR Renderer::ChooseSwapchainFormat(mage::Array<vk::SurfaceFormatKHR> const& inFormats) const

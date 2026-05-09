@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 namespace Vulkan
 {
 	Instance::Instance()
@@ -50,6 +52,9 @@ namespace Vulkan
 		};
 
 		mInstance = mContext.createInstance(instanceCreateInfo);
+
+		VULKAN_HPP_DEFAULT_DISPATCHER.init();
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(*mInstance);
 
 		SetupDebugMessenger();
 	}

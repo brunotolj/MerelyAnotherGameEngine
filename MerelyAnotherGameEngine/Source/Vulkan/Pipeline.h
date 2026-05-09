@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glslang/Include/glslang_c_shader_types.h>
 #include <slang/slang-com-ptr.h>
 #include <vulkan/vulkan_raii.hpp>
 
@@ -14,13 +13,19 @@ namespace Vulkan
 {
 	using SpirVBinary = mage::Array<u32>;
 
+	struct PipelineShaderStageInfo
+	{
+		vk::ShaderStageFlagBits Stage;
+		mage::StringView EntryPoint;
+	};
+
 	struct PipelineCreateInfo
 	{
 		SpirVBinary ShaderCode;
-		mage::Array<vk::VertexInputBindingDescription> BindingDescriptions;
-		mage::Array<vk::VertexInputAttributeDescription> AttributeDescriptions;
-		vk::PipelineInputAssemblyStateCreateInfo InputAssemblyInfo;
-		mage::Array<vk::DescriptorSetLayoutBinding> DescriptorSetLayout;
+		mage::Array<PipelineShaderStageInfo> ShaderStages;
+		mage::Array<vk::VertexInputBindingDescription> InputBindingDescriptions;
+		mage::Array<vk::VertexInputAttributeDescription> InputAttributeDescriptions;
+		mage::Array<vk::DescriptorSetLayoutBinding> DescriptorSetBindings;
 		mage::Array<vk::PushConstantRange> PushConstantRanges;
 	};
 
@@ -55,5 +60,4 @@ namespace Vulkan
 		Slang::ComPtr<slang::IGlobalSession> mGlobalSession = nullptr;
 		Slang::ComPtr<slang::ISession> mSession = nullptr;
 	};
-
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/Texture.h"
 
@@ -49,6 +48,8 @@ public:
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data);
 
 private:
+	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
+
 	Vulkan::Renderer const& mRenderer;
 
 	Vulkan::Pipeline mPipeline;
@@ -57,5 +58,5 @@ private:
 
 	mage::Array<Vulkan::Texture> mTextures;
 
-	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount);
+	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler);
 };

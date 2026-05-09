@@ -11,6 +11,8 @@ namespace mage
 	class StringView
 	{
 	public:
+		constexpr StringView() : StringView("") {}
+
 		constexpr StringView(cstr inCstr)
 		{
 			mData = inCstr;

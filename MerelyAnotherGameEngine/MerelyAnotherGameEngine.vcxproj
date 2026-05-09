@@ -200,8 +200,8 @@
     <ClInclude Include="Source\Vulkan\Buffer.h" />
     <ClInclude Include="Source\Vulkan\Image.h" />
     <ClInclude Include="Source\Vulkan\Model.h" />
-    <ClInclude Include="Source\Vulkan\Texture.h" />
     <ClInclude Include="Source\Vulkan\Pipeline.h" />
+    <ClInclude Include="Source\Vulkan\Texture.h" />
     <ClInclude Include="Source\Vulkan\Renderer.h" />
     <ClInclude Include="Source\Vulkan\VulkanInterface.h" />
     <ClInclude Include="Source\Vulkan\Window.h" />

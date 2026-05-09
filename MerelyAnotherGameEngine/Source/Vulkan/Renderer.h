@@ -10,7 +10,6 @@ namespace Vulkan
 	class DescriptorSetLayout;
 	class Instance;
 	class Pipeline;
-	class Texture;
 	class Window;
 	struct BufferCreateInfo;
 	struct ImageCreateInfo;
@@ -45,7 +44,7 @@ namespace Vulkan
 
 		mage::Array<cstr> GetRequiredDeviceExtensions() const;
 
-		u32 SelectMemoryType(u32 typeFilter, vk::MemoryPropertyFlags properties) const;
+		u32 SelectMemoryType(u32 inTypeFilter, vk::MemoryPropertyFlags inProperties) const;
 
 		static constexpr u32 cMaxFramesInFlight = 2;
 
@@ -53,6 +52,8 @@ namespace Vulkan
 		vk::raii::PhysicalDevice PickPhysicalDevice(Instance const& inInstance) const;
 		void SetupGraphicsQueue();
 		void RecreateSwapchain();
+
+		void InitializeDynamicState(vk::CommandBuffer inCommandBuffer);
 
 		vk::SurfaceFormatKHR ChooseSwapchainFormat(mage::Array<vk::SurfaceFormatKHR> const& inFormats) const;
 		vk::PresentModeKHR ChooseSwapchainPresentMode(mage::Array<vk::PresentModeKHR> const& inPresentModes) const;

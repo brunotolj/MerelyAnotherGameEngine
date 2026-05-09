@@ -3,7 +3,7 @@
 #include "Vulkan/Renderer.h"
 
 MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths) :
-	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler, texturePaths.GetSize()))
+	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler))
 {
 	u32 uniformBufferCount = mRenderer.cMaxFramesInFlight;
 	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
@@ -30,6 +30,7 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::Sha
 
 void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data)
 {
+	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);
 
 	MeshUBO ubo;
@@ -91,15 +92,24 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 	}
 }
 
-Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount)
+void MeshRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) const
+{
+	inCommandBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
+}
+
+Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)
 {
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
-		.BindingDescriptions = Vulkan::Model::Vertex::GetBindingDescriptions(),
-		.AttributeDescriptions = Vulkan::Model::Vertex::GetAttributeDescriptions(),
-		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleList },
-		.DescriptorSetLayout
+		.ShaderStages
+		{
+			{ vk::ShaderStageFlagBits::eVertex, "vertMain" },
+			{ vk::ShaderStageFlagBits::eFragment, "fragMain" }
+		},
+		.InputBindingDescriptions = Vulkan::Model::Vertex::GetBindingDescriptions(),
+		.InputAttributeDescriptions = Vulkan::Model::Vertex::GetAttributeDescriptions(),
+		.DescriptorSetBindings
 		{
 			{
 				.binding = 0,
@@ -116,5 +126,5 @@ Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& 
 		}}
 	};
 
-	return std::move(mRenderer.CreatePipeline(pipelineCreateInfo));
+	return mRenderer.CreatePipeline(pipelineCreateInfo);
 }

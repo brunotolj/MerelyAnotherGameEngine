@@ -2,7 +2,7 @@
 #include "Vulkan/Renderer.h"
 
 SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths) :
-	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler, texturePaths.GetSize()))
+	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler))
 {
 	u32 uniformBufferCount = Vulkan::Renderer::cMaxFramesInFlight;
 	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
@@ -31,8 +31,9 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan:
 
 void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData, const std::vector<SpriteRenderData>& data)
 {
+	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);
-	
+
 	VkExtent2D screenExtent = frameData.Extent;
 
 	SpriteUBO ubo;
@@ -105,15 +106,24 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 	}
 }
 
-Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler, u32 inTextureCount)
+void SpriteRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) const
+{
+	inCommandBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleStrip);
+}
+
+Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)
 {
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/SpriteShader.slang"),
-		.BindingDescriptions = {{ 0, sizeof(f32), vk::VertexInputRate::eVertex }},
-		.AttributeDescriptions = {{ 0, 0, vk::Format::eR32Sfloat, 0 }},
-		.InputAssemblyInfo {.topology = vk::PrimitiveTopology::eTriangleStrip },
-		.DescriptorSetLayout
+		.ShaderStages
+		{
+			{ vk::ShaderStageFlagBits::eVertex, "vertMain" },
+			{ vk::ShaderStageFlagBits::eFragment, "fragMain" }
+		},
+		.InputBindingDescriptions = {{ 0, sizeof(f32), vk::VertexInputRate::eVertex }},
+		.InputAttributeDescriptions = {{ 0, 0, vk::Format::eR32Sfloat, 0 }},
+		.DescriptorSetBindings
 		{
 			{
 				.binding = 0,
