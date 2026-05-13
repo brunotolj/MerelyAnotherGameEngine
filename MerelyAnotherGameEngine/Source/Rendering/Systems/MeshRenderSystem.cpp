@@ -28,7 +28,7 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::Sha
 		mTextures.AddConstruct(mRenderer, Vulkan::Texture::LoadFromFile(texturePaths[i]));
 }
 
-void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data)
+void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data)
 {
 	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);
@@ -95,6 +95,8 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, co
 void MeshRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) const
 {
 	inCommandBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleList);
+	inCommandBuffer.setDepthWriteEnable(vk::True);
+	inCommandBuffer.setConservativeRasterizationModeEXT(vk::ConservativeRasterizationModeEXT::eDisabled);
 }
 
 Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)

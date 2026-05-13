@@ -8,6 +8,7 @@ class PhysicsSystem;
 class InputSystem;
 class MeshRenderSystem;
 class SpriteRenderSystem;
+class TextRenderSystem;
 
 namespace Vulkan
 {
@@ -21,7 +22,8 @@ public:
 		std::unique_ptr<InputSystem>&& inputSystem,
 		std::unique_ptr<PhysicsSystem>&& physicsSystem,
 		std::unique_ptr<MeshRenderSystem>&& meshRenderSystem,
-		std::unique_ptr<SpriteRenderSystem>&& spriteRenderSystem);
+		std::unique_ptr<SpriteRenderSystem>&& spriteRenderSystem,
+		std::unique_ptr<TextRenderSystem>&& textRenderSystem);
 
 	void Update(f32 deltaTime);
 	void Render(Vulkan::Renderer& renderer) const;
@@ -39,6 +41,7 @@ private:
 	std::unique_ptr<PhysicsSystem> mPhysicsSystem;
 	std::unique_ptr<MeshRenderSystem> mMeshRenderSystem;
 	std::unique_ptr<SpriteRenderSystem> mSpriteRenderSystem;
+	std::unique_ptr<TextRenderSystem> mTextRenderSystem;
 
 	std::vector<std::shared_ptr<GameObject>> mObjects;
 	std::vector<std::shared_ptr<GameObject>> mNewObjects;

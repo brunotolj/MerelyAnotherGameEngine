@@ -4,10 +4,6 @@
 
 namespace mage
 {
-	class String : public Array<char>
-	{
-	};
-
 	class StringView
 	{
 	public:

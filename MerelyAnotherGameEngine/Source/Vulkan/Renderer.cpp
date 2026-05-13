@@ -335,7 +335,9 @@ namespace Vulkan
 			vk::DynamicState::eDepthTestEnable,
 			vk::DynamicState::eDepthWriteEnable,
 			vk::DynamicState::ePolygonModeEXT,
-			vk::DynamicState::eRasterizationSamplesEXT
+			vk::DynamicState::eRasterizationSamplesEXT,
+			vk::DynamicState::eConservativeRasterizationModeEXT,
+			vk::DynamicState::eExtraPrimitiveOverestimationSizeEXT
 		};
 
 		vk::PipelineDynamicStateCreateInfo dynamicStateInfo
@@ -514,6 +516,7 @@ namespace Vulkan
 		result.Add(vk::KHRSwapchainExtensionName);
 		result.Add(vk::KHRSwapchainMaintenance1ExtensionName);
 		result.Add(vk::EXTShaderObjectExtensionName);
+		result.Add(vk::EXTConservativeRasterizationExtensionName);
 
 		return result;
 	}
@@ -585,6 +588,7 @@ namespace Vulkan
 
 				{
 					auto& f = features.get<vk::PhysicalDeviceVulkan13Features>();
+					if (!f.shaderDemoteToHelperInvocation) return 0;
 					if (!f.synchronization2) return 0;
 					if (!f.dynamicRendering) return 0;
 				}
@@ -604,6 +608,8 @@ namespace Vulkan
 					auto& f = features.get<vk::PhysicalDeviceExtendedDynamicState3FeaturesEXT>();
 					if (!f.extendedDynamicState3PolygonMode) return 0;
 					if (!f.extendedDynamicState3RasterizationSamples) return 0;
+					if (!f.extendedDynamicState3ConservativeRasterizationMode) return 0;
+					if (!f.extendedDynamicState3ExtraPrimitiveOverestimationSize) return 0;
 				}
 
 				{
@@ -655,6 +661,7 @@ namespace Vulkan
 				.bufferDeviceAddress = true
 			},
 			{
+				.shaderDemoteToHelperInvocation = true,
 				.synchronization2 = true,
 				.dynamicRendering = true
 			},
@@ -667,7 +674,9 @@ namespace Vulkan
 			},
 			{
 				.extendedDynamicState3PolygonMode = true,
-				.extendedDynamicState3RasterizationSamples = true
+				.extendedDynamicState3RasterizationSamples = true,
+				.extendedDynamicState3ConservativeRasterizationMode = true,
+				.extendedDynamicState3ExtraPrimitiveOverestimationSize = true
 			},
 			{
 				.swapchainMaintenance1 = true
@@ -801,13 +810,9 @@ namespace Vulkan
 	{
 		inCommandBuffer.setCullMode(vk::CullModeFlagBits::eBack);
 		inCommandBuffer.setFrontFace(vk::FrontFace::eClockwise);
-		
 		inCommandBuffer.setViewportWithCount(vk::Viewport(0.0f, 0.0f, f32(mSwapchainExtent.width), f32(mSwapchainExtent.height), 0.0f, 1.0f));
 		inCommandBuffer.setScissorWithCount(vk::Rect2D(vk::Offset2D(0, 0), mSwapchainExtent));
-
 		inCommandBuffer.setDepthTestEnable(vk::True);
-		inCommandBuffer.setDepthWriteEnable(vk::True);
-
 		inCommandBuffer.setPolygonModeEXT(vk::PolygonMode::eFill);
 		inCommandBuffer.setRasterizationSamplesEXT(msaaSamples);
 	}
@@ -834,7 +839,7 @@ namespace Vulkan
 
 	vk::Extent2D Renderer::ChooseSwapchainExtent(vk::SurfaceCapabilitiesKHR const& inCapabilities, vk::Extent2D inWindowExtent) const
 	{
-		if (inCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		if (inCapabilities.currentExtent.width != u32(-1))
 			return inCapabilities.currentExtent;
 
 		return

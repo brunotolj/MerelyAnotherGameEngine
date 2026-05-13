@@ -7,6 +7,7 @@
 #include "Physics/PhysicsSystem.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
 #include "Rendering/Systems/SpriteRenderSystem.h"
+#include "Rendering/Systems/TextRenderSystem.h"
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
@@ -17,9 +18,6 @@
 
 #include <chrono>
 #include <memory>
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 static constexpr i32 gWindowWidth = 1920;
 static constexpr i32 gWindowHeight = 1080;
@@ -112,12 +110,6 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 
 i32 main()
 {
-	FT_Library library;
-	{
-		FT_Error result = FT_Init_FreeType(&library);
-		mage_check(result == 0);
-	}
-
 	Vulkan::WindowInfo windowCreateInfo
 	{
 		.Name = "Merely Another Game Engine",
@@ -129,15 +121,25 @@ i32 main()
 	Vulkan::Window window = vulkan.CreateWindow(windowCreateInfo);
 	Vulkan::Renderer renderer{ vulkan, window };
 
-	mage::Array<mage::StringView> meshTexturePaths;
-	meshTexturePaths.Add("Textures/cube.png");
-	meshTexturePaths.Add("Textures/ball.png");
-	meshTexturePaths.Add("Textures/cylinder.png");
-	meshTexturePaths.Add("Textures/capsule.png");
-	meshTexturePaths.Add("Textures/cone.png");
+	mage::Array<mage::StringView> meshTexturePaths
+	{
+		"Textures/cube.png",
+		"Textures/ball.png",
+		"Textures/cylinder.png",
+		"Textures/capsule.png",
+		"Textures/cone.png"
+	};
 
-	mage::Array<mage::StringView> spriteTexturePaths;
-	spriteTexturePaths.Add("Textures/default.png");
+	mage::Array<mage::StringView> spriteTexturePaths
+	{
+		"Textures/default.png"
+	};
+
+	mage::Array<mage::StringView> fontPaths
+	{
+		"Fonts/ArianaVioleta-dz2K.ttf",
+		"Fonts/Orbitron-Regular.ttf",
+	};
 
 	Vulkan::ShaderCompiler shaderCompiler;
 
@@ -145,7 +147,8 @@ i32 main()
 		std::make_unique<InputSystem>(window),
 		std::make_unique<PhysicsSystem>(),
 		std::make_unique<MeshRenderSystem>(renderer, shaderCompiler, meshTexturePaths),
-		std::make_unique<SpriteRenderSystem>(renderer, shaderCompiler, spriteTexturePaths));
+		std::make_unique<SpriteRenderSystem>(renderer, shaderCompiler, spriteTexturePaths),
+		std::make_unique<TextRenderSystem>(renderer, shaderCompiler, fontPaths));
 
 	constexpr f32 boardSize = 20.0f;
 

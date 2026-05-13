@@ -11,10 +11,10 @@ namespace std
 	template<>
 	struct hash<Vulkan::Model::Vertex>
 	{
-		u64 operator()(Vulkan::Model::Vertex const& vertex) const
+		u64 operator()(Vulkan::Model::Vertex const& inValue) const
 		{
 			u64 seed = 0;
-			mage::HashCombine(seed, vertex.Position, vertex.Normal, vertex.TextureCoords);
+			mage::HashCombine(seed, inValue.Position, inValue.Normal, inValue.TextureCoords);
 			return seed;
 		}
 	};

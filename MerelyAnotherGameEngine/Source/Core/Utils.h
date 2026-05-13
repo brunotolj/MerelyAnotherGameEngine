@@ -12,19 +12,18 @@ namespace mage
 		(HashCombine(inSeed, inRest), ...);
 	};
 
-	inline String ReadFile(mage::StringView inPath)
+	inline mage::Array<u8> ReadFile(mage::StringView inPath)
 	{
-		String data;
+		mage::Array<u8> data;
 
 		std::ifstream file(inPath.GetCString(), std::ios::ate | std::ios::binary);
 		mage_ensure(file.is_open());
 
 		u32 fileSize = u32(file.tellg());
-		data.ResizeUninitialized(fileSize + 1);
+		data.ResizeUninitialized(fileSize);
 
 		file.seekg(0);
-		file.read(data.GetData(), fileSize);
-		data[fileSize] = '\0';
+		file.read((char*)data.GetData(), fileSize);
 
 		return data;
 	}

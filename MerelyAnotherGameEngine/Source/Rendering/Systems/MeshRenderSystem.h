@@ -31,7 +31,7 @@ struct SceneRenderData
 	glm::vec3 LightDirection;
 	f32 AmbientLightIntensity;
 
-	std::vector<MeshRenderData> Meshes;
+	mage::Array<MeshRenderData> Meshes;
 };
 
 class MeshRenderSystem : public NonCopyableClass
@@ -45,7 +45,7 @@ class MeshRenderSystem : public NonCopyableClass
 public:
 	MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths);
 
-	void RenderMeshes(Vulkan::RenderFrameData const& frameData, const SceneRenderData& data);
+	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data);
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;

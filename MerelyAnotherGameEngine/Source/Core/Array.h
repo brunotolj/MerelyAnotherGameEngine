@@ -12,12 +12,17 @@ namespace mage
 	class Array
 	{
 	public:
-		Array(u32 inInitialSize = 0)
+		Array()
 		{
-			Empty();
-			
+		}
+
+		Array(u32 inInitialSize, bool inDefaultElements = true)
+		{
 			if (inInitialSize)
-				ResizeUninitialized(inInitialSize);
+				if (inDefaultElements)
+					ResizeDefault(inInitialSize);
+				else
+					ResizeUninitialized(inInitialSize);
 		}
 
 		Array(std::initializer_list<T> inElements)
@@ -76,6 +81,11 @@ namespace mage
 
 		T& operator[](u32 inIndex) { return mElements[inIndex]; }
 		T const& operator[](u32 inIndex) const { return mElements[inIndex]; }
+
+		T& GetFirst() { return mElements[0]; }
+		T const& GetFirst() const { return mElements[0]; }
+		T& GetLast() { return mElements[mSize - 1]; }
+		T const& GetLast() const { return mElements[mSize - 1]; }
 
 		u32 Add(T const& inElement)
 		{
@@ -237,7 +247,7 @@ namespace mage
 				mElements[i].~T();
 
 			for (u32 i = mSize; i < inNewSize; ++i)
-				mElements[i] = T();
+				new (mElements + i) T();
 
 			mSize = inNewSize;
 		}

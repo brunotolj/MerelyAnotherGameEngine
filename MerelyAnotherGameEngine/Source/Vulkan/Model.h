@@ -20,7 +20,7 @@ namespace Vulkan
 			static mage::Array<vk::VertexInputBindingDescription> GetBindingDescriptions();
 			static mage::Array<vk::VertexInputAttributeDescription> GetAttributeDescriptions();
 
-			bool operator==(const Vertex& other) const = default;
+			bool operator==(Vertex const& inOther) const = default;
 		};
 
 		struct Triangle

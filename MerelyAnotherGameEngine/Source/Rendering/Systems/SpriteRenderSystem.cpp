@@ -29,7 +29,7 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan:
 	CreateVertexBuffer();
 }
 
-void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData, const std::vector<SpriteRenderData>& data)
+void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data)
 {
 	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);
@@ -109,6 +109,8 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 void SpriteRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) const
 {
 	inCommandBuffer.setPrimitiveTopology(vk::PrimitiveTopology::eTriangleStrip);
+	inCommandBuffer.setDepthWriteEnable(vk::False);
+	inCommandBuffer.setConservativeRasterizationModeEXT(vk::ConservativeRasterizationModeEXT::eDisabled);
 }
 
 Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)

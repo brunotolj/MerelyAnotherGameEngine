@@ -108,6 +108,12 @@
     <ClCompile Include="Source\Vulkan\Pipeline.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Rendering\Systems\TextRenderSystem.cpp">
+      <Filter>Source Files\Rendering\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Rendering\Font.cpp">
+      <Filter>Source Files\Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -206,6 +212,12 @@
     <ClInclude Include="Source\Vulkan\Pipeline.h">
       <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Rendering\Systems\TextRenderSystem.h">
+      <Filter>Source Files\Rendering\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rendering\Font.h">
+      <Filter>Source Files\Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\MeshShader_Vert.slang" />
@@ -213,6 +225,9 @@
       <Filter>Source Files\Shaders</Filter>
     </None>
     <None Include="Source\Shaders\SpriteShader.slang">
+      <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Source\Shaders\TextShader.slang">
       <Filter>Source Files\Shaders</Filter>
     </None>
   </ItemGroup>

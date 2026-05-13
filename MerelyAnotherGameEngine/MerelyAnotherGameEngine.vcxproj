@@ -67,7 +67,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
@@ -77,7 +77,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)\ThirdParty\freetype-2.13.2\Bin\Debug;$(SolutionDir)\ThirdParty\glfw-3.3.8\Bin;$(SolutionDir)\ThirdParty\physx\Bin\checked;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype.lib;glfw3.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;slang.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;slang.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
@@ -93,7 +93,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -105,7 +105,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)\ThirdParty\freetype-2.13.2\Bin\Release;$(SolutionDir)\ThirdParty\glfw-3.3.8\Bin;$(SolutionDir)\ThirdParty\physx\Bin\profile;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype.lib;glfw3.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;slang.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;slang.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
@@ -123,7 +123,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\freetype-2.13.2\Include;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
@@ -135,7 +135,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;$(SolutionDir)\ThirdParty\freetype-2.13.2\Bin\Release;$(SolutionDir)\ThirdParty\glfw-3.3.8\Bin;$(SolutionDir)\ThirdParty\physx\Bin\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freetype.lib;glfw3.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;PVDRuntime_64.lib;slang.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;PhysX_64.lib;PhysXCommon_64.lib;PhysXCooking_64.lib;PhysXExtensions_static_64.lib;PhysXFoundation_64.lib;PhysXPvdSDK_static_64.lib;slang.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
@@ -157,6 +157,8 @@
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp" />
+    <ClCompile Include="Source\Rendering\Font.cpp" />
+    <ClCompile Include="Source\Rendering\Systems\TextRenderSystem.cpp" />
     <ClCompile Include="Source\Rendering\Systems\MeshRenderSystem.cpp" />
     <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp" />
     <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp" />
@@ -191,6 +193,8 @@
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h" />
     <ClInclude Include="Source\Physics\PhysicsCommon.h" />
     <ClInclude Include="Source\Physics\PhysicsSystem.h" />
+    <ClInclude Include="Source\Rendering\Font.h" />
+    <ClInclude Include="Source\Rendering\Systems\TextRenderSystem.h" />
     <ClInclude Include="Source\Rendering\Systems\MeshRenderSystem.h" />
     <ClInclude Include="Source\Rendering\Systems\SpriteRenderSystem.h" />
     <ClInclude Include="Source\Utility\BallSpawnerComponent.h" />
@@ -207,6 +211,7 @@
     <ClInclude Include="Source\Vulkan\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Source\Shaders\TextShader.slang" />
     <None Include="Source\Shaders\MeshShader.slang" />
     <None Include="Source\Shaders\MeshShader_Vert.slang" />
     <None Include="Source\Shaders\SpriteShader.slang" />
