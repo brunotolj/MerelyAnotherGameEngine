@@ -1,9 +1,15 @@
+#include "Assets/AssetManager.h"
+#include "Assets/FontFactory.h"
+#include "Assets/StaticMeshFactory.h"
+#include "Assets/TextureFactory.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
 #include "Game/InputSystem.h"
 #include "Game/CameraComponent.h"
 #include "Game/RigidBodyObjectComponent.h"
+#include "Game/SpriteObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
+#include "Game/TextObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
 #include "Rendering/Systems/SpriteRenderSystem.h"
@@ -11,7 +17,6 @@
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
-#include "Vulkan/Model.h"
 #include "Vulkan/Renderer.h"
 #include "Vulkan/VulkanInterface.h"
 #include "Vulkan/Window.h"
@@ -26,8 +31,8 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 	const mage::Transform& transform,
 	f32 speed,
 	PhysicsRigidBodyParams ballRigidBodyParams,
-	std::shared_ptr<Vulkan::Model> ballModel,
-	u32 ballTextureIndex,
+	AssetHandle<StaticMesh> ballMesh,
+	AssetHandle<Texture> ballTexture,
 	f32 ballSpeed,
 	i32 inputSpawnBall)
 {
@@ -44,8 +49,8 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 
 	ComponentTemplate<BallSpawnerComponent> ballSpawnerTemplate;
 	ballSpawnerTemplate.RigidBodyParams = ballRigidBodyParams;
-	ballSpawnerTemplate.Model = ballModel;
-	ballSpawnerTemplate.TextureIndex = ballTextureIndex;
+	ballSpawnerTemplate.Mesh = ballMesh;
+	ballSpawnerTemplate.Texture = ballTexture;
 	ballSpawnerTemplate.Speed = ballSpeed;
 	ballSpawnerTemplate.InputSpawn = inputSpawnBall;
 	GameObject::CreateComponent(object, ballSpawnerTemplate);
@@ -56,8 +61,8 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 std::shared_ptr<TransformableObject> CreateLevelObject(
 	const mage::Transform& transform,
 	PhysicsRigidBodyParams rigidBodyParams,
-	std::shared_ptr<Vulkan::Model> model,
-	u32 textureIndex)
+	AssetHandle<StaticMesh> mesh,
+	AssetHandle<Texture> texture)
 {
 	std::shared_ptr<TransformableObject> objectPtr = std::make_shared<TransformableObject>();
 	TransformableObject& object = *objectPtr.get();
@@ -68,8 +73,8 @@ std::shared_ptr<TransformableObject> CreateLevelObject(
 	GameObject::CreateComponent(object, rigidBodyTemplate);
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Model = model;
-	staticMeshTemplate.TextureIndex = textureIndex;
+	staticMeshTemplate.Mesh = mesh;
+	staticMeshTemplate.Texture = texture;
 	GameObject::CreateComponent(object, staticMeshTemplate);
 
 	return objectPtr;
@@ -78,8 +83,8 @@ std::shared_ptr<TransformableObject> CreateLevelObject(
 std::shared_ptr<TransformableObject> CreateCapsule(
 	const mage::Transform& transform,
 	PhysicsRigidBodyParams rigidBodyParams,
-	std::shared_ptr<Vulkan::Model> model,
-	u32 textureIndex,
+	AssetHandle<StaticMesh> mesh,
+	AssetHandle<Texture> texture,
 	i32 inputNeg,
 	i32 inputPos)
 {
@@ -101,11 +106,55 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 	GameObject::CreateComponent(capsule, rigidBodyTemplate);
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Model = model;
-	staticMeshTemplate.TextureIndex = textureIndex;
+	staticMeshTemplate.Mesh = mesh;
+	staticMeshTemplate.Texture = texture;
 	GameObject::CreateComponent(capsule, staticMeshTemplate);
 
 	return capsulePtr;
+}
+
+std::shared_ptr<GameObject> CreateUserInterface(
+	AssetHandle<Texture> texture,
+	AssetHandle<Font> fontA,
+	AssetHandle<Font> fontB)
+{
+	std::shared_ptr<GameObject> objectPtr = std::make_shared<GameObject>();
+	GameObject& object = *objectPtr.get();
+
+	ComponentTemplate<SpriteObjectComponent> spriteTemplate
+	{
+		.ScreenCoordsMin = { 50.0f, 50.0f },
+		.ScreenCoordsMax = { 150.0f, 150.0f },
+		.TextureCoordsMin = { 0.0f, 0.0f },
+		.TextureCoordsMax = { 1.0f, 1.0f },
+		.Texture = texture
+	};
+
+	GameObject::CreateComponent(object, spriteTemplate);
+
+	ComponentTemplate<TextObjectComponent> textTemplateA
+	{
+		.Text = "Merely Another Game Engine",
+		.Color = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f),
+		.ScreenPosition = glm::vec2(180.0f, 90.0f),
+		.Scale = 40.0f,
+		.Font = fontA
+	};
+
+	GameObject::CreateComponent(object, textTemplateA);
+
+	ComponentTemplate<TextObjectComponent> textTemplateB
+	{
+		.Text = "M.A.G.E.",
+		.Color = glm::vec4(0.5f, 1.0f, 1.0f, 1.0f),
+		.ScreenPosition = glm::vec2(180.0f, 140.0f),
+		.Scale = 40.0f,
+		.Font = fontB
+	};
+
+	GameObject::CreateComponent(object, textTemplateB);
+
+	return objectPtr;
 }
 
 i32 main()
@@ -121,34 +170,7 @@ i32 main()
 	Vulkan::Window window = vulkan.CreateWindow(windowCreateInfo);
 	Vulkan::Renderer renderer{ vulkan, window };
 
-	mage::Array<mage::StringView> meshTexturePaths
-	{
-		"Textures/cube.png",
-		"Textures/ball.png",
-		"Textures/cylinder.png",
-		"Textures/capsule.png",
-		"Textures/cone.png"
-	};
-
-	mage::Array<mage::StringView> spriteTexturePaths
-	{
-		"Textures/default.png"
-	};
-
-	mage::Array<mage::StringView> fontPaths
-	{
-		"Fonts/ArianaVioleta-dz2K.ttf",
-		"Fonts/Orbitron-Regular.ttf",
-	};
-
 	Vulkan::ShaderCompiler shaderCompiler;
-
-	GameWorld world(
-		std::make_unique<InputSystem>(window),
-		std::make_unique<PhysicsSystem>(),
-		std::make_unique<MeshRenderSystem>(renderer, shaderCompiler, meshTexturePaths),
-		std::make_unique<SpriteRenderSystem>(renderer, shaderCompiler, spriteTexturePaths),
-		std::make_unique<TextRenderSystem>(renderer, shaderCompiler, fontPaths));
 
 	constexpr f32 boardSize = 20.0f;
 
@@ -160,77 +182,99 @@ i32 main()
 	constexpr f32 capsuleElevation = 2.0f;
 	constexpr f32 capsuleRadius = 2.0f;
 	constexpr f32 capsuleLength = 1.5f;
-	
+
 	constexpr f32 coneHeight = 8.0f;
 	constexpr f32 coneRadius = 5.0f;
 
 	constexpr f32 ballRadius = 1.0f;
 
+	AssetManager assetManager;
+
+	AssetHandle<StaticMesh> boxMesh = Factory<StaticMesh>::MakeBox({ boardSize, boardSize, 1.0f }, renderer, assetManager);
+	AssetHandle<StaticMesh> cylinderMesh = Factory<StaticMesh>::MakeCylinder(cornerRadius, cornerHalfHeight, renderer, assetManager);
+	AssetHandle<StaticMesh> capsuleMesh = Factory<StaticMesh>::MakeCapsule(capsuleRadius, capsuleLength, renderer, assetManager);
+	AssetHandle<StaticMesh> coneMesh = Factory<StaticMesh>::MakeCone(coneRadius, coneHeight, renderer, assetManager);
+	AssetHandle<StaticMesh> ballMesh = Factory<StaticMesh>::MakeBall(ballRadius, renderer, assetManager);
+
+	AssetHandle<Texture> spriteTexture = Factory<Texture>::FromFile("Textures/default.png", renderer, assetManager);
+	AssetHandle<Texture> cubeTexture = Factory<Texture>::FromFile("Textures/cube.png", renderer, assetManager);
+	AssetHandle<Texture> ballTexture = Factory<Texture>::FromFile("Textures/ball.png", renderer, assetManager);
+	AssetHandle<Texture> cylinderTexture = Factory<Texture>::FromFile("Textures/cylinder.png", renderer, assetManager);
+	AssetHandle<Texture> capsuleTexture = Factory<Texture>::FromFile("Textures/capsule.png", renderer, assetManager);
+	AssetHandle<Texture> coneTexture = Factory<Texture>::FromFile("Textures/cone.png", renderer, assetManager);
+
+	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf", renderer, assetManager);
+	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf", renderer, assetManager);
+
+	GameWorld world(
+		std::make_unique<InputSystem>(window),
+		std::make_unique<PhysicsSystem>(),
+		std::make_unique<MeshRenderSystem>(renderer, shaderCompiler, assetManager),
+		std::make_unique<SpriteRenderSystem>(renderer, shaderCompiler, assetManager),
+		std::make_unique<TextRenderSystem>(renderer, shaderCompiler, assetManager));
+
 	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.1f, 1.0f });
 	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.05f, 0.0f });
 	
 	std::shared_ptr<physx::PxGeometry> boxCollision = std::make_unique<physx::PxBoxGeometry>(boardSize, boardSize, 1.0f);
-	std::shared_ptr<Vulkan::Model> boxModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeBox({ boardSize, boardSize, 1.0f }));
 	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, nullptr, boxCollision, floorMaterial };
 	
 	std::shared_ptr<physx::PxCustomGeometryExt::CylinderCallbacks> cylinderCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * cornerHalfHeight, cornerRadius);
 	std::shared_ptr<physx::PxGeometry> cylinderCollision = std::make_shared<physx::PxCustomGeometry>(*cylinderCollisionCallbacks.get());
-	std::shared_ptr<Vulkan::Model> cylinderModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCylinder(cornerRadius, cornerHalfHeight));
 	PhysicsRigidBodyParams cylinderRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cylinderCollisionCallbacks, cylinderCollision, defaultMaterial };
 	
 	std::shared_ptr<physx::PxGeometry> capsuleCollision = std::make_unique<physx::PxCapsuleGeometry>(capsuleRadius, capsuleLength);
-	std::shared_ptr<Vulkan::Model> capsuleModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCapsule(capsuleRadius, capsuleLength));
 	PhysicsRigidBodyParams capsuleRigidBodyParams = { PhysicsSystemObjectType::RigidKinematic, nullptr, capsuleCollision, defaultMaterial };
 	
 	std::shared_ptr<physx::PxCustomGeometryExt::ConeCallbacks> coneCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::ConeCallbacks>(coneHeight, coneRadius);
 	std::shared_ptr<physx::PxGeometry> coneCollision = std::make_shared<physx::PxCustomGeometry>(*coneCollisionCallbacks.get());
-	std::shared_ptr<Vulkan::Model> coneModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeCone(coneRadius, coneHeight));
 	PhysicsRigidBodyParams coneRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, coneCollisionCallbacks, coneCollision, defaultMaterial };
 
 	std::shared_ptr<physx::PxGeometry> ballCollision = std::make_unique<physx::PxSphereGeometry>(ballRadius);
-	std::shared_ptr<Vulkan::Model> ballModel = std::make_unique<Vulkan::Model>(renderer, Vulkan::Model::MakeBall(ballRadius));
 	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, nullptr, ballCollision, defaultMaterial };
 
 	{
+		world.AddObject(CreateUserInterface(spriteTexture, fontArianaVioleta, fontOrbitron));
+
 		mage::Transform transform;
 
-		world.AddObject(CreateLevelObject(transform, boxRigidBodyParams, boxModel, 0));
+		world.AddObject(CreateLevelObject(transform, boxRigidBodyParams, boxMesh, cubeTexture));
 
 		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
-		world.AddObject(CreateControllableCamera(transform, 10.0f, ballRigidBodyParams, ballModel, 1, 10.0f, GLFW_KEY_F));
+		world.AddObject(CreateControllableCamera(transform, 10.0f, ballRigidBodyParams, ballMesh, ballTexture, 10.0f, GLFW_KEY_F));
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
 		
 		transform.Position = {};
-		world.AddObject(CreateLevelObject(transform, coneRigidBodyParams, coneModel, 4));
+		world.AddObject(CreateLevelObject(transform, coneRigidBodyParams, coneMesh, coneTexture));
 		
 		transform.Position = glm::vec3(cornerPosition, cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderModel, 2));
+		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
 		
 		transform.Position = glm::vec3(-cornerPosition, cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderModel, 2));
+		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
 		
 		transform.Position = glm::vec3(-cornerPosition, -cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderModel, 2));
+		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
 		
 		transform.Position = glm::vec3(cornerPosition, -cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderModel, 2));
+		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
 		
 		transform.Rotation = {};
 		transform.Position = glm::vec3(-capsuleDistance, 0.0f, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, 3, GLFW_KEY_H, GLFW_KEY_J));
+		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_H, GLFW_KEY_J));
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
 		transform.Position = glm::vec3(0.0f, capsuleDistance, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, 3, GLFW_KEY_U, GLFW_KEY_I));
+		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_U, GLFW_KEY_I));
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.0f));
 		transform.Position = glm::vec3(capsuleDistance, 0.0f, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, 3, GLFW_KEY_O, GLFW_KEY_P));
+		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_O, GLFW_KEY_P));
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
 		transform.Position = glm::vec3(0.0f, -capsuleDistance, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleModel, 3, GLFW_KEY_K, GLFW_KEY_L));
+		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_K, GLFW_KEY_L));
 	}
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();

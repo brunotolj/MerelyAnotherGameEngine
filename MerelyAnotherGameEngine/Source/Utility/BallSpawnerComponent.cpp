@@ -9,8 +9,8 @@
 BallSpawnerComponent::BallSpawnerComponent(TransformableObject& owner, const ComponentTemplate<BallSpawnerComponent>& creationTemplate) :
 	GameObjectComponent(owner),
 	mRigidBodyParams(creationTemplate.RigidBodyParams),
-	mModel(creationTemplate.Model),
-	mTextureIndex(creationTemplate.TextureIndex),
+	mMesh(creationTemplate.Mesh),
+	mTexture(creationTemplate.Texture),
 	mSpeed(creationTemplate.Speed),
 	mInputSpawn(creationTemplate.InputSpawn)
 {
@@ -44,8 +44,8 @@ void BallSpawnerComponent::SpawnBall()
 	GameObject::CreateComponent(ball, rigidBodyTemplate);
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Model = mModel;
-	staticMeshTemplate.TextureIndex = mTextureIndex;
+	staticMeshTemplate.Mesh = mMesh;
+	staticMeshTemplate.Texture = mTexture;
 	GameObject::CreateComponent(ball, staticMeshTemplate);
 
 	ComponentTemplate<KillZObjectComponent> killZTemplate;

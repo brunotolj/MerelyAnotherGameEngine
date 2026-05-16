@@ -1,13 +1,13 @@
 #include "Rendering/Systems/MeshRenderSystem.h"
-#include "Vulkan/Model.h"
+#include "Assets/AssetManager.h"
+#include "Assets/Texture.h"
+#include "Assets/StaticMesh.h"
 #include "Vulkan/Renderer.h"
 
-MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths) :
-	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler))
+MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager) :
+	mRenderer(renderer), mAssetManager(inAssetManager), mPipeline(CreatePipeline(inShaderCompiler))
 {
 	u32 uniformBufferCount = mRenderer.cMaxFramesInFlight;
-	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
-	mage_check(textureCount > 0);
 
 	Vulkan::BufferCreateInfo bufferCreateInfo
 	{
@@ -22,10 +22,6 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::Sha
 		mUniformBuffers.Add(mRenderer.CreateBuffer(bufferCreateInfo));
 		mUniformBuffers[i].Map();
 	}
-
-	mTextures.Reserve(textureCount);
-	for (u32 i = 0; i < textureCount; ++i)
-		mTextures.AddConstruct(mRenderer, Vulkan::Texture::LoadFromFile(texturePaths[i]));
 }
 
 void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data)
@@ -44,6 +40,12 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, Sc
 
 	for (const MeshRenderData& meshData : data.Meshes)
 	{
+		StaticMesh const* mesh = meshData.Mesh.GetAsset();
+		mage_check(mesh);
+
+		Texture const* texture = meshData.Texture.GetAsset();
+		mage_check(texture);
+
 		{
 			PushConstantData push;
 			push.Transform = meshData.Transform;
@@ -61,9 +63,7 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, Sc
 		}
 
 		{
-			mage_check(meshData.TextureIndex >= 0 && meshData.TextureIndex < mTextures.GetSize());
-
-			vk::DescriptorImageInfo imageInfo = mTextures[meshData.TextureIndex].GetDescriptorInfo();
+			vk::DescriptorImageInfo imageInfo = texture->GetDescriptorInfo();
 
 			mage::Array<vk::WriteDescriptorSet> descriptorWrites
 			{
@@ -87,8 +87,8 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, Sc
 			mPipeline.PushDescriptorSet(frameData.CommandBuffer, pushInfo);
 		}
 
-		meshData.Mesh->Bind(frameData.CommandBuffer);
-		meshData.Mesh->Draw(frameData.CommandBuffer);
+		mesh->Bind(frameData.CommandBuffer);
+		mesh->Draw(frameData.CommandBuffer);
 	}
 }
 
@@ -109,8 +109,8 @@ Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& 
 			{ vk::ShaderStageFlagBits::eVertex, "vertMain" },
 			{ vk::ShaderStageFlagBits::eFragment, "fragMain" }
 		},
-		.InputBindingDescriptions = Vulkan::Model::Vertex::GetBindingDescriptions(),
-		.InputAttributeDescriptions = Vulkan::Model::Vertex::GetAttributeDescriptions(),
+		.InputBindingDescriptions = StaticMesh::Vertex::GetBindingDescriptions(),
+		.InputAttributeDescriptions = StaticMesh::Vertex::GetAttributeDescriptions(),
 		.DescriptorSetBindings
 		{
 			{

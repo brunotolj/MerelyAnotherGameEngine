@@ -1,11 +1,10 @@
 #include "Rendering/Systems/TextRenderSystem.h"
+#include "Assets/AssetManager.h"
 #include "Vulkan/Renderer.h"
 
-TextRenderSystem::TextRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& fontPaths)
-	: mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler))
+TextRenderSystem::TextRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager)
+	: mRenderer(renderer), mAssetManager(inAssetManager), mPipeline(CreatePipeline(inShaderCompiler))
 {
-	CreateGlyphBuffer(fontPaths[0]);
-	CreateGlyphBuffer(fontPaths[1]);
 	CreateVertexBuffer();
 }
 
@@ -20,13 +19,13 @@ void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage
 
 	for (TextRenderData const& textData : data)
 	{
-		FontData& fontData = mFonts[textData.FontIndex];
-		Vulkan::Buffer& glyphBuffer = mGlyphBuffers[textData.FontIndex];
-		auto& glyphBufferOffset = mGlyphBufferOffsets[textData.FontIndex];
+		Font const* font = textData.Font.GetAsset();
+		if (!mage_ensure(font))
+			continue;
 
 		cstr text = textData.Text.GetCString();
 		glm::vec2 position = textData.ScreenPosition;
-		f32 scale = textData.Scale / fontData.UnitsPerEm;
+		f32 scale = textData.Scale / font->GetUnitsPerEm();
 
 		while (*text)
 		{
@@ -39,21 +38,17 @@ void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage
 				continue;
 			}
 
-			GlyphData& glyphData = fontData.Glyphs.contains(glyph) ? fontData.Glyphs[glyph] : fontData.MissingCharacterGlyph;
+			Font::GlyphData const& glyphData = font->GetGlyphData(glyph);
 
 			if (glyphData.Contours.GetSize() > 0)
 			{
 				glm::vec2 offset = { f32(glyphData.LeftSideBearing), -glyphData.MinCoords.y };
 
-				u32 curveCount = 0;
-				for (GlyphContourData const& contour : glyphData.Contours)
-					curveCount += (contour.Points.GetSize() - 1) / 2;
-
 				{
 					PushConstantData push;
 					push.Color = textData.Color;
-					push.Curves = glyphBuffer.GetDeviceAddress() + glyphBufferOffset[glyph];
-					push.CurveCount = curveCount;
+					push.Curves = font->GetGlyphBufferDeviceAddress() + glyphData.BufferOffset;
+					push.CurveCount = glyphData.TotalCurveCount;
 					push.ScreenPos = (position + scale * offset) * (2.0f / extent) - 1.0f;
 					push.ScreenSize = 2.0f * scale * (glyphData.MaxCoords - glyphData.MinCoords) / extent;
 					push.GlyphBoundsMin = glyphData.MinCoords;
@@ -107,55 +102,6 @@ Vulkan::Pipeline TextRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& 
 	};
 
 	return mRenderer.CreatePipeline(pipelineCreateInfo);
-}
-
-void TextRenderSystem::CreateGlyphBuffer(mage::StringView fontPath)
-{
-	mFonts.AddDefault();
-	FontData& font = mFonts.GetLast();
-	font.InitFromFile(fontPath);
-
-	mage::Array<BezierCurve> curveData;
-
-	mGlyphBufferOffsets.AddDefault();
-	auto& offsets = mGlyphBufferOffsets.GetLast();
-
-	for (auto const& glyph : font.Glyphs)
-	{
-		offsets[glyph.first] = curveData.GetSize() * sizeof(BezierCurve);
-
-		for (GlyphContourData const& contour : glyph.second.Contours)
-			for (u32 i = 1; i < contour.Points.GetSize(); i += 2)
-				curveData.Add({ contour.Points[i - 1], contour.Points[i], contour.Points[i + 1] });
-	}
-
-	vk::DeviceSize dataSize = curveData.GetSize() * sizeof(BezierCurve);
-
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
-	{
-		.Size = dataSize,
-		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
-		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-	};
-
-	Vulkan::Buffer stagingBuffer = mRenderer.CreateBuffer(stagingBufferCreateInfo);
-
-	stagingBuffer.Map();
-	stagingBuffer.Write((void*)curveData.GetData(), dataSize);
-
-	Vulkan::BufferCreateInfo glyphBufferCreateInfo
-	{
-		.Size = dataSize,
-		.UsageFlags = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst,
-		.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
-	};
-
-	mGlyphBuffers.Add(mRenderer.CreateBuffer(glyphBufferCreateInfo));
-
-	mRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
-		{
-			mGlyphBuffers.GetLast().CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		});
 }
 
 void TextRenderSystem::CreateVertexBuffer()

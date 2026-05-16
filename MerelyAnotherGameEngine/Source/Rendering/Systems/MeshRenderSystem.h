@@ -1,11 +1,14 @@
 #pragma once
 
+#include "Assets/StaticMesh.h"
+#include "Assets/Texture.h"
+#include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
-#include "Vulkan/Texture.h"
+
+class AssetManager;
 
 namespace Vulkan
 {
-	class Model;
 	class Renderer;
 	struct RenderFrameData;
 }
@@ -18,9 +21,9 @@ struct MeshUBO
 
 struct MeshRenderData
 {
-	const Vulkan::Model* Mesh;
 	glm::mat4 Transform;
-	u32 TextureIndex;
+	AssetHandle<StaticMesh> Mesh;
+	AssetHandle<Texture> Texture;
 };
 
 struct SceneRenderData
@@ -43,7 +46,7 @@ class MeshRenderSystem : public NonCopyableClass
 	};
 
 public:
-	MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths);
+	MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager);
 
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data);
 
@@ -52,11 +55,11 @@ private:
 
 	Vulkan::Renderer const& mRenderer;
 
+	AssetManager const& mAssetManager;
+
 	Vulkan::Pipeline mPipeline;
 
 	mage::Array<Vulkan::Buffer> mUniformBuffers;
-
-	mage::Array<Vulkan::Texture> mTextures;
 
 	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler);
 };

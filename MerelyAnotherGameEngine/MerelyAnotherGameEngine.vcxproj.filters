@@ -37,6 +37,9 @@
     <Filter Include="Source Files\Vulkan">
       <UniqueIdentifier>{974dfce2-5b9c-4236-9599-0b14cd965c9c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Assets">
+      <UniqueIdentifier>{c26a4de3-a8b8-4a21-ac21-cba156ffe5e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -93,12 +96,6 @@
     <ClCompile Include="Source\Vulkan\Buffer.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Vulkan\Texture.cpp">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Vulkan\Model.cpp">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Vulkan\Image.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
@@ -111,8 +108,35 @@
     <ClCompile Include="Source\Rendering\Systems\TextRenderSystem.cpp">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Rendering\Font.cpp">
-      <Filter>Source Files\Rendering</Filter>
+    <ClCompile Include="Source\Assets\AssetManager.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\Font.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\Asset.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\FontFactory.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\Texture.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\TextureFactory.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\StaticMesh.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\StaticMeshFactory.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\SpriteObjectComponent.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\TextObjectComponent.cpp">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -200,12 +224,6 @@
     <ClInclude Include="Source\Vulkan\Buffer.h">
       <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan\Texture.h">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Vulkan\Model.h">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Vulkan\Image.h">
       <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
@@ -215,8 +233,35 @@
     <ClInclude Include="Source\Rendering\Systems\TextRenderSystem.h">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Rendering\Font.h">
-      <Filter>Source Files\Rendering</Filter>
+    <ClInclude Include="Source\Assets\AssetManager.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\Font.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\Asset.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\FontFactory.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\Texture.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\TextureFactory.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\StaticMesh.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\StaticMeshFactory.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\SpriteObjectComponent.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\TextObjectComponent.h">
+      <Filter>Source Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

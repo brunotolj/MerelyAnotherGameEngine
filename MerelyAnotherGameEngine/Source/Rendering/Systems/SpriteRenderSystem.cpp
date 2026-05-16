@@ -1,12 +1,12 @@
 #include "Rendering/Systems/SpriteRenderSystem.h"
+#include "Assets/AssetManager.h"
+#include "Assets/Texture.h"
 #include "Vulkan/Renderer.h"
 
-SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, const mage::Array<mage::StringView>& texturePaths) :
-	mRenderer(renderer), mPipeline(CreatePipeline(inShaderCompiler))
+SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager) :
+	mRenderer(renderer), mAssetManager(inAssetManager), mPipeline(CreatePipeline(inShaderCompiler))
 {
 	u32 uniformBufferCount = Vulkan::Renderer::cMaxFramesInFlight;
-	u32 textureCount = static_cast<u32>(texturePaths.GetSize());
-	mage_check(textureCount > 0);
 
 	Vulkan::BufferCreateInfo bufferCreateInfo
 	{
@@ -21,10 +21,6 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan:
 		mUniformBuffers.Add(mRenderer.CreateBuffer(bufferCreateInfo));
 		mUniformBuffers[i].Map();
 	}
-
-	mTextures.Reserve(textureCount);
-	for (u32 i = 0; i < textureCount; ++i)
-		mTextures.AddConstruct(mRenderer, Vulkan::Texture::LoadFromFile(texturePaths[i]));
 
 	CreateVertexBuffer();
 }
@@ -47,6 +43,9 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 
 	for (const SpriteRenderData& spriteData : data)
 	{
+		Texture const* texture = spriteData.Texture.GetAsset();
+		mage_check(texture);
+
 		{
 			PushConstantData push;
 
@@ -76,9 +75,7 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 		}
 
 		{
-			mage_check(spriteData.TextureIndex >= 0 && spriteData.TextureIndex < mTextures.GetSize());
-
-			vk::DescriptorImageInfo imageInfo = mTextures[spriteData.TextureIndex].GetDescriptorInfo();
+			vk::DescriptorImageInfo imageInfo = texture->GetDescriptorInfo();
 
 			mage::Array<vk::WriteDescriptorSet> descriptorWrites
 			{

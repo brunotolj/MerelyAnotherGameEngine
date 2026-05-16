@@ -8,7 +8,7 @@
 
 namespace mage
 {
-	template<typename T>
+	template<typename Type>
 	class Array
 	{
 	public:
@@ -25,15 +25,15 @@ namespace mage
 					ResizeUninitialized(inInitialSize);
 		}
 
-		Array(std::initializer_list<T> inElements)
+		Array(std::initializer_list<Type> inElements)
 		{
 			InitFrom_Copy(inElements.begin(), u32(inElements.size()));
 		}
 
 		Array(Array const& inOther) { *this = inOther; }
 		Array(Array&& inOther) { *this = std::move(inOther); }
-		Array(std::vector<T> const& inOther) { *this = inOther; }
-		Array(std::vector<T>&& inOther) { *this = std::move(inOther); }
+		Array(std::vector<Type> const& inOther) { *this = inOther; }
+		Array(std::vector<Type>&& inOther) { *this = std::move(inOther); }
 
 		Array& operator=(Array const& inOther)
 		{
@@ -56,13 +56,13 @@ namespace mage
 			return *this;
 		}
 
-		Array& operator=(std::vector<T> const& inOther)
+		Array& operator=(std::vector<Type> const& inOther)
 		{
 			InitFrom_Copy(inOther.data(), u32(inOther.size()));
 			return *this;
 		}
 
-		Array& operator=(std::vector<T>&& inOther)
+		Array& operator=(std::vector<Type>&& inOther)
 		{
 			InitFrom_Move(inOther.data(), u32(inOther.size()));
 			inOther.clear();
@@ -75,19 +75,19 @@ namespace mage
 			_aligned_free(mElements);
 		}
 
-		T* GetData() const { return mElements; }
+		Type* GetData() const { return mElements; }
 		u32 GetSize() const { return mSize; }
 		bool IsEmpty() const { return mSize == 0; }
 
-		T& operator[](u32 inIndex) { return mElements[inIndex]; }
-		T const& operator[](u32 inIndex) const { return mElements[inIndex]; }
+		Type& operator[](u32 inIndex) { return mElements[inIndex]; }
+		Type const& operator[](u32 inIndex) const { return mElements[inIndex]; }
 
-		T& GetFirst() { return mElements[0]; }
-		T const& GetFirst() const { return mElements[0]; }
-		T& GetLast() { return mElements[mSize - 1]; }
-		T const& GetLast() const { return mElements[mSize - 1]; }
+		Type& GetFirst() { return mElements[0]; }
+		Type const& GetFirst() const { return mElements[0]; }
+		Type& GetLast() { return mElements[mSize - 1]; }
+		Type const& GetLast() const { return mElements[mSize - 1]; }
 
-		u32 Add(T const& inElement)
+		u32 Add(Type const& inElement)
 		{
 			if (mSize == mCapacity)
 				Realloc(mSize + 1);
@@ -95,7 +95,7 @@ namespace mage
 			return AddChecked(inElement);
 		}
 
-		u32 Add(T&& inElement)
+		u32 Add(Type&& inElement)
 		{
 			if (mSize == mCapacity)
 				Realloc(mSize + 1);
@@ -108,7 +108,7 @@ namespace mage
 			if (mSize == mCapacity)
 				Realloc(mSize + 1);
 
-			return AddChecked(T());
+			return AddChecked(Type());
 		}
 
 		u32 AddUninitialized()
@@ -125,11 +125,11 @@ namespace mage
 			if (mSize == mCapacity)
 				Realloc(mSize + 1);
 
-			new (mElements + mSize) T(args...);
+			new (mElements + mSize) Type(args...);
 			return mSize++;
 		}
 
-		bool Insert(T const& inElement, u32 inIndex)
+		bool Insert(Type const& inElement, u32 inIndex)
 		{
 			if (inIndex > mSize)
 				return false;
@@ -145,7 +145,7 @@ namespace mage
 			return true;
 		}
 
-		bool InsertSwap(T const& inElement, u32 inIndex)
+		bool InsertSwap(Type const& inElement, u32 inIndex)
 		{
 			if (inIndex > mSize)
 				return false;
@@ -165,7 +165,7 @@ namespace mage
 			return true;
 		}
 
-		bool Remove(T const& inElement)
+		bool Remove(Type const& inElement)
 		{
 			for (u32 i = 0; i < mSize; ++i)
 			{
@@ -176,7 +176,7 @@ namespace mage
 					for (u32 j = i; j < mSize; ++j)
 						mElements[j] = std::move(mElements[j + 1]);
 
-					mElements[mSize].~T();
+					mElements[mSize].~Type();
 					return true;
 				}
 			}
@@ -184,7 +184,7 @@ namespace mage
 			return false;
 		}
 
-		bool RemoveSwap(T const& inElement)
+		bool RemoveSwap(Type const& inElement)
 		{
 			for (u32 i = 0; i < mSize; ++i)
 			{
@@ -194,7 +194,7 @@ namespace mage
 
 					mElements[i] = std::move(mElements[mSize]);
 
-					mElements[mSize].~T();
+					mElements[mSize].~Type();
 					return true;
 				}
 			}
@@ -213,7 +213,7 @@ namespace mage
 			for (u32 i = inIndex; i < mSize; ++i)
 				mElements[i] = std::move(mElements[i + 1]);
 
-			mElements[mSize].~T();
+			mElements[mSize].~Type();
 
 			return true;
 		}
@@ -227,7 +227,7 @@ namespace mage
 
 			mElements[inIndex] = std::move(mElements[mSize]);
 
-			mElements[mSize].~T();
+			mElements[mSize].~Type();
 			return true;
 		}
 
@@ -244,10 +244,10 @@ namespace mage
 			Reserve(inNewSize, false);
 
 			for (u32 i = inNewSize; i < mSize; ++i)
-				mElements[i].~T();
+				mElements[i].~Type();
 
 			for (u32 i = mSize; i < inNewSize; ++i)
-				new (mElements + i) T();
+				new (mElements + i) Type();
 
 			mSize = inNewSize;
 		}
@@ -257,7 +257,7 @@ namespace mage
 			Reserve(inNewSize, false);
 
 			for (u32 i = inNewSize; i < mSize; ++i)
-				mElements[i].~T();
+				mElements[i].~Type();
 
 			mSize = inNewSize;
 		}
@@ -265,7 +265,7 @@ namespace mage
 		void Empty()
 		{
 			for (u32 i = 0; i < mSize; ++i)
-				mElements[i].~T();
+				mElements[i].~Type();
 
 			mSize = 0;
 		}
@@ -276,48 +276,48 @@ namespace mage
 			Reserve(inExpectedCapacity, inAllowShrinking);
 		}
 
-		T* Find(T const& inElement)
+		Type* Find(Type const& inElement)
 		{
-			for (T& element : *this)
+			for (Type& element : *this)
 				if (element == inElement)
 					return &element;
 
 			return nullptr;
 		}
 
-		T const* Find(T const& inElement) const
+		Type const* Find(Type const& inElement) const
 		{
-			for (T const& element : *this)
+			for (Type const& element : *this)
 				if (element == inElement)
 					return &element;
 
 			return nullptr;
 		}
 
-		T* Find(std::function<bool(T const&)>&& inPredicate)
+		Type* Find(std::function<bool(Type const&)>&& inPredicate)
 		{
-			for (T& element : *this)
+			for (Type& element : *this)
 				if (inPredicate(element))
 					return &element;
 
 			return nullptr;
 		}
 
-		T const* Find(std::function<bool(T const&)>&& inPredicate) const
+		Type const* Find(std::function<bool(Type const&)>&& inPredicate) const
 		{
-			for (T const& element : *this)
+			for (Type const& element : *this)
 				if (inPredicate(element))
 					return &element;
 
 			return nullptr;
 		}
 
-		bool Contains(T const& inElement) const
+		bool Contains(Type const& inElement) const
 		{
 			return Find(inElement) != nullptr;
 		}
 
-		bool Contains(std::function<bool(T const&)>&& inPredicate) const
+		bool Contains(std::function<bool(Type const&)>&& inPredicate) const
 		{
 			return Find(std::move(inPredicate)) != nullptr;
 		}
@@ -327,8 +327,8 @@ namespace mage
 			std::sort(begin(), end());
 		}
 
-		T* begin() const { return mElements; }
-		T* end() const { return mElements + mSize; }
+		Type* begin() const { return mElements; }
+		Type* end() const { return mElements + mSize; }
 
 	private:
 		void Realloc(u32 inDesiredCapacity)
@@ -347,21 +347,21 @@ namespace mage
 
 			if (mSize)
 			{
-				T* newElements = (T*)_aligned_malloc(mCapacity * sizeof(T), alignof(T));
+				Type* newElements = (Type*)_aligned_malloc(mCapacity * sizeof(Type), alignof(Type));
 				mage_check(newElements);
-				memcpy(newElements, mElements, mSize * sizeof(T));
+				memcpy(newElements, mElements, mSize * sizeof(Type));
 				_aligned_free(mElements);
 				mElements = newElements;
 			}
 			else
 			{
 				_aligned_free(mElements);
-				mElements = (T*)_aligned_malloc(mCapacity * sizeof(T), alignof(T));
+				mElements = (Type*)_aligned_malloc(mCapacity * sizeof(Type), alignof(Type));
 				mage_check(mElements);
 			}
 		}
 
-		void InitFrom_Copy(T const* inFirst, u32 inSize)
+		void InitFrom_Copy(Type const* inFirst, u32 inSize)
 		{
 			Empty();
 			Reserve(inSize);
@@ -370,7 +370,7 @@ namespace mage
 				AddChecked(inFirst[i]);
 		}
 
-		void InitFrom_Move(T* inFirst, u32 inSize)
+		void InitFrom_Move(Type* inFirst, u32 inSize)
 		{
 			Empty();
 			Reserve(inSize);
@@ -379,19 +379,19 @@ namespace mage
 				AddChecked(std::move(inFirst[i]));
 		}
 
-		u32 AddChecked(T const& inElement)
+		u32 AddChecked(Type const& inElement)
 		{
-			new (mElements + mSize) T(inElement);
+			new (mElements + mSize) Type(inElement);
 			return mSize++;
 		}
 
-		u32 AddChecked(T&& inElement)
+		u32 AddChecked(Type&& inElement)
 		{
-			new (mElements + mSize) T(std::move(inElement));
+			new (mElements + mSize) Type(std::move(inElement));
 			return mSize++;
 		}
 
-		T* mElements = nullptr;
+		Type* mElements = nullptr;
 		u32 mCapacity = 0;
 		u32 mSize = 0;
 

@@ -1,7 +1,9 @@
-#include "Rendering/Font.h"
+#include "Assets/FontFactory.h"
 
-void FontData::InitFromFile(mage::StringView inPath)
+AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
 {
+	Font* result = new Font();
+
 	u8* reader;
 	std::unordered_map<u32, u32> tableLocations;
 
@@ -29,7 +31,7 @@ void FontData::InitFromFile(mage::StringView inPath)
 
 	reader = file.GetData() + location("head") + 18;
 
-	UnitsPerEm = read16();
+	result->mUnitsPerEm = read16();
 
 	reader += 30;
 
@@ -103,21 +105,21 @@ void FontData::InitFromFile(mage::StringView inPath)
 		{
 			compoundGlyphData.AddDefault();
 			CompoundGlyphData& compoundData = compoundGlyphData.GetLast();
-			
+
 			compoundData.Index = glyphIndex;
-			
+
 			while (true)
 			{
 				u16 flags = read16();
-			
+
 				mage_check((flags >> 1) & 1);
 				mage_check(((flags >> 7) & 1) == 0);
-			
+
 				compoundData.Glyphs.Add(read16());
-			
+
 				glm::vec3 transformX(1.0f, 0.0f, f32((flags & 1) ? i16(read16()) : i8(read8())));
 				glm::vec3 transformY(0.0f, 1.0f, f32((flags & 1) ? i16(read16()) : i8(read8())));
-			
+
 				if ((flags >> 3) & 1)
 				{
 					transformX.x = i16(read16()) / f32(1 << 14);
@@ -218,7 +220,7 @@ void FontData::InitFromFile(mage::StringView inPath)
 			for (u32 componentIndex = 0; componentIndex < compoundData.Glyphs.GetSize(); ++componentIndex)
 			{
 				GlyphRawData& componentRawData = glyphRawData[compoundData.Glyphs[componentIndex]];
-				
+
 				u32 existingPointCount = rawData.Points.GetSize();
 
 				for (u16 contourEndIndex : componentRawData.ContourEndIndices)
@@ -357,7 +359,7 @@ void FontData::InitFromFile(mage::StringView inPath)
 
 	for (glm::u32vec2 mapping : unicodeMapping)
 	{
-		GlyphData& glyph = Glyphs[mapping.x];
+		Font::GlyphData& glyph = result->mGlyphs[mapping.x];
 		GlyphRawData& rawData = glyphRawData[mapping.y];
 
 		glyph.MinCoords = rawData.MinCoords;
@@ -391,7 +393,7 @@ void FontData::InitFromFile(mage::StringView inPath)
 			{
 				contourPoints.Add(contourPoints.GetLast());
 
-				GlyphContourData& contour = glyph.Contours[contourIndex];
+				Font::GlyphData::Contour& contour = glyph.Contours[contourIndex];
 
 				for (u32 i = 1; i < contourPoints.GetSize(); i += 2)
 				{
@@ -399,7 +401,7 @@ void FontData::InitFromFile(mage::StringView inPath)
 					glm::vec2 p1 = contourPoints[i];
 					glm::vec2 p2 = contourPoints[i + 1];
 
-					contour.Points.Add(p0);
+					contour.Add(p0);
 
 					glm::vec2 d0 = p0 - p1;
 					glm::vec2 d1 = p2 - p1;
@@ -424,38 +426,40 @@ void FontData::InitFromFile(mage::StringView inPath)
 					{
 						if (t.x < t.y)
 						{
-							contour.Points.AddConstruct(vspos.x, extv0.y);
-							contour.Points.AddConstruct(vspos.x, vspos.y);
-							contour.Points.AddConstruct(vspos.x, hspos.y);
-							contour.Points.AddConstruct(hspos.x, hspos.y);
-							contour.Points.AddConstruct(exth1.x, hspos.y);
+							contour.AddConstruct(vspos.x, extv0.y);
+							contour.AddConstruct(vspos.x, vspos.y);
+							contour.AddConstruct(vspos.x, hspos.y);
+							contour.AddConstruct(hspos.x, hspos.y);
+							contour.AddConstruct(exth1.x, hspos.y);
 						}
 						else
 						{
-							contour.Points.AddConstruct(extv0.x, hspos.y);
-							contour.Points.AddConstruct(hspos.x, hspos.y);
-							contour.Points.AddConstruct(vspos.x, hspos.y);
-							contour.Points.AddConstruct(vspos.x, vspos.y);
-							contour.Points.AddConstruct(vspos.x, exth1.y);
+							contour.AddConstruct(extv0.x, hspos.y);
+							contour.AddConstruct(hspos.x, hspos.y);
+							contour.AddConstruct(vspos.x, hspos.y);
+							contour.AddConstruct(vspos.x, vspos.y);
+							contour.AddConstruct(vspos.x, exth1.y);
 						}
 					}
 					else if (v)
 					{
-						contour.Points.AddConstruct(vspos.x, extv0.y);
-						contour.Points.AddConstruct(vspos.x, vspos.y);
-						contour.Points.AddConstruct(vspos.x, extv1.y);
+						contour.AddConstruct(vspos.x, extv0.y);
+						contour.AddConstruct(vspos.x, vspos.y);
+						contour.AddConstruct(vspos.x, extv1.y);
 					}
 					else if (h)
 					{
-						contour.Points.AddConstruct(exth0.x, hspos.y);
-						contour.Points.AddConstruct(hspos.x, hspos.y);
-						contour.Points.AddConstruct(exth1.x, hspos.y);
+						contour.AddConstruct(exth0.x, hspos.y);
+						contour.AddConstruct(hspos.x, hspos.y);
+						contour.AddConstruct(exth1.x, hspos.y);
 					}
 					else
-						contour.Points.Add(p1);
+						contour.Add(p1);
 				}
 
-				contour.Points.Add(contourPoints[0]);
+				glyph.TotalCurveCount += contour.GetSize() / 2;
+
+				contour.Add(contourPoints[0]);
 
 				contourPoints.Empty();
 				contourIndex++;
@@ -463,5 +467,7 @@ void FontData::InitFromFile(mage::StringView inPath)
 		}
 	}
 
-	MissingCharacterGlyph = Glyphs[0xFFFF];
+	result->CreateGlyphBuffer(inRenderer);
+
+	return inAssetManager.Register(result);
 }

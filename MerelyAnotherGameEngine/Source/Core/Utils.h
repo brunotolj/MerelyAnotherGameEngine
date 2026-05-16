@@ -5,10 +5,10 @@
 
 namespace mage
 {
-	template<typename T, typename... Rest>
-	inline void HashCombine(u64& inSeed, T const& inValue, Rest &&... inRest)
+	template<typename Type, typename... Rest>
+	inline void HashCombine(u64& inSeed, Type const& inValue, Rest &&... inRest)
 	{
-		inSeed ^= std::hash<T>{}(inValue) + 0x9e3779b9 + (inSeed << 6) + (inSeed >> 2);
+		inSeed ^= std::hash<Type>{}(inValue) + 0x9e3779b9 + (inSeed << 6) + (inSeed >> 2);
 		(HashCombine(inSeed, inRest), ...);
 	};
 

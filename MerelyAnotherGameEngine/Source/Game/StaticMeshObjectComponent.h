@@ -2,17 +2,14 @@
 
 #include "Game/GameObject.h"
 #include "Game/GameObjectComponent.h"
-
-namespace Vulkan
-{
-	class Model;
-}
+#include "Assets/StaticMesh.h"
+#include "Assets/Texture.h"
 
 template<>
 struct ComponentTemplate<class StaticMeshObjectComponent>
 {
-	std::shared_ptr<Vulkan::Model> Model = nullptr;
-	u32 TextureIndex = 0;
+	AssetHandle<StaticMesh> Mesh;
+	AssetHandle<Texture> Texture;
 };
 
 class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject>
@@ -20,13 +17,11 @@ class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject
 public:
 	StaticMeshObjectComponent(TransformableObject& owner, const ComponentTemplate<StaticMeshObjectComponent>& creationTemplate);
 
-	std::shared_ptr<Vulkan::Model> GetModel() const { return mModel; }
-
 	mage::Transform const& GetTransform() const { return mOwner.Transform; }
-
-	u32 GetTextureIndex() const { return mTextureIndex; }
+	AssetHandle<StaticMesh> GetMesh() const { return mMesh; }
+	AssetHandle<Texture> GetTexture() const { return mTexture; }
 
 private:
-	std::shared_ptr<Vulkan::Model> mModel;
-	u32 mTextureIndex;
+	AssetHandle<StaticMesh> mMesh;
+	AssetHandle<Texture> mTexture;
 };
