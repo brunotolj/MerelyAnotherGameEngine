@@ -1,7 +1,7 @@
-#include "Assets/AssetManager.h"
 #include "Assets/FontFactory.h"
 #include "Assets/StaticMeshFactory.h"
 #include "Assets/TextureFactory.h"
+#include "Engine/Engine.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
 #include "Game/InputSystem.h"
@@ -170,7 +170,8 @@ i32 main()
 	Vulkan::Window window = vulkan.CreateWindow(windowCreateInfo);
 	Vulkan::Renderer renderer{ vulkan, window };
 
-	Vulkan::ShaderCompiler shaderCompiler;
+	Engine engine;
+	gEngine = &engine;
 
 	constexpr f32 boardSize = 20.0f;
 
@@ -188,30 +189,28 @@ i32 main()
 
 	constexpr f32 ballRadius = 1.0f;
 
-	AssetManager assetManager;
+	AssetHandle<StaticMesh> boxMesh = Factory<StaticMesh>::MakeBox({ boardSize, boardSize, 1.0f }, renderer);
+	AssetHandle<StaticMesh> cylinderMesh = Factory<StaticMesh>::MakeCylinder(cornerRadius, cornerHalfHeight, renderer);
+	AssetHandle<StaticMesh> capsuleMesh = Factory<StaticMesh>::MakeCapsule(capsuleRadius, capsuleLength, renderer);
+	AssetHandle<StaticMesh> coneMesh = Factory<StaticMesh>::MakeCone(coneRadius, coneHeight, renderer);
+	AssetHandle<StaticMesh> ballMesh = Factory<StaticMesh>::MakeBall(ballRadius, renderer);
 
-	AssetHandle<StaticMesh> boxMesh = Factory<StaticMesh>::MakeBox({ boardSize, boardSize, 1.0f }, renderer, assetManager);
-	AssetHandle<StaticMesh> cylinderMesh = Factory<StaticMesh>::MakeCylinder(cornerRadius, cornerHalfHeight, renderer, assetManager);
-	AssetHandle<StaticMesh> capsuleMesh = Factory<StaticMesh>::MakeCapsule(capsuleRadius, capsuleLength, renderer, assetManager);
-	AssetHandle<StaticMesh> coneMesh = Factory<StaticMesh>::MakeCone(coneRadius, coneHeight, renderer, assetManager);
-	AssetHandle<StaticMesh> ballMesh = Factory<StaticMesh>::MakeBall(ballRadius, renderer, assetManager);
+	AssetHandle<Texture> spriteTexture = Factory<Texture>::FromFile("Textures/default.png", renderer);
+	AssetHandle<Texture> cubeTexture = Factory<Texture>::FromFile("Textures/cube.png", renderer);
+	AssetHandle<Texture> ballTexture = Factory<Texture>::FromFile("Textures/ball.png", renderer);
+	AssetHandle<Texture> cylinderTexture = Factory<Texture>::FromFile("Textures/cylinder.png", renderer);
+	AssetHandle<Texture> capsuleTexture = Factory<Texture>::FromFile("Textures/capsule.png", renderer);
+	AssetHandle<Texture> coneTexture = Factory<Texture>::FromFile("Textures/cone.png", renderer);
 
-	AssetHandle<Texture> spriteTexture = Factory<Texture>::FromFile("Textures/default.png", renderer, assetManager);
-	AssetHandle<Texture> cubeTexture = Factory<Texture>::FromFile("Textures/cube.png", renderer, assetManager);
-	AssetHandle<Texture> ballTexture = Factory<Texture>::FromFile("Textures/ball.png", renderer, assetManager);
-	AssetHandle<Texture> cylinderTexture = Factory<Texture>::FromFile("Textures/cylinder.png", renderer, assetManager);
-	AssetHandle<Texture> capsuleTexture = Factory<Texture>::FromFile("Textures/capsule.png", renderer, assetManager);
-	AssetHandle<Texture> coneTexture = Factory<Texture>::FromFile("Textures/cone.png", renderer, assetManager);
-
-	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf", renderer, assetManager);
-	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf", renderer, assetManager);
+	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf", renderer);
+	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf", renderer);
 
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
 		std::make_unique<PhysicsSystem>(),
-		std::make_unique<MeshRenderSystem>(renderer, shaderCompiler, assetManager),
-		std::make_unique<SpriteRenderSystem>(renderer, shaderCompiler, assetManager),
-		std::make_unique<TextRenderSystem>(renderer, shaderCompiler, assetManager));
+		std::make_unique<MeshRenderSystem>(renderer),
+		std::make_unique<SpriteRenderSystem>(renderer),
+		std::make_unique<TextRenderSystem>(renderer));
 
 	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.1f, 1.0f });
 	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.05f, 0.0f });

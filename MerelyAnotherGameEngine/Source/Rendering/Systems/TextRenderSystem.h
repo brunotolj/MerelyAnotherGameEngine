@@ -42,7 +42,7 @@ class TextRenderSystem : public NonCopyableClass
 	};
 
 public:
-	TextRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager);
+	TextRenderSystem(Vulkan::Renderer const& renderer);
 
 	void RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data);
 
@@ -50,13 +50,12 @@ private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
 
 	Vulkan::Renderer const& mRenderer;
-	AssetManager const& mAssetManager;
 
 	Vulkan::Pipeline mPipeline;
 
 	Vulkan::Buffer mVertexBuffer = nullptr;
 
-	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler);
+	Vulkan::Pipeline CreatePipeline();
 
 	void CreateVertexBuffer();
 };

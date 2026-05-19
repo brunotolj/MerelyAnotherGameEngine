@@ -46,7 +46,7 @@ class MeshRenderSystem : public NonCopyableClass
 	};
 
 public:
-	MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager);
+	MeshRenderSystem(Vulkan::Renderer const& renderer);
 
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data);
 
@@ -55,11 +55,9 @@ private:
 
 	Vulkan::Renderer const& mRenderer;
 
-	AssetManager const& mAssetManager;
-
 	Vulkan::Pipeline mPipeline;
 
 	mage::Array<Vulkan::Buffer> mUniformBuffers;
 
-	Vulkan::Pipeline CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler);
+	Vulkan::Pipeline CreatePipeline();
 };

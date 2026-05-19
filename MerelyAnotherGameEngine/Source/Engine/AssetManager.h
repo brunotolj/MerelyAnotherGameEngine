@@ -31,9 +31,9 @@ private:
 	AssetHandle<Type> Register(Type* inAsset)
 	{
 		if (!mage_ensure(inAsset))
-			return AssetHandle<Type>(*this, 0);
+			return AssetHandle<Type>(0);
 
-		return AssetHandle<Type>(*this, mAssetLists[typeid(Type)].Register(inAsset));
+		return AssetHandle<Type>(mAssetLists[typeid(Type)].Register(inAsset));
 	}
 
 	std::map<std::type_index, AssetList> mAssetLists;

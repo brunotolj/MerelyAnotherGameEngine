@@ -1,6 +1,5 @@
 #pragma once
 
-#include <slang/slang-com-ptr.h>
 #include <vulkan/vulkan_raii.hpp>
 
 namespace slang
@@ -11,8 +10,6 @@ namespace slang
 
 namespace Vulkan
 {
-	using SpirVBinary = mage::Array<u32>;
-
 	struct PipelineShaderStageInfo
 	{
 		vk::ShaderStageFlagBits Stage;
@@ -21,7 +18,7 @@ namespace Vulkan
 
 	struct PipelineCreateInfo
 	{
-		SpirVBinary ShaderCode;
+		mage::Array<u32> ShaderCode;
 		mage::Array<PipelineShaderStageInfo> ShaderStages;
 		mage::Array<vk::VertexInputBindingDescription> InputBindingDescriptions;
 		mage::Array<vk::VertexInputAttributeDescription> InputAttributeDescriptions;
@@ -47,17 +44,5 @@ namespace Vulkan
 		vk::raii::DescriptorSetLayout mDescriptorSetLayout = nullptr;
 		vk::raii::PipelineLayout mPipelineLayout = nullptr;
 		vk::raii::Pipeline mVkPipeline = nullptr;
-	};
-
-	class ShaderCompiler : public NonMovableClass
-	{
-	public:
-		ShaderCompiler();
-
-		SpirVBinary CompileFromFile(mage::StringView inPath) const;
-
-	private:
-		Slang::ComPtr<slang::IGlobalSession> mGlobalSession = nullptr;
-		Slang::ComPtr<slang::ISession> mSession = nullptr;
 	};
 }

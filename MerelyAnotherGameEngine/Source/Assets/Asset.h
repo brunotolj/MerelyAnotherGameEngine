@@ -22,10 +22,8 @@ public:
 	Asset const* GetAsset(std::type_index inType) const;
 
 protected:
-	AssetHandleBase(AssetManager const* inAssetManager, u32 inAssetId)
-		: mAssetManager(inAssetManager), mAssetId(inAssetId) {}
+	AssetHandleBase(u32 inAssetId) : mAssetId(inAssetId) {}
 
-	AssetManager const* mAssetManager;
 	u32 mAssetId;
 };
 
@@ -35,7 +33,7 @@ class AssetHandle : public AssetHandleBase
 	friend AssetManager;
 
 public:
-	AssetHandle() : AssetHandleBase(nullptr, 0) {}
+	AssetHandle() : AssetHandleBase(0) {}
 
 	Type const* GetAsset() const
 	{
@@ -43,6 +41,5 @@ public:
 	}
 
 private:
-	AssetHandle(AssetManager const& inAssetManager, u32 inAssetId)
-		: AssetHandleBase(&inAssetManager, inAssetId) {}
+	AssetHandle(u32 inAssetId) : AssetHandleBase(inAssetId) {}
 };

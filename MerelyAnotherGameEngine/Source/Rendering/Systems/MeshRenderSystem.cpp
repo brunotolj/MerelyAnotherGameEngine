@@ -1,11 +1,9 @@
 #include "Rendering/Systems/MeshRenderSystem.h"
-#include "Assets/AssetManager.h"
-#include "Assets/Texture.h"
-#include "Assets/StaticMesh.h"
+#include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager) :
-	mRenderer(renderer), mAssetManager(inAssetManager), mPipeline(CreatePipeline(inShaderCompiler))
+MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer) :
+	mRenderer(renderer), mPipeline(CreatePipeline())
 {
 	u32 uniformBufferCount = mRenderer.cMaxFramesInFlight;
 
@@ -99,11 +97,11 @@ void MeshRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) cons
 	inCommandBuffer.setConservativeRasterizationModeEXT(vk::ConservativeRasterizationModeEXT::eDisabled);
 }
 
-Vulkan::Pipeline MeshRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)
+Vulkan::Pipeline MeshRenderSystem::CreatePipeline()
 {
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
-		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
+		.ShaderCode = gEngine->mShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
 		.ShaderStages
 		{
 			{ vk::ShaderStageFlagBits::eVertex, "vertMain" },

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Assets/AssetManager.h"
 #include "Assets/StaticMesh.h"
 
 namespace Vulkan
@@ -12,13 +11,13 @@ template<>
 class Factory<StaticMesh>
 {
 public:
-	static AssetHandle<StaticMesh> FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager);
+	static AssetHandle<StaticMesh> FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer);
 
-	static AssetHandle<StaticMesh> MakeBox(glm::vec3 inHalfExtent, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager);
-	static AssetHandle<StaticMesh> MakeBall(f32 inRadius, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager);
-	static AssetHandle<StaticMesh> MakeCylinder(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager);
-	static AssetHandle<StaticMesh> MakeCapsule(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager);
-	static AssetHandle<StaticMesh> MakeCone(f32 inRadius, f32 inHeight, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager);
+	static AssetHandle<StaticMesh> MakeBox(glm::vec3 inHalfExtent, Vulkan::Renderer const& inRenderer);
+	static AssetHandle<StaticMesh> MakeBall(f32 inRadius, Vulkan::Renderer const& inRenderer);
+	static AssetHandle<StaticMesh> MakeCylinder(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer);
+	static AssetHandle<StaticMesh> MakeCapsule(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer);
+	static AssetHandle<StaticMesh> MakeCone(f32 inRadius, f32 inHeight, Vulkan::Renderer const& inRenderer);
 
 private:
 	Factory() {}

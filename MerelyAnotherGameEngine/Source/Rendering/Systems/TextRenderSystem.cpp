@@ -1,9 +1,9 @@
 #include "Rendering/Systems/TextRenderSystem.h"
-#include "Assets/AssetManager.h"
+#include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-TextRenderSystem::TextRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager)
-	: mRenderer(renderer), mAssetManager(inAssetManager), mPipeline(CreatePipeline(inShaderCompiler))
+TextRenderSystem::TextRenderSystem(Vulkan::Renderer const& renderer)
+	: mRenderer(renderer), mPipeline(CreatePipeline())
 {
 	CreateVertexBuffer();
 }
@@ -81,11 +81,11 @@ void TextRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) cons
 	inCommandBuffer.setExtraPrimitiveOverestimationSizeEXT(0.0f);
 }
 
-Vulkan::Pipeline TextRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)
+Vulkan::Pipeline TextRenderSystem::CreatePipeline()
 {
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
-		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/TextShader.slang"),
+		.ShaderCode = gEngine->mShaderCompiler.CompileFromFile("Source/Shaders/TextShader.slang"),
 		.ShaderStages
 		{
 			{ vk::ShaderStageFlagBits::eVertex, "vertMain" },

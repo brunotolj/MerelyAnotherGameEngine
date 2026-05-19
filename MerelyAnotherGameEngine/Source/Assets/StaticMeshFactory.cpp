@@ -1,4 +1,5 @@
 #include "Assets/StaticMeshFactory.h"
+#include "Engine/Engine.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 
@@ -19,7 +20,7 @@ namespace std
 	};
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -94,10 +95,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath, V
 	result->CreateVertexBuffer(inRenderer);
 	result->CreateIndexBuffer(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent, Vulkan::Renderer const& inRenderer)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -115,10 +116,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent, Vul
 	result->CreateVertexBuffer(inRenderer);
 	result->CreateIndexBuffer(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius, Vulkan::Renderer const& inRenderer)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -128,10 +129,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius, Vulkan::Rend
 	result->CreateVertexBuffer(inRenderer);
 	result->CreateIndexBuffer(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -142,10 +143,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHa
 	result->CreateVertexBuffer(inRenderer);
 	result->CreateIndexBuffer(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -156,10 +157,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHal
 	result->CreateVertexBuffer(inRenderer);
 	result->CreateIndexBuffer(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight, Vulkan::Renderer const& inRenderer)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -169,7 +170,7 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight
 	result->CreateVertexBuffer(inRenderer);
 	result->CreateIndexBuffer(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
 
 void Factory<StaticMesh>::AddHemisphere(StaticMesh& inOutResult, mage::Transform inTransform, f32 inRadius, glm::vec2 inUvCenter, f32 inUvRadius, u32 inSubdivisions)

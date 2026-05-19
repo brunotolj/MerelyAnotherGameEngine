@@ -1,10 +1,9 @@
 #include "Rendering/Systems/SpriteRenderSystem.h"
-#include "Assets/AssetManager.h"
-#include "Assets/Texture.h"
+#include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer, Vulkan::ShaderCompiler const& inShaderCompiler, AssetManager const& inAssetManager) :
-	mRenderer(renderer), mAssetManager(inAssetManager), mPipeline(CreatePipeline(inShaderCompiler))
+SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer) :
+	mRenderer(renderer), mPipeline(CreatePipeline())
 {
 	u32 uniformBufferCount = Vulkan::Renderer::cMaxFramesInFlight;
 
@@ -110,11 +109,11 @@ void SpriteRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) co
 	inCommandBuffer.setConservativeRasterizationModeEXT(vk::ConservativeRasterizationModeEXT::eDisabled);
 }
 
-Vulkan::Pipeline SpriteRenderSystem::CreatePipeline(Vulkan::ShaderCompiler const& inShaderCompiler)
+Vulkan::Pipeline SpriteRenderSystem::CreatePipeline()
 {
 	Vulkan::PipelineCreateInfo pipelineCreateInfo
 	{
-		.ShaderCode = inShaderCompiler.CompileFromFile("Source/Shaders/SpriteShader.slang"),
+		.ShaderCode = gEngine->mShaderCompiler.CompileFromFile("Source/Shaders/SpriteShader.slang"),
 		.ShaderStages
 		{
 			{ vk::ShaderStageFlagBits::eVertex, "vertMain" },

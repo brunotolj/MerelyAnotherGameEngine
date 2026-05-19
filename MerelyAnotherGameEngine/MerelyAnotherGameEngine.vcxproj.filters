@@ -40,6 +40,9 @@
     <Filter Include="Source Files\Assets">
       <UniqueIdentifier>{c26a4de3-a8b8-4a21-ac21-cba156ffe5e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{3fbb0c8a-5223-4a5d-ab95-f3e1315baa94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -108,9 +111,6 @@
     <ClCompile Include="Source\Rendering\Systems\TextRenderSystem.cpp">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Assets\AssetManager.cpp">
-      <Filter>Source Files\Assets</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Assets\Font.cpp">
       <Filter>Source Files\Assets</Filter>
     </ClCompile>
@@ -137,6 +137,15 @@
     </ClCompile>
     <ClCompile Include="Source\Game\TextObjectComponent.cpp">
       <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\Engine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\AssetManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\ShaderCompiler.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +242,6 @@
     <ClInclude Include="Source\Rendering\Systems\TextRenderSystem.h">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Assets\AssetManager.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Assets\Font.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
@@ -262,6 +268,15 @@
     </ClInclude>
     <ClInclude Include="Source\Game\TextObjectComponent.h">
       <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\Engine.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\AssetManager.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\ShaderCompiler.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

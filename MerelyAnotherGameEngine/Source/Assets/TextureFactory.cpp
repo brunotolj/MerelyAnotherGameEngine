@@ -1,10 +1,11 @@
 #include "Assets/TextureFactory.h"
+#include "Engine/Engine.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb_image.h>
 
-AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer, AssetManager& inAssetManager)
+AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer)
 {
 	Texture* result = new Texture();
 
@@ -22,5 +23,5 @@ AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath, Vulkan:
 
 	result->CreateImage(inRenderer);
 
-	return inAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result);
 }
