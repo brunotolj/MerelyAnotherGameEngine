@@ -2,12 +2,13 @@
 #include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer) :
-	mRenderer(renderer), mPipeline(CreatePipeline())
+MeshRenderSystem::MeshRenderSystem()
 {
-	u32 uniformBufferCount = mRenderer.cMaxFramesInFlight;
+	CreatePipeline();
 
-	Vulkan::BufferCreateInfo bufferCreateInfo
+	u32 uniformBufferCount = Vulkan::Renderer::cMaxFramesInFlight;
+
+	Vulkan::Buffer::CreateInfo bufferCreateInfo
 	{
 		.Size = sizeof(MeshUBO),
 		.UsageFlags = vk::BufferUsageFlagBits::eUniformBuffer,
@@ -17,7 +18,7 @@ MeshRenderSystem::MeshRenderSystem(Vulkan::Renderer const& renderer) :
 	mUniformBuffers.Reserve(uniformBufferCount);
 	for (u32 i = 0; i < uniformBufferCount; ++i)
 	{
-		mUniformBuffers.Add(mRenderer.CreateBuffer(bufferCreateInfo));
+		mUniformBuffers.AddConstruct(bufferCreateInfo);
 		mUniformBuffers[i].Map();
 	}
 }
@@ -97,9 +98,9 @@ void MeshRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) cons
 	inCommandBuffer.setConservativeRasterizationModeEXT(vk::ConservativeRasterizationModeEXT::eDisabled);
 }
 
-Vulkan::Pipeline MeshRenderSystem::CreatePipeline()
+void MeshRenderSystem::CreatePipeline()
 {
-	Vulkan::PipelineCreateInfo pipelineCreateInfo
+	Vulkan::Pipeline::CreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = gEngine->mShaderCompiler.CompileFromFile("Source/Shaders/MeshShader.slang"),
 		.ShaderStages
@@ -126,5 +127,5 @@ Vulkan::Pipeline MeshRenderSystem::CreatePipeline()
 		}}
 	};
 
-	return mRenderer.CreatePipeline(pipelineCreateInfo);
+	mPipeline.Create(pipelineCreateInfo);
 }

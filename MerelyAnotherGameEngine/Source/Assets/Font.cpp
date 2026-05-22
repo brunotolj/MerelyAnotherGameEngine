@@ -1,5 +1,5 @@
 #include "Assets/Font.h"
-#include "Vulkan/Renderer.h"
+#include "Engine/Engine.h"
 
 Font::GlyphData const& Font::GetGlyphData(u32 inGlyphIndex) const
 {
@@ -20,7 +20,7 @@ u16 Font::GetUnitsPerEm() const
 	return mUnitsPerEm;
 }
 
-void Font::CreateGlyphBuffer(Vulkan::Renderer const& inRenderer)
+void Font::CreateGlyphBuffer()
 {
 	mage::Array<glm::vec2> curveData;
 
@@ -39,28 +39,28 @@ void Font::CreateGlyphBuffer(Vulkan::Renderer const& inRenderer)
 
 	vk::DeviceSize dataSize = curveData.GetSize() * sizeof(glm::vec2);
 
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
+	Vulkan::Buffer::CreateInfo stagingBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 	};
 
-	Vulkan::Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
+	Vulkan::Buffer stagingBuffer(stagingBufferCreateInfo);
 
 	stagingBuffer.Map();
 	stagingBuffer.Write((void*)curveData.GetData(), dataSize);
 
-	Vulkan::BufferCreateInfo glyphBufferCreateInfo
+	Vulkan::Buffer::CreateInfo glyphBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eUniformBuffer | vk::BufferUsageFlagBits::eTransferDst,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
 	};
 
-	mGlyphBuffer = inRenderer.CreateBuffer(glyphBufferCreateInfo);
+	mGlyphBuffer.Create(glyphBufferCreateInfo);
 
-	inRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
+	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 		{
 			mGlyphBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 		});

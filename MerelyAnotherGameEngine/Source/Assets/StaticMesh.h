@@ -3,11 +3,6 @@
 #include "Assets/Asset.h"
 #include "Vulkan/Buffer.h"
 
-namespace Vulkan
-{
-	class Renderer;
-}
-
 class StaticMesh : public Asset
 {
 	friend class Factory<StaticMesh>;
@@ -39,8 +34,8 @@ public:
 private:
 	StaticMesh() {}
 
-	void CreateVertexBuffer(Vulkan::Renderer const& inRenderer);
-	void CreateIndexBuffer(Vulkan::Renderer const& inRenderer);
+	void CreateVertexBuffer();
+	void CreateIndexBuffer();
 
 	Vulkan::Buffer mVertexBuffer = nullptr;
 	Vulkan::Buffer mIndexBuffer = nullptr;

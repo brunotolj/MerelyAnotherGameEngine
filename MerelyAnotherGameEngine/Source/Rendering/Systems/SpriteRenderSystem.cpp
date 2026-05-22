@@ -2,12 +2,13 @@
 #include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer) :
-	mRenderer(renderer), mPipeline(CreatePipeline())
+SpriteRenderSystem::SpriteRenderSystem()
 {
+	CreatePipeline();
+
 	u32 uniformBufferCount = Vulkan::Renderer::cMaxFramesInFlight;
 
-	Vulkan::BufferCreateInfo bufferCreateInfo
+	Vulkan::Buffer::CreateInfo bufferCreateInfo
 	{
 		.Size = sizeof(SpriteUBO),
 		.UsageFlags = vk::BufferUsageFlagBits::eUniformBuffer,
@@ -17,7 +18,7 @@ SpriteRenderSystem::SpriteRenderSystem(Vulkan::Renderer const& renderer) :
 	mUniformBuffers.Reserve(uniformBufferCount);
 	for (u32 i = 0; i < uniformBufferCount; ++i)
 	{
-		mUniformBuffers.Add(mRenderer.CreateBuffer(bufferCreateInfo));
+		mUniformBuffers.AddConstruct(bufferCreateInfo);
 		mUniformBuffers[i].Map();
 	}
 
@@ -109,9 +110,9 @@ void SpriteRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) co
 	inCommandBuffer.setConservativeRasterizationModeEXT(vk::ConservativeRasterizationModeEXT::eDisabled);
 }
 
-Vulkan::Pipeline SpriteRenderSystem::CreatePipeline()
+void SpriteRenderSystem::CreatePipeline()
 {
-	Vulkan::PipelineCreateInfo pipelineCreateInfo
+	Vulkan::Pipeline::CreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = gEngine->mShaderCompiler.CompileFromFile("Source/Shaders/SpriteShader.slang"),
 		.ShaderStages
@@ -138,7 +139,7 @@ Vulkan::Pipeline SpriteRenderSystem::CreatePipeline()
 		}}
 	};
 
-	return mRenderer.CreatePipeline(pipelineCreateInfo);
+	mPipeline.Create(pipelineCreateInfo);
 }
 
 void SpriteRenderSystem::CreateVertexBuffer()
@@ -147,28 +148,28 @@ void SpriteRenderSystem::CreateVertexBuffer()
 
 	f32 vertexData[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
 
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
+	Vulkan::Buffer::CreateInfo stagingBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 	};
 
-	Vulkan::Buffer stagingBuffer = mRenderer.CreateBuffer(stagingBufferCreateInfo);
+	Vulkan::Buffer stagingBuffer(stagingBufferCreateInfo);
 
 	stagingBuffer.Map();
 	stagingBuffer.Write((void*)vertexData, dataSize);
 
-	Vulkan::BufferCreateInfo vertexBufferCreateInfo
+	Vulkan::Buffer::CreateInfo vertexBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
 	};
 
-	mVertexBuffer = mRenderer.CreateBuffer(vertexBufferCreateInfo);
+	mVertexBuffer.Create(vertexBufferCreateInfo);
 
-	mRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
+	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 		{
 			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 		});

@@ -5,7 +5,7 @@
 
 #include <stb_image.h>
 
-AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer)
+AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath)
 {
 	Texture* result = new Texture();
 
@@ -21,7 +21,7 @@ AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath, Vulkan:
 
 	stbi_image_free(imageData);
 
-	result->CreateImage(inRenderer);
+	result->CreateImage();
 
 	return gEngine->mAssetManager.Register(result);
 }

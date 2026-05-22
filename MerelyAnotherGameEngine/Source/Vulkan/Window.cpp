@@ -26,6 +26,15 @@ namespace Vulkan
 		glfwDestroyWindow(mGlfwWindow);
 	}
 
+	vk::raii::SurfaceKHR Window::CreateVkSurface(vk::raii::Instance const& inVkInstance)
+	{
+		VkSurfaceKHR surface = nullptr;
+		VkResult result = glfwCreateWindowSurface(*inVkInstance, mGlfwWindow, nullptr, &surface);
+		mage_check(result == VK_SUCCESS);
+
+		return vk::raii::SurfaceKHR(inVkInstance, surface);
+	}
+
 	void Window::WaitForValidSize() const
 	{
 		while (mWidth == 0 || mHeight == 0)

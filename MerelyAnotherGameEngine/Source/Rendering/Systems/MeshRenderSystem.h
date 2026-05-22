@@ -9,7 +9,6 @@ class AssetManager;
 
 namespace Vulkan
 {
-	class Renderer;
 	struct RenderFrameData;
 }
 
@@ -46,18 +45,15 @@ class MeshRenderSystem : public NonCopyableClass
 	};
 
 public:
-	MeshRenderSystem(Vulkan::Renderer const& renderer);
+	MeshRenderSystem();
 
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data);
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
+	void CreatePipeline();
 
-	Vulkan::Renderer const& mRenderer;
-
-	Vulkan::Pipeline mPipeline;
+	Vulkan::Pipeline mPipeline = nullptr;
 
 	mage::Array<Vulkan::Buffer> mUniformBuffers;
-
-	Vulkan::Pipeline CreatePipeline();
 };

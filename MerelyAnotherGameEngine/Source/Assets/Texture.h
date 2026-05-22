@@ -5,11 +5,6 @@
 
 #include <vulkan/vulkan_raii.hpp>
 
-namespace Vulkan
-{
-	class Renderer;
-}
-
 class Texture : public Asset
 {
 	friend class Factory<Texture>;
@@ -20,7 +15,7 @@ public:
 private:
 	Texture() {}
 
-	void CreateImage(Vulkan::Renderer const& inRenderer);
+	void CreateImage();
 
 	Vulkan::Image mImage = nullptr;
 	vk::raii::Sampler mSampler = nullptr;

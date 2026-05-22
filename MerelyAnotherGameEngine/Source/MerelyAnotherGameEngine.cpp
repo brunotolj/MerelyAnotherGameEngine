@@ -17,8 +17,8 @@
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
+#include "Vulkan/Device.h"
 #include "Vulkan/Renderer.h"
-#include "Vulkan/VulkanInterface.h"
 #include "Vulkan/Window.h"
 
 #include <chrono>
@@ -159,6 +159,9 @@ std::shared_ptr<GameObject> CreateUserInterface(
 
 i32 main()
 {
+	Engine engine;
+	gEngine = &engine;
+
 	Vulkan::WindowInfo windowCreateInfo
 	{
 		.Name = "Merely Another Game Engine",
@@ -166,12 +169,8 @@ i32 main()
 		.Height = gWindowHeight
 	};
 
-	Vulkan::Instance vulkan;
-	Vulkan::Window window = vulkan.CreateWindow(windowCreateInfo);
-	Vulkan::Renderer renderer{ vulkan, window };
-
-	Engine engine;
-	gEngine = &engine;
+	Vulkan::Window window(windowCreateInfo);
+	Vulkan::Renderer renderer(window);
 
 	constexpr f32 boardSize = 20.0f;
 
@@ -189,28 +188,28 @@ i32 main()
 
 	constexpr f32 ballRadius = 1.0f;
 
-	AssetHandle<StaticMesh> boxMesh = Factory<StaticMesh>::MakeBox({ boardSize, boardSize, 1.0f }, renderer);
-	AssetHandle<StaticMesh> cylinderMesh = Factory<StaticMesh>::MakeCylinder(cornerRadius, cornerHalfHeight, renderer);
-	AssetHandle<StaticMesh> capsuleMesh = Factory<StaticMesh>::MakeCapsule(capsuleRadius, capsuleLength, renderer);
-	AssetHandle<StaticMesh> coneMesh = Factory<StaticMesh>::MakeCone(coneRadius, coneHeight, renderer);
-	AssetHandle<StaticMesh> ballMesh = Factory<StaticMesh>::MakeBall(ballRadius, renderer);
+	AssetHandle<StaticMesh> boxMesh = Factory<StaticMesh>::MakeBox({ boardSize, boardSize, 1.0f });
+	AssetHandle<StaticMesh> cylinderMesh = Factory<StaticMesh>::MakeCylinder(cornerRadius, cornerHalfHeight);
+	AssetHandle<StaticMesh> capsuleMesh = Factory<StaticMesh>::MakeCapsule(capsuleRadius, capsuleLength);
+	AssetHandle<StaticMesh> coneMesh = Factory<StaticMesh>::MakeCone(coneRadius, coneHeight);
+	AssetHandle<StaticMesh> ballMesh = Factory<StaticMesh>::MakeBall(ballRadius);
 
-	AssetHandle<Texture> spriteTexture = Factory<Texture>::FromFile("Textures/default.png", renderer);
-	AssetHandle<Texture> cubeTexture = Factory<Texture>::FromFile("Textures/cube.png", renderer);
-	AssetHandle<Texture> ballTexture = Factory<Texture>::FromFile("Textures/ball.png", renderer);
-	AssetHandle<Texture> cylinderTexture = Factory<Texture>::FromFile("Textures/cylinder.png", renderer);
-	AssetHandle<Texture> capsuleTexture = Factory<Texture>::FromFile("Textures/capsule.png", renderer);
-	AssetHandle<Texture> coneTexture = Factory<Texture>::FromFile("Textures/cone.png", renderer);
+	AssetHandle<Texture> spriteTexture = Factory<Texture>::FromFile("Textures/default.png");
+	AssetHandle<Texture> cubeTexture = Factory<Texture>::FromFile("Textures/cube.png");
+	AssetHandle<Texture> ballTexture = Factory<Texture>::FromFile("Textures/ball.png");
+	AssetHandle<Texture> cylinderTexture = Factory<Texture>::FromFile("Textures/cylinder.png");
+	AssetHandle<Texture> capsuleTexture = Factory<Texture>::FromFile("Textures/capsule.png");
+	AssetHandle<Texture> coneTexture = Factory<Texture>::FromFile("Textures/cone.png");
 
-	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf", renderer);
-	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf", renderer);
+	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf");
+	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf");
 
 	GameWorld world(
 		std::make_unique<InputSystem>(window),
 		std::make_unique<PhysicsSystem>(),
-		std::make_unique<MeshRenderSystem>(renderer),
-		std::make_unique<SpriteRenderSystem>(renderer),
-		std::make_unique<TextRenderSystem>(renderer));
+		std::make_unique<MeshRenderSystem>(),
+		std::make_unique<SpriteRenderSystem>(),
+		std::make_unique<TextRenderSystem>());
 
 	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.1f, 1.0f });
 	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.05f, 0.0f });
@@ -295,7 +294,7 @@ i32 main()
 		world.Render(renderer);
 	}
 
-	renderer.WaitIdle();
+	engine.mVulkanDevice.GetVkDevice().waitIdle();
 
 	return 0;
 }

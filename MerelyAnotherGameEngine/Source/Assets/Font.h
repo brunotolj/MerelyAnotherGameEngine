@@ -3,11 +3,6 @@
 #include "Assets/Asset.h"
 #include "Vulkan/Buffer.h"
 
-namespace Vulkan
-{
-	class Renderer;
-}
-
 class Font : public Asset
 {
 	friend class Factory<Font>;
@@ -34,7 +29,7 @@ public:
 private:
 	Font() {}
 
-	void CreateGlyphBuffer(Vulkan::Renderer const& inRenderer);
+	void CreateGlyphBuffer();
 
 	std::unordered_map<u32, GlyphData> mGlyphs;
 	Vulkan::Buffer mGlyphBuffer = nullptr;

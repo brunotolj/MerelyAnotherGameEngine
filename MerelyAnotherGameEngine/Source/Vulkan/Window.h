@@ -14,19 +14,22 @@ namespace Vulkan
 
 	class Window : public NonMovableClass
 	{
-		friend class Instance;
+		friend class Device;
 
 	public:
 		using ResizedCallbackType = std::function<void(i32, i32)>;
 		using KeyCallbackType = std::function<void(i32, i32, i32, i32)>;
 		using CursorPositionCallbackType = std::function<void(glm::dvec2)>;
 
+		Window(const WindowInfo& inCreateInfo);
 		~Window();
 
 		bool ShouldClose() const { return glfwWindowShouldClose(mGlfwWindow); }
 		void RequestClose() { glfwSetWindowShouldClose(mGlfwWindow, true); }
 
 		vk::Extent2D GetSize() const { return { u32(mWidth), u32(mHeight) }; }
+
+		vk::raii::SurfaceKHR CreateVkSurface(vk::raii::Instance const& inVkInstance);
 
 		i32 GetCursorInputMode() const { return glfwGetInputMode(mGlfwWindow, GLFW_CURSOR); }
 		void SetCursorInputMode(i32 inValue) { glfwSetInputMode(mGlfwWindow, GLFW_CURSOR, inValue); }
@@ -43,8 +46,6 @@ namespace Vulkan
 		static void PollEvents() { glfwPollEvents(); }
 
 	private:
-		Window(const WindowInfo& inCreateInfo);
-
 		mage::StringView mName;
 
 		i32 mWidth = 0;

@@ -36,6 +36,11 @@ namespace mage
 			};
 		}
 
+		f32 S;
+		f32 XY;
+		f32 YZ;
+		f32 ZX;
+
 		static Rotor Invert(Rotor inRotor)
 		{
 			Rotor result;
@@ -55,11 +60,6 @@ namespace mage
 			result.ZX = inLhs.S * inRhs.ZX - inLhs.XY * inRhs.YZ + inLhs.YZ * inRhs.XY + inLhs.ZX * inRhs.S;
 			return result;
 		}
-
-		f32 S;
-		f32 XY;
-		f32 YZ;
-		f32 ZX;
 	};
 
 	inline Rotor operator-(Rotor inRotor)

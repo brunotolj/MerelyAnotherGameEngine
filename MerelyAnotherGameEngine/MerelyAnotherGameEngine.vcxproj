@@ -177,10 +177,10 @@
     <ClCompile Include="Source\Utility\DefaultMovementComponent.cpp" />
     <ClCompile Include="Source\Utility\KillZObjectComponent.cpp" />
     <ClCompile Include="Source\Vulkan\Buffer.cpp" />
+    <ClCompile Include="Source\Vulkan\Device.cpp" />
     <ClCompile Include="Source\Vulkan\Image.cpp" />
     <ClCompile Include="Source\Vulkan\Pipeline.cpp" />
     <ClCompile Include="Source\Vulkan\Renderer.cpp" />
-    <ClCompile Include="Source\Vulkan\VulkanInterface.cpp" />
     <ClCompile Include="Source\Vulkan\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -222,10 +222,10 @@
     <ClInclude Include="Source\Utility\DefaultMovementComponent.h" />
     <ClInclude Include="Source\Utility\KillZObjectComponent.h" />
     <ClInclude Include="Source\Vulkan\Buffer.h" />
+    <ClInclude Include="Source\Vulkan\Device.h" />
     <ClInclude Include="Source\Vulkan\Image.h" />
     <ClInclude Include="Source\Vulkan\Pipeline.h" />
     <ClInclude Include="Source\Vulkan\Renderer.h" />
-    <ClInclude Include="Source\Vulkan\VulkanInterface.h" />
     <ClInclude Include="Source\Vulkan\Window.h" />
   </ItemGroup>
   <ItemGroup>

@@ -87,9 +87,6 @@
     <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp">
       <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Vulkan\VulkanInterface.cpp">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Vulkan\Renderer.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
@@ -146,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\ShaderCompiler.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Vulkan\Device.cpp">
+      <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -221,9 +221,6 @@
     <ClInclude Include="Source\Core\Types.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan\VulkanInterface.h">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Vulkan\Renderer.h">
       <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
@@ -277,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\ShaderCompiler.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Vulkan\Device.h">
+      <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

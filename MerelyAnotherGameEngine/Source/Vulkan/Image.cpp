@@ -1,27 +1,117 @@
 #include "Vulkan/Image.h"
+#include "Engine/Engine.h"
 #include "Vulkan/Buffer.h"
 
 namespace Vulkan
 {
-    Image& Image::operator=(Image&& inImage)
-    {
-		mVkImage = std::move(inImage.mVkImage);
-		mDeviceMemory = std::move(inImage.mDeviceMemory);
-		mImageView = std::move(inImage.mImageView);
-		std::swap(mImageSize, inImage.mImageSize);
-		std::swap(mImageLayout, inImage.mImageLayout);
-		std::swap(mAspectMask, inImage.mAspectMask);
-
-		return *this;
-    }
-
-	vk::DescriptorImageInfo Image::GetDescriptorInfo() const
+	Image::Image(Image::CreateInfo const& inCreateInfo)
 	{
-		return vk::DescriptorImageInfo
+		Create(inCreateInfo);
+	}
+
+	void Image::Create(CreateInfo const& inCreateInfo)
+	{
+		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
+
+		vk::ImageCreateInfo imageCreateInfo
 		{
-			.imageView = mImageView,
-			.imageLayout = mImageLayout
+			.imageType = vk::ImageType::e2D,
+			.format = inCreateInfo.Format,
+			.extent = inCreateInfo.Size,
+			.mipLevels = 1,
+			.arrayLayers = 1,
+			.samples = inCreateInfo.SampleCount,
+			.tiling = vk::ImageTiling::eOptimal,
+			.usage = inCreateInfo.UsageFlags,
+			.sharingMode = vk::SharingMode::eExclusive
 		};
+
+		mVkImage = device.createImage(imageCreateInfo);
+		mImageSize = inCreateInfo.Size;
+		mAspectMask = inCreateInfo.AspectFlags;
+
+		vk::MemoryRequirements memRequirements = mVkImage.getMemoryRequirements();
+		u32 memoryTypeIndex = gEngine->mVulkanDevice.SelectMemoryType(memRequirements.memoryTypeBits, inCreateInfo.MemoryFlags);
+
+		vk::MemoryAllocateInfo memoryAllocInfo
+		{
+			.allocationSize = memRequirements.size,
+			.memoryTypeIndex = memoryTypeIndex
+		};
+
+		mDeviceMemory = device.allocateMemory(memoryAllocInfo);
+		mVkImage.bindMemory(mDeviceMemory, 0);
+
+		vk::ImageViewCreateInfo imageViewCreateInfo
+		{
+			.image = mVkImage,
+			.viewType = vk::ImageViewType::e2D,
+			.format = inCreateInfo.Format,
+			.subresourceRange
+			{
+				.aspectMask = inCreateInfo.AspectFlags,
+				.levelCount = 1,
+				.layerCount = 1
+			}
+		};
+
+		mImageView = device.createImageView(imageViewCreateInfo);
+	}
+
+	vk::raii::ImageView const& Image::GetVkImageView() const
+	{
+		return mImageView;
+	}
+
+	vk::ImageLayout Image::GetLayout() const
+	{
+		return mImageLayout;
+	}
+
+	void Image::CopyFromMemory(void* inSrcMemory, vk::ImageLayout inImageLayout)
+	{
+		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
+
+		vk::HostImageLayoutTransitionInfo layoutTransitionInfo
+		{
+			.image = mVkImage,
+			.oldLayout = vk::ImageLayout::eUndefined,
+			.newLayout = inImageLayout,
+			.subresourceRange
+			{
+				   .aspectMask = mAspectMask,
+				   .baseMipLevel = 0,
+				   .levelCount = 1,
+				   .baseArrayLayer = 0,
+				   .layerCount = 1
+			}
+		};
+
+		device.transitionImageLayout(layoutTransitionInfo);
+		mImageLayout = inImageLayout;
+
+		vk::MemoryToImageCopy copy
+		{
+			.pHostPointer = inSrcMemory,
+			.imageSubresource
+			{
+				   .aspectMask = mAspectMask,
+				   .mipLevel = 0,
+				   .baseArrayLayer = 0,
+				   .layerCount = 1
+			},
+			.imageExtent = mImageSize,
+		};
+
+		vk::CopyMemoryToImageInfo copyInfo
+		{
+			.dstImage = mVkImage,
+			.dstImageLayout = inImageLayout,
+			.regionCount = 1,
+			.pRegions = &copy
+		};
+
+		device.copyMemoryToImage(copyInfo);
 	}
 
 	void Image::CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const
@@ -32,7 +122,7 @@ namespace Vulkan
 			.imageExtent = mImageSize
 		};
 
-		inCommandBuffer.copyBufferToImage(inSrcBuffer.mVkBuffer, mVkImage, vk::ImageLayout::eTransferDstOptimal, { copyRegion });
+		inCommandBuffer.copyBufferToImage(inSrcBuffer.GetVkBuffer(), mVkImage, vk::ImageLayout::eTransferDstOptimal, {copyRegion});
 	}
 
 	void Image::TransitionLayout(vk::CommandBuffer inCommandBuffer, TransitionLayoutParams const& inParams)

@@ -6,21 +6,19 @@ namespace Vulkan
 {
 	class Buffer;
 
-	struct ImageCreateInfo
+	class Image : public NonMovableClass
 	{
-		vk::Extent3D Size;
-		vk::Format Format;
-		vk::ImageAspectFlags AspectFlags;
-		vk::ImageUsageFlags UsageFlags;
-		vk::MemoryPropertyFlags MemoryFlags;
-		vk::SampleCountFlagBits SampleCount;
-	};
-
-	class Image : public NonCopyableClass
-	{
-		friend class Renderer;
-
 	public:
+		struct CreateInfo
+		{
+			vk::Extent3D Size;
+			vk::Format Format;
+			vk::ImageAspectFlags AspectFlags;
+			vk::ImageUsageFlags UsageFlags;
+			vk::MemoryPropertyFlags MemoryFlags;
+			vk::SampleCountFlagBits SampleCount;
+		};
+
 		struct TransitionLayoutParams
 		{
 			vk::PipelineStageFlags2 SrcStageMask;
@@ -32,17 +30,21 @@ namespace Vulkan
 		};
 
 		Image(nullptr_t) {}
-		Image(Image&& inImage) { *this = std::move(inImage); };
-		Image& operator=(Image&& inImage);
+		Image(CreateInfo const& inCreateInfo);
 
-		vk::DescriptorImageInfo GetDescriptorInfo() const;
+		void Create(CreateInfo const& inCreateInfo);
 
+		vk::raii::ImageView const& GetVkImageView() const;
+		vk::ImageLayout GetLayout() const;
+
+		void CopyFromMemory(void* inSrcMemory, vk::ImageLayout inImageLayout);
 		void CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const;
+
 		void TransitionLayout(vk::CommandBuffer inCommandBuffer, TransitionLayoutParams const& inParams);
 
-	private:
 		static void TransitionLayout(vk::CommandBuffer inCommandBuffer, vk::Image inImage, TransitionLayoutParams const& inParams, vk::ImageAspectFlags inAspectMask);
 
+	private:
 		vk::raii::Image mVkImage = nullptr;
 		vk::raii::DeviceMemory mDeviceMemory = nullptr;
 		vk::raii::ImageView mImageView = nullptr;

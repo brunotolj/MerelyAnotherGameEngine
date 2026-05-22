@@ -1,7 +1,7 @@
 #include "Assets/FontFactory.h"
 #include "Engine/Engine.h"
 
-AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer)
+AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath)
 {
 	Font* result = new Font();
 
@@ -468,7 +468,7 @@ AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath, Vulkan::Rende
 		}
 	}
 
-	result->CreateGlyphBuffer(inRenderer);
+	result->CreateGlyphBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }

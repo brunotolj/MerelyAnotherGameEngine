@@ -2,9 +2,9 @@
 #include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-TextRenderSystem::TextRenderSystem(Vulkan::Renderer const& renderer)
-	: mRenderer(renderer), mPipeline(CreatePipeline())
+TextRenderSystem::TextRenderSystem()
 {
+	CreatePipeline();
 	CreateVertexBuffer();
 }
 
@@ -81,9 +81,9 @@ void TextRenderSystem::SetupDynamicState(vk::CommandBuffer inCommandBuffer) cons
 	inCommandBuffer.setExtraPrimitiveOverestimationSizeEXT(0.0f);
 }
 
-Vulkan::Pipeline TextRenderSystem::CreatePipeline()
+void TextRenderSystem::CreatePipeline()
 {
-	Vulkan::PipelineCreateInfo pipelineCreateInfo
+	Vulkan::Pipeline::CreateInfo pipelineCreateInfo
 	{
 		.ShaderCode = gEngine->mShaderCompiler.CompileFromFile("Source/Shaders/TextShader.slang"),
 		.ShaderStages
@@ -101,7 +101,7 @@ Vulkan::Pipeline TextRenderSystem::CreatePipeline()
 		}}
 	};
 
-	return mRenderer.CreatePipeline(pipelineCreateInfo);
+	mPipeline.Create(pipelineCreateInfo);
 }
 
 void TextRenderSystem::CreateVertexBuffer()
@@ -110,28 +110,28 @@ void TextRenderSystem::CreateVertexBuffer()
 
 	f32 vertexData[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
 
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
+	Vulkan::Buffer::CreateInfo stagingBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 	};
 
-	Vulkan::Buffer stagingBuffer = mRenderer.CreateBuffer(stagingBufferCreateInfo);
+	Vulkan::Buffer stagingBuffer(stagingBufferCreateInfo);
 
 	stagingBuffer.Map();
 	stagingBuffer.Write((void*)vertexData, dataSize);
 
-	Vulkan::BufferCreateInfo vertexBufferCreateInfo
+	Vulkan::Buffer::CreateInfo vertexBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
 	};
 
-	mVertexBuffer = mRenderer.CreateBuffer(vertexBufferCreateInfo);
+	mVertexBuffer.Create(vertexBufferCreateInfo);
 
-	mRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
+	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 		{
 			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 		});

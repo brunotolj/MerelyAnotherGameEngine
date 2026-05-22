@@ -4,22 +4,20 @@
 
 namespace Vulkan
 {
-	struct BufferCreateInfo
+	class Buffer : public NonMovableClass
 	{
-		vk::DeviceSize Size;
-		vk::BufferUsageFlags UsageFlags;
-		vk::MemoryPropertyFlags MemoryFlags;
-	};
-
-	class Buffer : public NonCopyableClass
-	{
-		friend class Image;
-		friend class Renderer;
-
 	public:
+		struct CreateInfo
+		{
+			vk::DeviceSize Size;
+			vk::BufferUsageFlags UsageFlags;
+			vk::MemoryPropertyFlags MemoryFlags;
+		};
+
 		Buffer(nullptr_t) {};
-		Buffer(Buffer&& inBuffer) { *this = std::move(inBuffer); };
-		Buffer& operator=(Buffer&& inBuffer);
+		Buffer(CreateInfo const& inCreateInfo);
+
+		void Create(CreateInfo const& inCreateInfo);
 
 		void Map();
 		void Unmap();
@@ -27,6 +25,7 @@ namespace Vulkan
 		void Write(void* inData, vk::DeviceSize inSize) const;
 		void Flush() const;
 
+		vk::raii::Buffer const& GetVkBuffer() const;
 		vk::DeviceAddress GetDeviceAddress() const;
 
 		void CopyFromBuffer(vk::CommandBuffer inCommandBuffer, Buffer const& inSrcBuffer) const;

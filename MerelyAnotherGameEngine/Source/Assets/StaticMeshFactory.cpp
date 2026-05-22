@@ -20,7 +20,7 @@ namespace std
 	};
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath, Vulkan::Renderer const& inRenderer)
+AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -92,13 +92,13 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath, V
 			result->mFaces.AddConstruct(indices[i - 2], indices[i], indices[i - 2]);
 	}
 
-	result->CreateVertexBuffer(inRenderer);
-	result->CreateIndexBuffer(inRenderer);
+	result->CreateVertexBuffer();
+	result->CreateIndexBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent, Vulkan::Renderer const& inRenderer)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -113,26 +113,26 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent, Vul
 	AddFlatSurface(*result, { z, mage::Rotor(y, glm::radians(90.0f)) }, { inHalfExtent.y, inHalfExtent.x }, { 66.0f / 256.0f, 4.0f / 256.0f }, { 128.0f / 256.0f, 66.0f / 256.0f });
 	AddFlatSurface(*result, { -z, mage::Rotor(y, glm::radians(-90.0f)) }, { inHalfExtent.y, inHalfExtent.x }, { 66.0f / 256.0f, 128.0f / 256.0f }, { 128.0f / 256.0f, 190.0f / 256.0f });
 
-	result->CreateVertexBuffer(inRenderer);
-	result->CreateIndexBuffer(inRenderer);
+	result->CreateVertexBuffer();
+	result->CreateIndexBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius, Vulkan::Renderer const& inRenderer)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius)
 {
 	StaticMesh* result = new StaticMesh();
 
 	AddHemisphere(*result, {}, inRadius, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 3);
 	AddInvertedCopy(*result, { 53.0f / 128.0f, 1.0f });
 
-	result->CreateVertexBuffer(inRenderer);
-	result->CreateIndexBuffer(inRenderer);
+	result->CreateVertexBuffer();
+	result->CreateIndexBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHalfHeight)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -140,13 +140,13 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHa
 	AddInvertedCopy(*result, { 126.0f / 256.0f, 130.0f / 256.0f });
 	AddCylindricSurface(*result, {}, inRadius, inHalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 48);
 
-	result->CreateVertexBuffer(inRenderer);
-	result->CreateIndexBuffer(inRenderer);
+	result->CreateVertexBuffer();
+	result->CreateIndexBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHalfHeight, Vulkan::Renderer const& inRenderer)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHalfHeight)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -154,21 +154,21 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHal
 	AddInvertedCopy(*result, { 126.0f / 256.0f, 130.0f / 256.0f });
 	AddCylindricSurface(*result, {}, inRadius, inHalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 40);
 
-	result->CreateVertexBuffer(inRenderer);
-	result->CreateIndexBuffer(inRenderer);
+	result->CreateVertexBuffer();
+	result->CreateIndexBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight, Vulkan::Renderer const& inRenderer)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight)
 {
 	StaticMesh* result = new StaticMesh();
 
 	AddConicSurface(*result, { { -0.5f * inHeight, 0.0f, 0.0f }, {} }, inRadius, inHeight, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 48, 10);
 	AddCircle(*result, { { -0.5f * inHeight, 0.0f, 0.0f }, mage::Rotor({ 0.0f, 0.0f, 1.0f }, glm::radians(180.0f)) }, inRadius, glm::vec2(181.0f / 256.0f), 71.0f / 256.0f, 4);
 
-	result->CreateVertexBuffer(inRenderer);
-	result->CreateIndexBuffer(inRenderer);
+	result->CreateVertexBuffer();
+	result->CreateIndexBuffer();
 
 	return gEngine->mAssetManager.Register(result);
 }

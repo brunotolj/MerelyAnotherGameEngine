@@ -8,7 +8,6 @@ class AssetManager;
 
 namespace Vulkan
 {
-	class Renderer;
 	struct RenderFrameData;
 }
 
@@ -42,20 +41,17 @@ class TextRenderSystem : public NonCopyableClass
 	};
 
 public:
-	TextRenderSystem(Vulkan::Renderer const& renderer);
+	TextRenderSystem();
 
 	void RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data);
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
 
-	Vulkan::Renderer const& mRenderer;
+	void CreatePipeline();
+	void CreateVertexBuffer();
 
-	Vulkan::Pipeline mPipeline;
+	Vulkan::Pipeline mPipeline = nullptr;
 
 	Vulkan::Buffer mVertexBuffer = nullptr;
-
-	Vulkan::Pipeline CreatePipeline();
-
-	void CreateVertexBuffer();
 };

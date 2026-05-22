@@ -1,5 +1,5 @@
 #include "Assets/StaticMesh.h"
-#include "Vulkan/Renderer.h"
+#include "Engine/Engine.h"
 
 mage::Array<vk::VertexInputBindingDescription> StaticMesh::Vertex::GetBindingDescriptions()
 {
@@ -54,38 +54,38 @@ void StaticMesh::Draw(vk::CommandBuffer inCommandBuffer) const
 		inCommandBuffer.draw(mVertices.GetSize(), 1, 0, 0);
 }
 
-void StaticMesh::CreateVertexBuffer(Vulkan::Renderer const& inRenderer)
+void StaticMesh::CreateVertexBuffer()
 {
 	vk::DeviceSize dataSize = mVertices.GetSize() * sizeof(Vertex);
 
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
+	Vulkan::Buffer::CreateInfo stagingBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 	};
 
-	Vulkan::Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
+	Vulkan::Buffer stagingBuffer(stagingBufferCreateInfo);
 
 	stagingBuffer.Map();
 	stagingBuffer.Write(mVertices.GetData(), dataSize);
 
-	Vulkan::BufferCreateInfo vertexBufferCreateInfo
+	Vulkan::Buffer::CreateInfo vertexBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eVertexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
 	};
 
-	mVertexBuffer = inRenderer.CreateBuffer(vertexBufferCreateInfo);
+	mVertexBuffer.Create(vertexBufferCreateInfo);
 
-	inRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
+	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 		{
 			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 		});
 }
 
-void StaticMesh::CreateIndexBuffer(Vulkan::Renderer const& inRenderer)
+void StaticMesh::CreateIndexBuffer()
 {
 	u32 indexCount = 3 * mFaces.GetSize();
 	if (indexCount == 0)
@@ -93,28 +93,28 @@ void StaticMesh::CreateIndexBuffer(Vulkan::Renderer const& inRenderer)
 
 	vk::DeviceSize dataSize = indexCount * sizeof(u32);
 
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
+	Vulkan::Buffer::CreateInfo stagingBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 	};
 
-	Vulkan::Buffer stagingBuffer = inRenderer.CreateBuffer(stagingBufferCreateInfo);
+	Vulkan::Buffer stagingBuffer(stagingBufferCreateInfo);
 
 	stagingBuffer.Map();
 	stagingBuffer.Write(mFaces.GetData(), dataSize);
 
-	Vulkan::BufferCreateInfo indexBufferCreateInfo
+	Vulkan::Buffer::CreateInfo indexBufferCreateInfo
 	{
 		.Size = dataSize,
 		.UsageFlags = vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
 		.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal
 	};
 
-	mIndexBuffer = inRenderer.CreateBuffer(indexBufferCreateInfo);
+	mIndexBuffer.Create(indexBufferCreateInfo);
 
-	inRenderer.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
+	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
 		{
 			mIndexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
 		});

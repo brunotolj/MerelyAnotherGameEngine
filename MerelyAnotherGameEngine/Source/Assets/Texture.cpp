@@ -1,26 +1,21 @@
 #include "Assets/Texture.h"
-#include "Vulkan/Buffer.h"
-#include "Vulkan/Renderer.h"
+#include "Engine/Engine.h"
 
 vk::DescriptorImageInfo Texture::GetDescriptorInfo() const
 {
-	vk::DescriptorImageInfo result = mImage.GetDescriptorInfo();
-	result.sampler = mSampler;
-	return result;
+	return vk::DescriptorImageInfo
+	{
+		.sampler = mSampler,
+		.imageView = mImage.GetVkImageView(),
+		.imageLayout = mImage.GetLayout()
+	};
 }
 
-void Texture::CreateImage(Vulkan::Renderer const& inRenderer)
+void Texture::CreateImage()
 {
 	vk::DeviceSize dataSize = mSize.width * mSize.height * mSize.depth * 4;
 
-	Vulkan::BufferCreateInfo stagingBufferCreateInfo
-	{
-		.Size = dataSize,
-		.UsageFlags = vk::BufferUsageFlagBits::eTransferSrc,
-		.MemoryFlags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-	};
-
-	Vulkan::ImageCreateInfo imageCreateInfo
+	Vulkan::Image::CreateInfo imageCreateInfo
 	{
 		.Size = mSize,
 		.Format = vk::Format::eR8G8B8A8Srgb,
@@ -30,8 +25,8 @@ void Texture::CreateImage(Vulkan::Renderer const& inRenderer)
 		.SampleCount = vk::SampleCountFlagBits::e1
 	};
 
-	mImage = inRenderer.CreateImage(imageCreateInfo);
-	inRenderer.CopyMemoryToImage(mData.GetData(), mImage, vk::ImageLayout::eShaderReadOnlyOptimal);
+	mImage.Create(imageCreateInfo);
+	mImage.CopyFromMemory(mData.GetData(), vk::ImageLayout::eShaderReadOnlyOptimal);
 
 	vk::SamplerCreateInfo samplerCreateInfo
 	{
@@ -42,9 +37,10 @@ void Texture::CreateImage(Vulkan::Renderer const& inRenderer)
 		.addressModeV = vk::SamplerAddressMode::eRepeat,
 		.addressModeW = vk::SamplerAddressMode::eRepeat,
 		.anisotropyEnable = vk::True,
+		.maxAnisotropy = gEngine->mVulkanDevice.GetVkPhysicalDevice().getProperties().limits.maxSamplerAnisotropy,
 		.compareEnable = vk::False,
 		.compareOp = vk::CompareOp::eAlways
 	};
 
-	mSampler = inRenderer.CreateImageSampler(samplerCreateInfo);
+	mSampler = gEngine->mVulkanDevice.GetVkDevice().createSampler(samplerCreateInfo);
 }

@@ -1,19 +1,46 @@
 #include "Vulkan/Buffer.h"
+#include "Engine/Engine.h"
 
 namespace Vulkan
 {
-    Buffer& Buffer::operator=(Buffer&& inBuffer)
+    Buffer::Buffer(CreateInfo const& inCreateInfo)
     {
-		mVkBuffer = std::move(inBuffer.mVkBuffer);
-		mDeviceMemory = std::move(inBuffer.mDeviceMemory);
-		std::swap(mMappedMemory, inBuffer.mMappedMemory);
-		std::swap(mBufferSize, inBuffer.mBufferSize);
-		std::swap(mDeviceAddress, inBuffer.mDeviceAddress);
-
-		return *this;
+		Create(inCreateInfo);
     }
 
-	void Buffer::Map()
+	void Buffer::Create(CreateInfo const& inCreateInfo)
+	{
+		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
+
+		vk::BufferCreateInfo bufferCreateInfo
+		{
+			.size = inCreateInfo.Size,
+			.usage = inCreateInfo.UsageFlags | vk::BufferUsageFlagBits::eShaderDeviceAddress,
+			.sharingMode = vk::SharingMode::eExclusive
+		};
+
+		mVkBuffer = device.createBuffer(bufferCreateInfo);
+		mBufferSize = inCreateInfo.Size;
+
+		vk::MemoryRequirements memRequirements = mVkBuffer.getMemoryRequirements();
+		u32 memoryTypeIndex = gEngine->mVulkanDevice.SelectMemoryType(memRequirements.memoryTypeBits, inCreateInfo.MemoryFlags);
+
+		vk::MemoryAllocateFlagsInfo memoryAllocFlagsInfo{ .flags = vk::MemoryAllocateFlagBits::eDeviceAddress };
+
+		vk::MemoryAllocateInfo memoryAllocInfo
+		{
+			.pNext = memoryAllocFlagsInfo,
+			.allocationSize = memRequirements.size,
+			.memoryTypeIndex = memoryTypeIndex
+		};
+
+		mDeviceMemory = device.allocateMemory(memoryAllocInfo);
+		mVkBuffer.bindMemory(mDeviceMemory, 0);
+
+		mDeviceAddress = device.getBufferAddress({ .buffer = mVkBuffer });
+	}
+
+    void Buffer::Map()
 	{
 		mage_check(mMappedMemory == nullptr);
 
@@ -45,6 +72,11 @@ namespace Vulkan
 
 		mVkBuffer.getDevice().flushMappedMemoryRanges(memoryRange);
     }
+
+	vk::raii::Buffer const& Buffer::GetVkBuffer() const
+	{
+		return mVkBuffer;
+	}
 
 	vk::DeviceAddress Buffer::GetDeviceAddress() const
 	{

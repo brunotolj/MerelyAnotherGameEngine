@@ -8,7 +8,6 @@ class AssetManager;
 
 namespace Vulkan
 {
-	class Renderer;
 	struct RenderFrameData;
 }
 
@@ -36,22 +35,19 @@ class SpriteRenderSystem : public NonCopyableClass
 	};
 
 public:
-	SpriteRenderSystem(Vulkan::Renderer const& renderer);
+	SpriteRenderSystem();
 
 	void RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data);
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
 
-	Vulkan::Renderer const& mRenderer;
+	void CreatePipeline();
+	void CreateVertexBuffer();
 
-	Vulkan::Pipeline mPipeline;
+	Vulkan::Pipeline mPipeline = nullptr;
 
 	mage::Array<Vulkan::Buffer> mUniformBuffers;
 
 	Vulkan::Buffer mVertexBuffer = nullptr;
-
-	Vulkan::Pipeline CreatePipeline();
-
-	void CreateVertexBuffer();
 };

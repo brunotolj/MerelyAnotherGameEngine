@@ -6,14 +6,7 @@
 
 namespace Vulkan
 {
-	class Buffer;
-	class DescriptorSetLayout;
-	class Instance;
-	class Pipeline;
 	class Window;
-	struct BufferCreateInfo;
-	struct ImageCreateInfo;
-	struct PipelineCreateInfo;
 
 	struct RenderFrameData
 	{
@@ -25,32 +18,16 @@ namespace Vulkan
 	class Renderer : public NonMovableClass
 	{
 	public:
-		Renderer(Instance const& inInstance, Window& inWindow);
+		Renderer(Window& inWindow);
 
 		using RenderFrameFunction = std::function<void(RenderFrameData const&)>;
 		void RenderFrame(RenderFrameFunction&& inFunction);
 
 		using SingleTimeCommandsFunction = std::function<void(vk::CommandBuffer)>;
-		void SubmitSingleTimeCommands(SingleTimeCommandsFunction&& inFunction) const;
-
-		void WaitIdle() const;
-
-		Pipeline CreatePipeline(PipelineCreateInfo const& inPipelineCreateInfo) const;
-		Buffer CreateBuffer(BufferCreateInfo const& inBufferCreateInfo) const;
-		Image CreateImage(ImageCreateInfo const& inImageCreateInfo) const;
-		vk::raii::Sampler CreateImageSampler(vk::SamplerCreateInfo inSamplerCreateInfo) const;
-
-		void CopyMemoryToImage(void* inSrcMemory, Image& inDstImage, vk::ImageLayout inImageLayout) const;
-
-		mage::Array<cstr> GetRequiredDeviceExtensions() const;
-
-		u32 SelectMemoryType(u32 inTypeFilter, vk::MemoryPropertyFlags inProperties) const;
 
 		static constexpr u32 cMaxFramesInFlight = 2;
 
 	private:
-		vk::raii::PhysicalDevice PickPhysicalDevice(Instance const& inInstance) const;
-		void SetupGraphicsQueue();
 		void RecreateSwapchain();
 
 		void InitializeDynamicState(vk::CommandBuffer inCommandBuffer);
@@ -60,13 +37,8 @@ namespace Vulkan
 		vk::Extent2D ChooseSwapchainExtent(vk::SurfaceCapabilitiesKHR const& inCapabilities, vk::Extent2D inWindowExtent) const;
 		u32 ChooseSwapchainMinImageCount(vk::SurfaceCapabilitiesKHR const& inCapabilities) const;
 
-		vk::raii::PhysicalDevice mPhysicalDevice = nullptr;
 		vk::raii::SurfaceKHR mSurface = nullptr;
 
-		vk::raii::Device mDevice = nullptr;
-		vk::raii::Queue mGraphicsQueue = nullptr;
-
-		vk::raii::CommandPool mCommandPool = nullptr;
 		mage::Array<vk::raii::CommandBuffer> mCommandBuffers;
 
 		mage::Array<vk::raii::Semaphore> mPresentCompleteSemaphores;
