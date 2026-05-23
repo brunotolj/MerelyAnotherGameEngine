@@ -147,6 +147,9 @@
     <ClCompile Include="Source\Vulkan\Device.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Engine\WindowManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -277,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="Source\Vulkan\Device.h">
       <Filter>Source Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\WindowManager.h">
+      <Filter>Source Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

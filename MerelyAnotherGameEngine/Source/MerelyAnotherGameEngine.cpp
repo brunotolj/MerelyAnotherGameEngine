@@ -19,7 +19,6 @@
 #include "Utility/DefaultMovementComponent.h"
 #include "Vulkan/Device.h"
 #include "Vulkan/Renderer.h"
-#include "Vulkan/Window.h"
 
 #include <chrono>
 #include <memory>
@@ -162,14 +161,16 @@ i32 main()
 	Engine engine;
 	gEngine = &engine;
 
-	Vulkan::WindowInfo windowCreateInfo
+	WindowInfo windowInfo
 	{
 		.Name = "Merely Another Game Engine",
 		.Width = gWindowWidth,
-		.Height = gWindowHeight
+		.Height = gWindowHeight,
+		.CursorMode = CursorInputMode::Disabled
 	};
 
-	Vulkan::Window window(windowCreateInfo);
+	WindowHandle window = engine.mWindowManager.CreateWindow(windowInfo);
+
 	Vulkan::Renderer renderer(window);
 
 	constexpr f32 boardSize = 20.0f;
@@ -205,7 +206,7 @@ i32 main()
 	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf");
 
 	GameWorld world(
-		std::make_unique<InputSystem>(window),
+		std::make_unique<InputSystem>(),
 		std::make_unique<PhysicsSystem>(),
 		std::make_unique<MeshRenderSystem>(),
 		std::make_unique<SpriteRenderSystem>(),
@@ -277,16 +278,16 @@ i32 main()
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
 
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_NORMAL); });
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(GLFW_CURSOR_DISABLED); });
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&window]() { window.RequestClose(); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
+	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
 
-	while (!window.ShouldClose())
+	while (!engine.ShouldExit())
 	{
-		Vulkan::Window::PollEvents();
+		engine.mWindowManager.PollEvents();
 
-		const std::chrono::steady_clock::time_point newTime = std::chrono::high_resolution_clock::now();
-		const f32 frameTime = std::chrono::duration<f32, std::chrono::seconds::period>(newTime - currentTime).count();
+		std::chrono::steady_clock::time_point newTime = std::chrono::high_resolution_clock::now();
+		f32 frameTime = std::chrono::duration<f32, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
 		world.Update(frameTime);

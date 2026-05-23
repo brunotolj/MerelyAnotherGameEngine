@@ -1,4 +1,5 @@
 #include "Game/GameWorld.h"
+#include "Engine/WindowManager.h"
 #include "Game/InputSystem.h"
 #include "Utility/DefaultMovementComponent.h"
 
@@ -16,8 +17,8 @@ DefaultMovementComponent::DefaultMovementComponent(TransformableObject& owner, c
 
 void DefaultMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	world.GetInputSystem().BindCursorMovementHandler([this](glm::dvec2 movement, i32 cursorMode)
-		{ if (cursorMode == GLFW_CURSOR_DISABLED) mCursorMovement += movement; });
+	world.GetInputSystem().BindCursorMovementHandler([this](glm::dvec2 movement, CursorInputMode cursorMode)
+		{ if (cursorMode == CursorInputMode::Disabled) mCursorMovement += movement; });
 }
 
 void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
@@ -33,16 +34,16 @@ void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
 		mage::Rotor({ 0.0f, 0.0f, 1.0f }, mRotation.x),
 		mage::Rotor({ 1.0f, 0.0f, 0.0f }, mRotation.y));
 
-	if (inputSystem.GetKeyState(GLFW_KEY_D) == GLFW_PRESS) movement.x += 1.0f;
-	if (inputSystem.GetKeyState(GLFW_KEY_A) == GLFW_PRESS) movement.x -= 1.0f;
+	if (inputSystem.IsKeyPressed(GLFW_KEY_D)) movement.x += 1.0f;
+	if (inputSystem.IsKeyPressed(GLFW_KEY_A)) movement.x -= 1.0f;
 
-	if (inputSystem.GetKeyState(GLFW_KEY_W) == GLFW_PRESS) movement.y += 1.0f;
-	if (inputSystem.GetKeyState(GLFW_KEY_S) == GLFW_PRESS) movement.y -= 1.0f;
+	if (inputSystem.IsKeyPressed(GLFW_KEY_W)) movement.y += 1.0f;
+	if (inputSystem.IsKeyPressed(GLFW_KEY_S)) movement.y -= 1.0f;
 
 	movement = mOwner.Transform.Matrix() * glm::vec4(movement, 0.0f);
 
-	if (inputSystem.GetKeyState(GLFW_KEY_E) == GLFW_PRESS) movement.z += 1.0f;
-	if (inputSystem.GetKeyState(GLFW_KEY_Q) == GLFW_PRESS) movement.z -= 1.0f;
+	if (inputSystem.IsKeyPressed(GLFW_KEY_E)) movement.z += 1.0f;
+	if (inputSystem.IsKeyPressed(GLFW_KEY_Q)) movement.z -= 1.0f;
 
 	mOwner.Transform.Position += mSpeed * deltaTime * movement;
 }

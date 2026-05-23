@@ -14,8 +14,6 @@ concept AssetType = std::derived_from<Type, Asset> && !std::same_as<Type, Asset>
 template <typename Type>
 class Factory;
 
-class AssetManager;
-
 class AssetHandleBase
 {
 public:
@@ -30,7 +28,7 @@ protected:
 template <AssetType Type>
 class AssetHandle : public AssetHandleBase
 {
-	friend AssetManager;
+	friend class AssetManager;
 
 public:
 	AssetHandle() : AssetHandleBase(0) {}

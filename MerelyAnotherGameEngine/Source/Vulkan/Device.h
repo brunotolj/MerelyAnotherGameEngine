@@ -8,13 +8,12 @@ namespace Vulkan
 	{
 	public:
 		Device();
-		~Device();
 
-		vk::raii::Instance const& GetVkInstance() const;
-		vk::raii::PhysicalDevice const& GetVkPhysicalDevice() const;
-		vk::raii::Device const& GetVkDevice() const;
-		vk::raii::Queue const& GetGraphicsQueue() const;
-		vk::raii::CommandPool const& GetCommandPool() const;
+		vk::raii::Instance const& GetVkInstance() const { return mVkInstance; }
+		vk::raii::PhysicalDevice const& GetVkPhysicalDevice() const { return mVkPhysicalDevice; }
+		vk::raii::Device const& GetVkDevice() const { return mVkDevice; }
+		vk::raii::Queue const& GetGraphicsQueue() const { return mGraphicsQueue; }
+		vk::raii::CommandPool const& GetCommandPool() const { return mCommandPool; }
 
 		using SingleTimeCommandsFunction = std::function<void(vk::CommandBuffer)>;
 		void SubmitSingleTimeCommands(SingleTimeCommandsFunction&& inFunction) const;

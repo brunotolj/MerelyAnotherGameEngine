@@ -24,8 +24,8 @@ void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
 	InputSystem& inputSystem = mOwner.GetWorld()->GetInputSystem();
 
 	f32 input = 0.0f;
-	if (inputSystem.GetKeyState(mInputNeg) == GLFW_PRESS) input -= 1.0f;
-	if (inputSystem.GetKeyState(mInputPos) == GLFW_PRESS) input += 1.0f;
+	if (inputSystem.IsKeyPressed(mInputNeg)) input -= 1.0f;
+	if (inputSystem.IsKeyPressed(mInputPos)) input += 1.0f;
 
 	f32 remainingTime = deltaTime;
 	f32 movement = 0.0f;

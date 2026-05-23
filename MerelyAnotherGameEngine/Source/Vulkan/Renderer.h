@@ -4,10 +4,10 @@
 
 #include <vulkan/vulkan_raii.hpp>
 
+class WindowHandle;
+
 namespace Vulkan
 {
-	class Window;
-
 	struct RenderFrameData
 	{
 		vk::CommandBuffer CommandBuffer;
@@ -18,7 +18,7 @@ namespace Vulkan
 	class Renderer : public NonMovableClass
 	{
 	public:
-		Renderer(Window& inWindow);
+		Renderer(WindowHandle inWindow);
 
 		using RenderFrameFunction = std::function<void(RenderFrameData const&)>;
 		void RenderFrame(RenderFrameFunction&& inFunction);
@@ -28,6 +28,7 @@ namespace Vulkan
 		static constexpr u32 cMaxFramesInFlight = 2;
 
 	private:
+		bool IsWindowSizeValid() const;
 		void RecreateSwapchain();
 
 		void InitializeDynamicState(vk::CommandBuffer inCommandBuffer);
@@ -62,6 +63,6 @@ namespace Vulkan
 		u32 mCurrentFrameIndex = 0;
 
 		vk::Extent2D mWindowSize;
-		bool mWasWindowResized = false;
+		bool mShouldRecreateSwapchain = false;
 	};
 }

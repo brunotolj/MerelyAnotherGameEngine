@@ -1,7 +1,8 @@
 #include "Vulkan/Device.h"
-#include "Vulkan/Window.h"
 
 #include <iostream>
+
+#include <GLFW/glfw3.h>
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
@@ -9,8 +10,6 @@ namespace Vulkan
 {
 	Device::Device()
 	{
-		glfwInit();
-
 		vk::ApplicationInfo appInfo
 		{
 			.pApplicationName = "Test",
@@ -63,36 +62,6 @@ namespace Vulkan
 
 		CreateLogicalDevice();
 		mage_check(mVkDevice != nullptr);
-	}
-
-	Device::~Device()
-	{
-		glfwTerminate();
-	}
-
-	vk::raii::Instance const& Device::GetVkInstance() const
-	{
-		return mVkInstance;
-	}
-
-	vk::raii::PhysicalDevice const& Device::GetVkPhysicalDevice() const
-	{
-		return mVkPhysicalDevice;
-	}
-
-	vk::raii::Device const& Device::GetVkDevice() const
-	{
-		return mVkDevice;
-	}
-
-	vk::raii::Queue const& Device::GetGraphicsQueue() const
-	{
-		return mGraphicsQueue;
-	}
-
-	vk::raii::CommandPool const& Device::GetCommandPool() const
-	{
-		return mCommandPool;
 	}
 
 	void Device::SubmitSingleTimeCommands(SingleTimeCommandsFunction&& inFunction) const

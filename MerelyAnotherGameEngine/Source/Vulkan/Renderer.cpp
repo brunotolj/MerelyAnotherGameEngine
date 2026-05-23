@@ -1,13 +1,13 @@
 #include "Vulkan/Renderer.h"
 #include "Engine/Engine.h"
-#include "Vulkan/Buffer.h"
-#include "Vulkan/Pipeline.h"
-#include "Vulkan/Window.h"
+
+#include <GLFW/glfw3.h>
 
 namespace Vulkan
 {
-	Renderer::Renderer(Window& inWindow)
+	Renderer::Renderer(WindowHandle inWindow)
 	{
+		vk::raii::Instance const& instance = gEngine->mVulkanDevice.GetVkInstance();
 		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
 		vk::raii::PhysicalDevice const& physicalDevice = gEngine->mVulkanDevice.GetVkPhysicalDevice();
 
@@ -17,8 +17,13 @@ namespace Vulkan
 		while (VkFlags(supportedSampleCounts) & (VkFlags(msaaSamples) << 1))
 			msaaSamples = vk::SampleCountFlagBits(VkFlags(msaaSamples) << 1);
 
-		mSurface = inWindow.CreateVkSurface(gEngine->mVulkanDevice.GetVkInstance());
-		mage_check(mSurface != nullptr);
+		{
+			VkSurfaceKHR surface = nullptr;
+			VkResult result = glfwCreateWindowSurface(*instance, inWindow.GetRawWindow(), nullptr, &surface);
+			mage_check(result == VK_SUCCESS);
+
+			mSurface = vk::raii::SurfaceKHR(instance, surface);
+		}
 
 		vk::CommandBufferAllocateInfo commandBufferAllocInfo
 		{
@@ -37,26 +42,35 @@ namespace Vulkan
 			mPresentFences.Add(device.createFence({ .flags = vk::FenceCreateFlagBits::eSignaled }));
 		}
 
-		mWindowSize = inWindow.GetSize();
-		inWindow.SetResizedCallback([this](i32 inNewWidth, i32 inNewHeight)
+		gEngine->mWindowManager.AddResizedCallback([this, inWindow](WindowHandle inResizedWindow, glm::i32vec2 inNewSize)
 			{
-				mWasWindowResized = true;
-				mWindowSize.width = u32(inNewWidth);
-				mWindowSize.height = u32(inNewHeight);
+				if (inResizedWindow != inWindow)
+					return;
+
+				mShouldRecreateSwapchain = true;
+				mWindowSize.width = u32(inNewSize.x);
+				mWindowSize.height = u32(inNewSize.y);
 			});
 
-		RecreateSwapchain();
+		mShouldRecreateSwapchain = true;
+		
+		glm::i32vec2 windowSize = inWindow.GetWindowSize();
+		mWindowSize.width = u32(windowSize.x);
+		mWindowSize.height = u32(windowSize.y);
 	}
 
 	void Renderer::RenderFrame(Renderer::RenderFrameFunction&& inFunction)
 	{
-		vk::Result result;
-
-		if (mWasWindowResized)
+		if (mShouldRecreateSwapchain)
 		{
-			mWasWindowResized = false;
 			RecreateSwapchain();
+
+			if (mShouldRecreateSwapchain)
+				return;
 		}
+
+		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
+		vk::raii::Queue const& graphicsQueue = gEngine->mVulkanDevice.GetGraphicsQueue();
 
 		vk::raii::CommandBuffer& commandBuffer = mCommandBuffers[mCurrentFrameIndex];
 		vk::Semaphore currentPresentCompleteSemaphore = mPresentCompleteSemaphores[mCurrentFrameIndex];
@@ -64,8 +78,7 @@ namespace Vulkan
 		vk::Fence currentDrawFence = mDrawFences[mCurrentFrameIndex];
 		vk::Fence currentPresentFence = mPresentFences[mCurrentFrameIndex];
 
-		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
-		vk::raii::Queue const& graphicsQueue = gEngine->mVulkanDevice.GetGraphicsQueue();
+		vk::Result result;
 
 		result = device.waitForFences(currentDrawFence, vk::True, UINT64_MAX);
 		mage_check(result == vk::Result::eSuccess);
@@ -222,8 +235,18 @@ namespace Vulkan
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % cMaxFramesInFlight;
 	}
 
+	bool Renderer::IsWindowSizeValid() const
+	{
+		return mWindowSize.width > 0 && mWindowSize.height > 0;
+	}
+
 	void Renderer::RecreateSwapchain()
 	{
+		if (!IsWindowSizeValid())
+			return;
+
+		mShouldRecreateSwapchain = false;
+
 		vk::raii::PhysicalDevice const& physicalDevice = gEngine->mVulkanDevice.GetVkPhysicalDevice();
 		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
 

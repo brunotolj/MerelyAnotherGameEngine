@@ -159,6 +159,7 @@
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\Engine\ShaderCompiler.cpp" />
+    <ClCompile Include="Source\Engine\WindowManager.cpp" />
     <ClCompile Include="Source\Game\CameraComponent.cpp" />
     <ClCompile Include="Source\Game\GameObject.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />
@@ -181,7 +182,6 @@
     <ClCompile Include="Source\Vulkan\Image.cpp" />
     <ClCompile Include="Source\Vulkan\Pipeline.cpp" />
     <ClCompile Include="Source\Vulkan\Renderer.cpp" />
-    <ClCompile Include="Source\Vulkan\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Assets\Asset.h" />
@@ -203,6 +203,7 @@
     <ClInclude Include="Source\Engine\AssetManager.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
     <ClInclude Include="Source\Engine\ShaderCompiler.h" />
+    <ClInclude Include="Source\Engine\WindowManager.h" />
     <ClInclude Include="Source\Game\CameraComponent.h" />
     <ClInclude Include="Source\Game\GameObject.h" />
     <ClInclude Include="Source\Game\GameObjectComponent.h" />
@@ -226,7 +227,6 @@
     <ClInclude Include="Source\Vulkan\Image.h" />
     <ClInclude Include="Source\Vulkan\Pipeline.h" />
     <ClInclude Include="Source\Vulkan\Renderer.h" />
-    <ClInclude Include="Source\Vulkan\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Shaders\TextShader.slang" />
