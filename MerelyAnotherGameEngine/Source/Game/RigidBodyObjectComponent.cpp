@@ -19,12 +19,12 @@ void RigidBodyObjectComponent::OnOwnerAddedToWorld(GameWorld& world)
 	pose.q.y = -mOwner.Transform.Rotation.ZX;
 	pose.q.z = -mOwner.Transform.Rotation.XY;
 
-	mPhysicsActor = world.GetPhysicsSystem().AddRigidBody(mRigidBodyParams, pose, mLinearVelocity, mAngularVelocity);
+	mPhysicsActor = world.mPhysicsSystem.AddRigidBody(mRigidBodyParams, pose, mLinearVelocity, mAngularVelocity);
 }
 
 void RigidBodyObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
 {
-	world.GetPhysicsSystem().RemoveActor(mPhysicsActor);
+	world.mPhysicsSystem.RemoveActor(mPhysicsActor);
 }
 
 void RigidBodyObjectComponent::UpdatePrePhysics(f32 deltaTime)

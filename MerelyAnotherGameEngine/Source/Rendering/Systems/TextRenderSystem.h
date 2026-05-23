@@ -43,7 +43,7 @@ class TextRenderSystem : public NonCopyableClass
 public:
 	TextRenderSystem();
 
-	void RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data);
+	void RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data) const;
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;

@@ -1,29 +1,13 @@
 #include "Game/CameraComponent.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
-#include "Game/InputSystem.h"
 #include "Game/SpriteObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Game/TextObjectComponent.h"
-#include "Physics/PhysicsSystem.h"
 #include "Rendering/Systems/MeshRenderSystem.h"
 #include "Rendering/Systems/SpriteRenderSystem.h"
 #include "Rendering/Systems/TextRenderSystem.h"
 #include "Vulkan/Renderer.h"
-
-GameWorld::GameWorld(
-	std::unique_ptr<InputSystem>&& inputSystem,
-	std::unique_ptr<PhysicsSystem>&& physicsSystem,
-	std::unique_ptr<MeshRenderSystem>&& meshRenderSystem,
-	std::unique_ptr<SpriteRenderSystem>&& spriteRenderSystem,
-	std::unique_ptr<TextRenderSystem>&& textRenderSystem) :
-	mInputSystem(std::move(inputSystem)),
-	mPhysicsSystem(std::move(physicsSystem)),
-	mMeshRenderSystem(std::move(meshRenderSystem)),
-	mSpriteRenderSystem(std::move(spriteRenderSystem)),
-	mTextRenderSystem(std::move(textRenderSystem))
-{
-}
 
 void GameWorld::Update(f32 deltaTime)
 {
@@ -44,7 +28,7 @@ void GameWorld::Update(f32 deltaTime)
 	}
 	mNewObjects.clear();
 
-	mPhysicsSystem->Update(deltaTime);
+	mPhysicsSystem.Update(deltaTime);
 
 	mIsCurrentlyUpdatingObjects = true;
 	for (const std::shared_ptr<GameObject>& object : mObjects)
@@ -150,9 +134,9 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 			f32 aspectRatio = f32(inFrameData.Extent.width) / f32(inFrameData.Extent.height);
 			sceneData.ProjectionTransform = CalcProjectionTransform(0.1f, 1000.0f, glm::radians(90.0f), aspectRatio);
 
-			mMeshRenderSystem->RenderMeshes(inFrameData, sceneData);
-			mSpriteRenderSystem->RenderSprites(inFrameData, spriteData);
-			mTextRenderSystem->RenderText(inFrameData, textData);
+			mMeshRenderSystem.RenderMeshes(inFrameData, sceneData);
+			mSpriteRenderSystem.RenderSprites(inFrameData, spriteData);
+			mTextRenderSystem.RenderText(inFrameData, textData);
 		});
 }
 

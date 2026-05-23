@@ -205,32 +205,25 @@ i32 main()
 	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf");
 	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf");
 
-	GameWorld world(
-		std::make_unique<InputSystem>(),
-		std::make_unique<PhysicsSystem>(),
-		std::make_unique<MeshRenderSystem>(),
-		std::make_unique<SpriteRenderSystem>(),
-		std::make_unique<TextRenderSystem>());
+	GameWorld world;
 
-	PhysicsSystemMaterialPtr defaultMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.1f, 1.0f });
-	PhysicsSystemMaterialPtr floorMaterial = world.GetPhysicsSystem().CreateMaterial({ 0.2f, 0.05f, 0.0f });
+	physx::PxMaterial* defaultMaterial = world.mPhysicsSystem.CreateMaterial({ 0.2f, 0.1f, 1.0f });
+	physx::PxMaterial* floorMaterial = world.mPhysicsSystem.CreateMaterial({ 0.2f, 0.05f, 0.0f });
 	
-	std::shared_ptr<physx::PxGeometry> boxCollision = std::make_unique<physx::PxBoxGeometry>(boardSize, boardSize, 1.0f);
-	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, nullptr, boxCollision, floorMaterial };
+	physx::PxBoxGeometry boxCollision(boardSize, boardSize, 1.0f);
+	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, boxCollision, floorMaterial };
 	
-	std::shared_ptr<physx::PxCustomGeometryExt::CylinderCallbacks> cylinderCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::CylinderCallbacks>(2.0f * cornerHalfHeight, cornerRadius);
-	std::shared_ptr<physx::PxGeometry> cylinderCollision = std::make_shared<physx::PxCustomGeometry>(*cylinderCollisionCallbacks.get());
-	PhysicsRigidBodyParams cylinderRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cylinderCollisionCallbacks, cylinderCollision, defaultMaterial };
+	physx::PxCustomGeometryExt::CylinderCallbacks cylinderCollisionCallbacks(2.0f * cornerHalfHeight, cornerRadius);
+	PhysicsRigidBodyParams cylinderRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cylinderCollisionCallbacks, defaultMaterial };
 	
-	std::shared_ptr<physx::PxGeometry> capsuleCollision = std::make_unique<physx::PxCapsuleGeometry>(capsuleRadius, capsuleLength);
-	PhysicsRigidBodyParams capsuleRigidBodyParams = { PhysicsSystemObjectType::RigidKinematic, nullptr, capsuleCollision, defaultMaterial };
+	physx::PxCapsuleGeometry capsuleCollision(capsuleRadius, capsuleLength);
+	PhysicsRigidBodyParams capsuleRigidBodyParams = { PhysicsSystemObjectType::RigidKinematic, capsuleCollision, defaultMaterial };
 	
-	std::shared_ptr<physx::PxCustomGeometryExt::ConeCallbacks> coneCollisionCallbacks = std::make_shared<physx::PxCustomGeometryExt::ConeCallbacks>(coneHeight, coneRadius);
-	std::shared_ptr<physx::PxGeometry> coneCollision = std::make_shared<physx::PxCustomGeometry>(*coneCollisionCallbacks.get());
-	PhysicsRigidBodyParams coneRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, coneCollisionCallbacks, coneCollision, defaultMaterial };
+	physx::PxCustomGeometryExt::ConeCallbacks coneCollisionCallbacks(coneHeight, coneRadius);
+	PhysicsRigidBodyParams coneRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, coneCollisionCallbacks, defaultMaterial };
 
-	std::shared_ptr<physx::PxGeometry> ballCollision = std::make_unique<physx::PxSphereGeometry>(ballRadius);
-	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, nullptr, ballCollision, defaultMaterial };
+	physx::PxSphereGeometry ballCollision(ballRadius);
+	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, ballCollision, defaultMaterial };
 
 	{
 		world.AddObject(CreateUserInterface(spriteTexture, fontArianaVioleta, fontOrbitron));
@@ -278,9 +271,9 @@ i32 main()
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
 
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
-	world.GetInputSystem().BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
+	world.mInputSystem.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
+	world.mInputSystem.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
+	world.mInputSystem.BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
 
 	while (!engine.ShouldExit())
 	{

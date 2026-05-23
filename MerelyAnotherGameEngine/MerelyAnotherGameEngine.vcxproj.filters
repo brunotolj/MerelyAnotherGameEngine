@@ -90,9 +90,6 @@
     <ClCompile Include="Source\Vulkan\Renderer.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Vulkan\Window.cpp">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Vulkan\Buffer.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
@@ -149,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\WindowManager.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Physics\PhysicsGeometry.cpp">
+      <Filter>Source Files\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -227,9 +227,6 @@
     <ClInclude Include="Source\Vulkan\Renderer.h">
       <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vulkan\Window.h">
-      <Filter>Source Files\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Vulkan\Buffer.h">
       <Filter>Source Files\Vulkan</Filter>
     </ClInclude>
@@ -283,6 +280,9 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\WindowManager.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Physics\PhysicsGeometry.h">
+      <Filter>Source Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <cstdint>
-#include <memory>
-
-#include <Foundation/PxTransform.h>
-#include <Geometry/PxCustomGeometry.h>
+#include "Physics/PhysicsGeometry.h"
 
 enum class PhysicsSystemObjectType : u8
 {
@@ -20,16 +16,11 @@ struct PhysicsSystemMaterialProperties
 	f32 Restitution;
 };
 
-struct PhysicsSystemMaterial;
-using PhysicsSystemMaterialPtr = std::shared_ptr<PhysicsSystemMaterial>;
-
 struct PhysicsRigidBodyParams
 {
 	PhysicsSystemObjectType Type = PhysicsSystemObjectType::RigidStatic;
 
-	std::shared_ptr<physx::PxCustomGeometry::Callbacks> CustomGeometryCallbacks = nullptr;
-	
-	std::shared_ptr<physx::PxGeometry> Geometry = nullptr;
+	PhysicsGeometry Geometry;
 
-	PhysicsSystemMaterialPtr Material = nullptr;
+	physx::PxMaterial* Material = nullptr;
 };

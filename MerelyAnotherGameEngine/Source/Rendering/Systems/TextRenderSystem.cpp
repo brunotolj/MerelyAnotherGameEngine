@@ -8,7 +8,7 @@ TextRenderSystem::TextRenderSystem()
 	CreateVertexBuffer();
 }
 
-void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data)
+void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data) const
 {
 	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);

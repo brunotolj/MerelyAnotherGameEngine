@@ -16,6 +16,9 @@ PhysicsSystem::PhysicsSystem()
 
 PhysicsSystem::~PhysicsSystem()
 {
+	for (physx::PxMaterial* material : mMaterials)
+		PX_RELEASE(material);
+
 	PX_RELEASE(mScene);
 	PX_RELEASE(mDispatcher);
 	PX_RELEASE(mPhysics);
@@ -35,9 +38,9 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(
 	physx::PxVec3 angularVelocity)
 {
 	physx::PxRigidActor* actor = nullptr;
-	physx::PxMaterial* material = params.Material.get() ? &params.Material->Get() : nullptr;
+	physx::PxCustomGeometryExt::CylinderCallbacks* callbacks = (physx::PxCustomGeometryExt::CylinderCallbacks*)params.Geometry.CustomGeometry.Geometry.callbacks;
 
-	physx::PxShape* shape = mPhysics->createShape(*params.Geometry, &material, true);
+	physx::PxShape* shape = mPhysics->createShape(params.Geometry.BaseGeometry, *params.Material, true);
 	mage_check(shape);
 
 	switch (params.Type)
@@ -82,14 +85,10 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(
 	return actor;
 }
 
-PhysicsSystemMaterialPtr PhysicsSystem::CreateMaterial(const PhysicsSystemMaterialProperties& props)
+physx::PxMaterial* PhysicsSystem::CreateMaterial(const PhysicsSystemMaterialProperties& props)
 {
-	physx::PxMaterial* pxMat = mPhysics->createMaterial(
-		props.StaticFriction,
-		props.DynamicFriction,
-		props.Restitution);
-
-	return std::make_shared<PhysicsSystemMaterial>(*this, *pxMat);
+	mMaterials.Add(mPhysics->createMaterial(props.StaticFriction, props.DynamicFriction, props.Restitution));
+	return mMaterials.GetLast();
 }
 
 void PhysicsSystem::RemoveActor(physx::PxRigidActor* actor)

@@ -21,7 +21,7 @@ void BoundedLineMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 
 void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
 {
-	InputSystem& inputSystem = mOwner.GetWorld()->GetInputSystem();
+	InputSystem& inputSystem = mOwner.GetWorld()->mInputSystem;
 
 	f32 input = 0.0f;
 	if (inputSystem.IsKeyPressed(mInputNeg)) input -= 1.0f;

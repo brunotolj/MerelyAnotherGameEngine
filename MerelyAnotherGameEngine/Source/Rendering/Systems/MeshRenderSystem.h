@@ -47,7 +47,7 @@ class MeshRenderSystem : public NonCopyableClass
 public:
 	MeshRenderSystem();
 
-	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data);
+	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data) const;
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;

@@ -17,14 +17,14 @@ DefaultMovementComponent::DefaultMovementComponent(TransformableObject& owner, c
 
 void DefaultMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	world.GetInputSystem().BindCursorMovementHandler([this](glm::dvec2 movement, CursorInputMode cursorMode)
+	world.mInputSystem.BindCursorMovementHandler([this](glm::dvec2 movement, CursorInputMode cursorMode)
 		{ if (cursorMode == CursorInputMode::Disabled) mCursorMovement += movement; });
 }
 
 void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
 {
 	glm::vec3 movement(0.0f);
-	InputSystem& inputSystem = mOwner.GetWorld()->GetInputSystem();
+	InputSystem& inputSystem = mOwner.GetWorld()->mInputSystem;
 
 	mRotation += 0.01f * glm::vec2(mCursorMovement);
 	mRotation.y = glm::clamp(mRotation.y, -glm::radians(80.0f), glm::radians(80.0f));

@@ -23,7 +23,7 @@ MeshRenderSystem::MeshRenderSystem()
 	}
 }
 
-void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data)
+void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data) const
 {
 	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);
@@ -33,7 +33,7 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, Sc
 	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(data.LightDirection, 0.0f));
 	ubo.LightDirectionAndAmbient.w = data.AmbientLightIntensity;
 
-	Vulkan::Buffer& uniformBuffer = mUniformBuffers[frameData.Index];
+	Vulkan::Buffer const& uniformBuffer = mUniformBuffers[frameData.Index];
 	uniformBuffer.Write(&ubo, sizeof(ubo));
 	uniformBuffer.Flush();
 

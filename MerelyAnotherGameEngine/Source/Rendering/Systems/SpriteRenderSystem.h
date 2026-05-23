@@ -37,7 +37,7 @@ class SpriteRenderSystem : public NonCopyableClass
 public:
 	SpriteRenderSystem();
 
-	void RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data);
+	void RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data) const;
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;

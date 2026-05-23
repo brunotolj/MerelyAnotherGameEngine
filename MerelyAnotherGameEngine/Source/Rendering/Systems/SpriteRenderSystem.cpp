@@ -25,7 +25,7 @@ SpriteRenderSystem::SpriteRenderSystem()
 	CreateVertexBuffer();
 }
 
-void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data)
+void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data) const
 {
 	SetupDynamicState(frameData.CommandBuffer);
 	mPipeline.Bind(frameData.CommandBuffer);
@@ -35,7 +35,7 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 	SpriteUBO ubo;
 	ubo.ScreenTransform = { -1.0f, -1.0f, 2.0f / 1920.0f, 2.0f / 1080.0f };
 
-	Vulkan::Buffer& uniformBuffer = mUniformBuffers[frameData.Index];
+	Vulkan::Buffer const& uniformBuffer = mUniformBuffers[frameData.Index];
 	uniformBuffer.Write(&ubo, sizeof(ubo));
 	uniformBuffer.Flush();
 

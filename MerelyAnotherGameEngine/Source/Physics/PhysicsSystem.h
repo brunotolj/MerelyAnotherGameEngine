@@ -2,8 +2,6 @@
 
 #include "Physics/PhysicsCommon.h"
 
-#include <PxPhysicsAPI.h>
-
 class RigidBodyObjectComponent;
 
 class PhysicsSystem : public NonCopyableClass
@@ -21,7 +19,7 @@ public:
 		physx::PxVec3 linearVelocity,
 		physx::PxVec3 angularVelocity);
 
-	PhysicsSystemMaterialPtr CreateMaterial(const PhysicsSystemMaterialProperties& props);
+	physx::PxMaterial* CreateMaterial(const PhysicsSystemMaterialProperties& props);
 
 	void RemoveActor(physx::PxRigidActor* actor);
 
@@ -32,18 +30,6 @@ private:
 	physx::PxPhysics* mPhysics = nullptr;
 	physx::PxDefaultCpuDispatcher* mDispatcher = nullptr;
 	physx::PxScene* mScene = nullptr;
-};
 
-struct PhysicsSystemMaterial : public NonCopyableStruct
-{
-	PhysicsSystemMaterial(PhysicsSystem& system, physx::PxMaterial& material) :
-		mSystem(system), mMaterial(material) {}
-
-	~PhysicsSystemMaterial() { mMaterial.release(); }
-
-	physx::PxMaterial& Get() { return mMaterial; }
-
-private:
-	PhysicsSystem& mSystem;
-	physx::PxMaterial& mMaterial;
+	mage::Array<physx::PxMaterial*> mMaterials;
 };
