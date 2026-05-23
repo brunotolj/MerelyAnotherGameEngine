@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2024 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
@@ -456,30 +456,24 @@ struct PxFilterObjectType
 		eARTICULATION,
 
 		/**
+		\brief A deformable surface
+		\see PxDeformableSurface
+		*/
+		eDEFORMABLE_SURFACE,
+
+		/**
+		\brief A deformable volume
+		\see PxDeformableVolume
+		*/
+		eDEFORMABLE_VOLUME,
+
+		eSOFTBODY PX_DEPRECATED = eDEFORMABLE_VOLUME, //!< \deprecated
+
+		/**
 		\brief A particle system
 		\see PxParticleSystem
 		*/
 		ePARTICLESYSTEM,
-
-		/**
-		\brief A FEM-based soft body
-		\see PxSoftBody
-		*/
-		eSOFTBODY,
-
-		/**
-		\brief A FEM-based cloth
-		\note In development
-		\see PxFEMCloth
-		*/
-		eFEMCLOTH,
-
-		/**
-		\brief A hair system
-		\note In development
-		\see PxHairSystem
-		*/
-		eHAIRSYSTEM,
 
 		//! \brief internal use only!
 		eMAX_TYPE_COUNT = 16,
@@ -497,8 +491,9 @@ struct PxFilterObjectFlag
 	{
 		eKINEMATIC	= (1<<4),
 		eTRIGGER	= (1<<5),
+		eCUSTOM_GEOMETRY = (1 << 6),
 
-		eNEXT_FREE	= (1<<6)	// Used internally
+		eNEXT_FREE	= (1<<7)	// Used internally
 	};
 };
 

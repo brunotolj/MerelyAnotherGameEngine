@@ -22,19 +22,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2024 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
 #ifndef PX_CONVEX_MESH_H
 #define PX_CONVEX_MESH_H
 
-#include "foundation/Px.h"
+#include "foundation/PxVec3.h"
+#include "foundation/PxMat33.h"
 #include "common/PxBase.h"
 
 #if !PX_DOXYGEN
 namespace physx
 {
+class PxBounds3;
 #endif
 
 /**
@@ -156,7 +158,7 @@ public:
 	virtual const PxReal* getSDF() const = 0;
 
 
-	virtual	const char*	getConcreteTypeName() const	{ return "PxConvexMesh"; }
+	virtual	const char*	getConcreteTypeName() const	PX_OVERRIDE	PX_FINAL	{ return "PxConvexMesh"; }
 
 	/**
 	\brief This method decides whether a convex mesh is gpu compatible. If the total number of vertices are more than 64 or any number of vertices in a polygon is more than 32, or

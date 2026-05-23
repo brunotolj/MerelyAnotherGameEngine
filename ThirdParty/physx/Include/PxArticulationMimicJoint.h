@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2024 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved. 
 
@@ -90,6 +90,31 @@ public:
 	virtual void setOffset(PxReal offset) = 0;
 
 	/**
+	\brief Get the natural frequency of a mimic joint.
+	\return The natural frequency.
+	*/
+	virtual PxReal getNaturalFrequency() const = 0;
+
+	/**
+	\brief Set the natural frequency of a mimic joint.
+	\param[in] naturalFrequency is the new natural frequency to be used in the next simulation step.
+	*/
+	virtual void setNaturalFrequency(PxReal naturalFrequency) = 0;
+
+	/**
+	\brief Get the damping ratio of a mimic joint.
+	\return The damping ratio.
+	*/
+	virtual PxReal getDampingRatio() const = 0;
+
+	/**
+	\brief Set the damping ratio of a mimic joint.
+	\param[in] dampingRatio is the new damping ratio to be used in the next simulation step.
+	*/
+	virtual void setDampingRatio(PxReal dampingRatio) = 0;
+
+
+	/**
 	\brief Return the jointA specified in PxArticulationReducedCoordinate::createMimicJoint()
 	\return The jointA specified in PxArticulationReducedCoordinate::createMimicJoint()
 	\see  PxArticulationReducedCoordinate::createMimicJoint()
@@ -123,7 +148,7 @@ public:
 
 	\return The string name.
 	*/
-	virtual	const char*						getConcreteTypeName() const { return "PxArticulationMimicJoint"; }
+	virtual	const char*						getConcreteTypeName() const	PX_OVERRIDE	PX_FINAL	{ return "PxArticulationMimicJoint"; }
 
 	virtual									~PxArticulationMimicJoint() {}
 

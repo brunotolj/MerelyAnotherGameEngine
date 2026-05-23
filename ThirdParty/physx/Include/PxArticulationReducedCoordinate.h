@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2024 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
@@ -32,6 +32,7 @@
 #include "PxPhysXConfig.h"
 #include "common/PxBase.h"
 #include "foundation/PxVec3.h"
+#include "foundation/PxBounds3.h"
 #include "foundation/PxTransform.h"
 #include "solver/PxSolverDefs.h"
 #include "PxArticulationFlag.h"
@@ -99,26 +100,30 @@ namespace physx
 	{
 	public:
 		PxArticulationCache() :
-			externalForces			(NULL),
-			denseJacobian			(NULL),
-			massMatrix				(NULL),
-			jointVelocity			(NULL),
-			jointAcceleration		(NULL),
-			jointPosition			(NULL),
-			jointForce				(NULL),
-			jointTargetPositions	(NULL),
-			jointTargetVelocities	(NULL),
-			linkVelocity			(NULL),
-			linkAcceleration		(NULL),
-			linkIncomingJointForce	(NULL),
-			linkForce				(NULL),
-			linkTorque				(NULL),
-			rootLinkData			(NULL),
-			coefficientMatrix		(NULL),
-			lambda					(NULL),
-			scratchMemory			(NULL),
-			scratchAllocator		(NULL),
-			version					(0)
+			externalForces				(NULL),
+			denseJacobian				(NULL),
+			massMatrix					(NULL),
+			coriolisForce				(NULL),
+			gravityCompensationForce	(NULL),
+			centroidalMomentumMatrix	(NULL),
+			centroidalMomentumBias		(NULL),
+			jointVelocity				(NULL),
+			jointAcceleration			(NULL),
+			jointPosition				(NULL),
+			jointForce					(NULL),
+			jointTargetPositions		(NULL),
+			jointTargetVelocities		(NULL),
+			linkVelocity				(NULL),
+			linkAcceleration			(NULL),
+			linkIncomingJointForce		(NULL),
+			linkForce					(NULL),
+			linkTorque					(NULL),
+			rootLinkData				(NULL),
+			coefficientMatrix			(NULL),
+			lambda						(NULL),
+			scratchMemory				(NULL),
+			scratchAllocator			(NULL),
+			version						(0)
 		{}
 
 		/**
@@ -154,14 +159,68 @@ namespace physx
 		PxReal*						denseJacobian;
 
 		/**
-		\brief The generalized mass matrix that maps joint accelerations to joint forces.
+		\brief The generalized mass matrix used in inverse dynamics algorithms.
 
-		- N = getDofs() * getDofs().
+		- N = (getDofs() + 6) * (getDofs() + 6) -> size includes possible floating-base DOFs regardless of PxArticulationFlag::eFIX_BASE flag.
+		- If PxArticulationFlag::eFIX_BASE is true, the terms corresponding to the root DoFs are included in the top left block of the matrix.
+		  For these terms, column indices correspond to linear acceleration first then angular acceleration, row indices correspond to force first then torque.
+		  The bottom right block of the matrix corresponds to the joint DoFs terms, column indices correspond to joint acceleration, row indices correspond to joint force.
+		- If PxArticulationFlag::eFIX_BASE is false, only the terms corresponding to the joint DoFs are included, column indices correspond to joint acceleration,
+		  row indices correspond to joint force.
 		- The indexing follows the internal DOF index order, see PxArticulationCache::jointVelocity.
+		- The mass matrix is indexed [nCols * row + column].
 
-		\see PxArticulationReducedCoordinate::computeGeneralizedMassMatrix
+		\see PxArticulationReducedCoordinate::computeMassMatrix, PxArticulationReducedCoordinate::computeGeneralizedMassMatrix
 		*/
 		PxReal*						massMatrix;
+
+		/**
+		\brief The Coriolis and centrifugal compensation forces used in inverse dynamics algorithms.
+
+		- N = getDofs() + 6 -> size includes possible floating-base DOFs regardless of PxArticulationFlag::eFIX_BASE flag.
+		- If PxArticulationFlag::eFIX_BASE is true, the terms corresponding to the root DoFs are included at the start of
+		  the array (force then torque), followed by the joint DoFs terms.
+		- If PxArticulationFlag::eFIX_BASE is false, only the terms corresponding to the joint DoFs are included.
+		- The indexing follows the internal DOF index order, see PxArticulationCache::jointVelocity.
+
+		\see PxArticulationReducedCoordinate::computeCoriolisCompensation
+		*/
+		PxReal*						coriolisForce;
+
+		/**
+		\brief The gravity compensation forces used in inverse dynamics algorithms.
+
+		- N = getDofs() + 6 -> size includes possible floating-base DOFs regardless of PxArticulationFlag::eFIX_BASE flag.
+		- If PxArticulationFlag::eFIX_BASE is true, the terms corresponding to the root DoFs are included at the start of
+		  the array (force then torque), followed by the joint DoFs terms.
+		- If PxArticulationFlag::eFIX_BASE is false, only the terms corresponding to the joint DoFs are included.
+		- The indexing follows the internal DOF index order, see PxArticulationCache::jointVelocity.
+
+		\see PxArticulationReducedCoordinate::computeGravityCompensation
+		*/
+		PxReal*						gravityCompensationForce;
+
+		/**
+		\brief The centroidal momentum matrix that maps velocities to centroidal momentum.
+
+		- N = 6 * (getDofs() + 6).
+		- Each row includes first the term related to the DOF of the root (linear, then angular), then the joint DOF following the internal DOF index order,
+		  see PxArticulationCache::jointVelocity.
+		- The centroidal momentum includes first the linear and then the angular contribution.
+
+		\see PxArticulationReducedCoordinate::computeCentroidalMomentumMatrix
+		*/
+		PxReal*						centroidalMomentumMatrix;
+
+		/**
+		\brief The centroidal momentum bias force. This is a second-order term to calculate the derivative of the centroidal momentum.
+
+		- N = 6.
+		- The centroidal momentum includes first the linear and then the angular contribution.
+
+		\see PxArticulationReducedCoordinate::computeCentroidalMomentumMatrix
+		*/
+		PxReal*						centroidalMomentumBias;
 
 		/**
 		\brief The articulation joint DOF velocities.
@@ -271,8 +330,8 @@ namespace physx
 		- Write using PxArticulationCacheFlag::eLINK_FORCE.
 		- The indexing follows the internal link indexing, see PxArticulationLink::getLinkIndex.
 		- The force is given in world space.
-        */
-        PxVec3*					linkForce;
+		*/
+		PxVec3*					linkForce;
 
 		/**
 		\brief Link torque, i.e. an external torque applied to the link.
@@ -282,7 +341,7 @@ namespace physx
 		- The indexing follows the internal link indexing, see PxArticulationLink::getLinkIndex.
 		- The torque is given in world space.
 		*/
-		PxVec3*                 linkTorque;
+		PxVec3*					linkTorque;
 
 		/**
 		\brief Root link transform, velocities, and accelerations.
@@ -537,65 +596,6 @@ namespace physx
 		virtual		void				putToSleep() = 0;
 
 		/**
-		\deprecated The COM velocity limits will be removed in a future version without replacement.
-
-		\brief Sets the limit on the magnitude of the linear velocity of the articulation's center of mass.
-
-		- The limit acts on the linear velocity of the entire articulation. The velocity is calculated from the total momentum
-		and the spatial inertia of the articulation.
-		- The limit only applies to floating-base articulations.
-		- A benefit of the COM velocity limit is that it is evenly applied to the whole articulation, which results in fewer visual
-		artifacts compared to link rigid-body damping or joint-velocity limits. However, these per-link or per-degree-of-freedom
-		limits may still help avoid numerical issues.
-
-		\note This call may not be made during simulation.
-
-		\param[in]  maxLinearVelocity The maximal linear velocity magnitude. <b>Range:</b> [0, PX_MAX_F32); <b>Default:</b> 1e+6.
-
-		\see setMaxCOMAngularVelocity, PxRigidBody::setLinearDamping, PxRigidBody::setAngularDamping, PxArticulationJointReducedCoordinate::setMaxJointVelocity
-		*/
-		PX_DEPRECATED virtual		void				setMaxCOMLinearVelocity(const PxReal maxLinearVelocity) = 0;
-
-		/**
-		\deprecated The COM velocity limits will be removed in a future version without replacement.
-		\brief Gets the limit on the magnitude of the linear velocity of the articulation's center of mass.
-
-		\return The maximal linear velocity magnitude.
-
-		\see setMaxCOMLinearVelocity
-		*/
-		PX_DEPRECATED virtual		PxReal				getMaxCOMLinearVelocity() const = 0;
-
-		/**
-		\deprecated The COM velocity limits will be removed in a future version without replacement.
-		\brief Sets the limit on the magnitude of the angular velocity at the articulation's center of mass.
-
-		- The limit acts on the angular velocity of the entire articulation. The velocity is calculated from the total momentum
-		and the spatial inertia of the articulation.
-		- The limit only applies to floating-base articulations.
-		- A benefit of the COM velocity limit is that it is evenly applied to the whole articulation, which results in fewer visual
-		artifacts compared to link rigid-body damping or joint-velocity limits. However, these per-link or per-degree-of-freedom
-		limits may still help avoid numerical issues.
-
-		\note This call may not be made during simulation.
-
-		\param[in]  maxAngularVelocity The maximal angular velocity magnitude. <b>Range:</b> [0, PX_MAX_F32); <b>Default:</b> 1e+6
-
-		\see setMaxCOMLinearVelocity, PxRigidBody::setLinearDamping, PxRigidBody::setAngularDamping, PxArticulationJointReducedCoordinate::setMaxJointVelocity
-		*/
-		PX_DEPRECATED virtual		void				setMaxCOMAngularVelocity(const PxReal maxAngularVelocity) = 0;
-
-		/**
-		\deprecated The COM velocity limits will be removed in a future version without replacement.
-		\brief Gets the limit on the magnitude of the angular velocity at the articulation's center of mass.
-
-		\return The maximal angular velocity magnitude.
-
-		\see setMaxCOMAngularVelocity
-		*/
-		PX_DEPRECATED virtual		PxReal				getMaxCOMAngularVelocity() const = 0;
-
-		/**
 		\brief Adds a link to the articulation with default attribute values.
 
 		\param[in] parent The parent link in the articulation. Must be NULL if (and only if) this is the root link.
@@ -795,6 +795,17 @@ namespace physx
 
 		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
 
+		\note Calling applyCache(cache, PxArticulationCacheFlag::eROOT_TRANSFORM) has the same outcome as calling 
+		PxArticulationReducedCoordinate::setRootGlobalPose() followed by PxArticulationReducedCoordinate::updateKinematic(PxArticulationKinematicFlag::ePOSITION).
+		Similarly, calling applyCache(cache, PxArticulationCacheFlag::eROOT_VELOCITIES) is the cache equivalent of calling 
+		PxArticulationReducedCoordinate::setRootLinearVelocity() followed by PxArticulationReducedCoordinate::updateKinematic(PxArticulationKinematicFlag::eVELOCITY).  
+		Joint positions follow a similar pattern with applyCache(cache, PxArticulationCacheFlag::ePOSITION) having the same outcome as callling 
+		PxArticulationJointReducedCoordinate::setJointPosition() followed by PxArticulationReducedCoordinate::updateKinematic(PxArticulationKinematicFlag::ePOSITION).  
+		Finally, joint velocities updated with applyCache(PxArticulationCacheFlag::eVELOCITY) will produce the same outcome as calling 
+		PxArticulationJointReducedCoordinate::setJointVelocity() followed by PxArticulationReducedCoordinate::updateKinematic(PxArticulationKinematicFlag::eVELOCITY).
+
+		\note This method should not be used if the direct GPU API is enabled. See #PxDirectGPUAPI for the details.
+
 		\see PxArticulationCache, PxArticulationCacheFlags, createCache, copyInternalStateToCache, PxScene::applyArticulationData
 		*/
 		virtual		void					applyCache(PxArticulationCache& cache, const PxArticulationCacheFlags flags, bool autowake = true) = 0;
@@ -806,6 +817,8 @@ namespace physx
 		\param[in] flags Indicate which data to copy from the articulation to the cache.
 
 		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
+
+		\note This method should not be used if the direct GPU API is enabled. See #PxDirectGPUAPI for the details.
 
 		\see PxArticulationCache, PxArticulationCacheFlags, createCache, applyCache
 		*/
@@ -854,11 +867,14 @@ namespace physx
 
 		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
 
-		\see computeGeneralizedGravityForce, computeCoriolisAndCentrifugalForce
+		\see computeGravityCompensation, computeCoriolisCompensation, computeGeneralizedExternalForce, computeJointAcceleration,
+		computeJointForce, computeDenseJacobian, computeMassMatrix
 		*/
 		virtual		void					commonInit() const = 0;
 
 		/**
+		\deprecated Please use computeGravityCompensation instead. It provides a more complete gravity compensation force for floating-base articulations.
+
 		\brief Computes the joint DOF forces required to counteract gravitational forces for the given articulation pose.
 
 		- Inputs:	Articulation pose (joint positions + base transform).
@@ -877,6 +893,34 @@ namespace physx
 		virtual		void					computeGeneralizedGravityForce(PxArticulationCache& cache) const = 0;
 
 		/**
+		\brief Computes the forces required to counteract gravitational forces for the given articulation pose.
+
+		In the case of a fixed-base articulation, the gravity compensation force accounts for the gravity on all the links and provides
+		the force required to compensate the gravitational forces for all the joint DoFs.
+		The indexing follows the internal DOF index order, see PxArticulationCache::jointVelocity.
+
+		In the case of a floating-base articulation, the gravity compensation force also accounts for the gravity on the root link and also provides
+		the force on the root required to compensate its gravitational force. The indexing is:
+			| Root force X | Root force Y | Root force Z | Root torque X | Root torque Y | Root torque Z | Force/Torque DOF 0 | ... | Force/Torque DOF N |
+
+		- Inputs:	Articulation pose (joint positions + base transform).
+		- Outputs:	Forces to counteract gravity (in cache).
+
+		- The joint forces returned are determined purely by gravity for the articulation in the current joint and base pose, and joints at rest;
+		  i.e. external forces, joint velocities, and joint accelerations are set to zero. Joint drives are also not considered in the computation.
+		- commonInit() must be called before the computation, and after setting the articulation pose via applyCache().
+
+		\param[out] cache Out: PxArticulationCache::gravityCompensationForce.
+
+		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
+
+		\see commonInit
+		*/
+		virtual		void					computeGravityCompensation(PxArticulationCache& cache) const = 0;
+
+		/**
+		\deprecated Please use computeCoriolisCompensation instead. It provides a more complete Coriolis and centrifugal compensation force for floating-base articulations.
+
 		\brief Computes the joint DOF forces required to counteract Coriolis and centrifugal forces for the given articulation state.
 
 		- Inputs:	Articulation state (joint positions and velocities (in cache), and base transform and spatial velocity).
@@ -894,6 +938,32 @@ namespace physx
 		\see commonInit
 		*/
 		virtual		void					computeCoriolisAndCentrifugalForce(PxArticulationCache& cache) const = 0;
+
+		/**
+		\brief Computes the joint DOF forces (and root force) required to counteract Coriolis and centrifugal forces for the given articulation state.
+
+		In the case of a fixed-base articulation, the Coriolis and centrifugal compensation force accounts for forces resulting to the current
+		joint velocities. The indexing follows the internal DOF index order, see PxArticulationCache::jointVelocity.
+
+		In the case of a floating-base articulation, the Coriolis and centrifugal compensation force also accounts for forces resulting to the current
+		root velocity. The indexing is:
+			| Root force X | Root force Y | Root force Z | Root torque X | Root torque Y | Root torque Z | Force/Torque DOF 0 | ... | Force/Torque DOF N |
+
+		- Inputs:	Articulation state (joint positions and velocities (in cache), and base transform and spatial velocity).
+		- Outputs:	Joint forces (and root force) to counteract Coriolis and centrifugal forces (in cache).
+
+		- The forces returned are determined purely by the articulation's state; i.e. external forces, gravity, and joint accelerations are set to zero.
+		  Joint drives and potential damping terms, such as link angular or linear damping, or joint friction, are also not considered in the computation.
+		- Prior to the computation, update/set the base spatial velocity with PxArticulationCache::rootLinkData and applyCache().
+		- commonInit() must be called before the computation, and after setting the articulation pose via applyCache().
+
+		\param[in,out] cache In: PxArticulationCache::jointVelocity and PxArticulationCache::linkVelocity; Out: PxArticulationCache::coriolisForce.
+
+		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
+
+		\see commonInit
+		*/
+		virtual		void					computeCoriolisCompensation(PxArticulationCache& cache) const = 0;
 
 		/**
 		\brief Computes the joint DOF forces required to counteract external spatial forces applied to articulation links.
@@ -933,17 +1003,17 @@ namespace physx
 		virtual		void					computeJointAcceleration(PxArticulationCache& cache) const = 0;
 
 		/**
-		\brief Computes the joint forces for the given articulation state and joint accelerations, not considering gravity.
+		\brief Computes the joint forces for the given articulation pose and joint accelerations, not considering gravity and velocity.
 
-		- Inputs:	Joint accelerations (in cache) and articulation state (joint positions and velocities (in cache), and base transform and spatial velocity).
+		- Inputs:	Joint accelerations (in cache).
 		- Outputs:	Joint forces (in cache).
 
-		- The computation includes Coriolis terms. However, joint drives and potential damping terms are not considered in the computation
+		- Gravity, Coriolis effects, joint drives and potential damping terms are not considered in the computation
 		(for example, linear link damping or joint friction).
-		- Prior to the computation, update/set the base spatial velocity with PxArticulationCache::rootLinkData and applyCache().
+		- To compute the joint force for a different pose, the joint positions and root transform first need to be applied with applyCache() as this function ignores any values set to joint positions and root transform in the cache
 		- commonInit() must be called before the computation, and after setting the articulation pose via applyCache().
 
-		\param[in,out] cache In: PxArticulationCache::jointAcceleration and PxArticulationCache::jointVelocity; Out: PxArticulationCache::jointForce.
+		\param[in,out] cache In: PxArticulationCache::jointAcceleration; Out: PxArticulationCache::jointForce.
 
 		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
 
@@ -1005,6 +1075,8 @@ namespace physx
 		virtual	PX_DEPRECATED	bool		computeLambda(PxArticulationCache& cache, PxArticulationCache& initialState, const PxReal* const jointTorque, const PxU32 maxIter) const = 0;
 
 		/**
+		\deprecated Please use computeMassMatrix instead. It provides a more complete mass matrix for floating-base articulations.
+
 		\brief Compute the joint-space inertia matrix that maps joint accelerations to joint forces: forces = M * accelerations.
 
 		- Inputs:	Articulation pose (joint positions and base transform).
@@ -1018,7 +1090,69 @@ namespace physx
 
 		\see commonInit
 		*/
-		virtual		void					computeGeneralizedMassMatrix(PxArticulationCache& cache) const = 0;
+		virtual	PX_DEPRECATED	void		computeGeneralizedMassMatrix(PxArticulationCache& cache) const = 0;
+
+		/**
+		\brief Compute the mass matrix M that maps accelerations to forces: forces = M * accelerations.
+
+		In the case of a fixed-base articulation, the mass matrix maps joint accelerations to joint forces.
+		The indexing follows the internal DOF index order, see PxArticulationCache::jointVelocity.
+
+		In the case of a floating-base articulation, the mass matrix also includes terms required to map root accelerations
+		to root forces. The mass matrix should be used with accelerations and forces that follows the indexing below:
+			| Root force X       |     | Root linear acceleration X  |
+			| Root force Y	     |     | Root linear acceleration Y  |
+			| Root force Z       |     | Root linear acceleration Z  |
+			| Root torque X      |     | Root angular acceleration X |
+			| Root torque Y      |     | Root angular acceleration Y |
+			| Root torque Z      | = M | Root angular acceleration Z |
+			| Force/Torque DOF 0 |     | Joint acceleration 0        |
+			| Force/Torque DOF 1 |     | Joint acceleration 1        |
+			| ...                |     | ...                         |
+			| Force/Torque DOF N |     | Joint acceleration N        |
+
+		- Inputs:	Articulation pose (joint positions and base transform).
+		- Outputs:	Mass matrix (in cache).
+
+		commonInit() must be called before the computation, and after setting the articulation pose via applyCache().
+
+		\param[out] cache Out: PxArticulationCache::massMatrix.
+
+		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
+		\note The mass matrix is indexed [nCols * row + column].
+
+		\see commonInit, PxArticulationCache::massMatrix
+		*/
+		virtual		void					computeMassMatrix(PxArticulationCache& cache) const = 0;
+
+		/**
+		\brief Compute the articulation's center of mass.
+
+		\return The articulation's center of mass given either in the world frame (rootFrame = false) or in the root frame
+		(rootFrame = true). PxVec3(0.0f) is returned if the articulation is not in a scene or the call is made during simulation.
+
+		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
+		*/
+		virtual		PxVec3				computeArticulationCOM(const bool rootFrame = false) const = 0;
+
+		/**
+		\brief Compute the centroidal momentum matrix and corresponding bias force of an articulation.
+
+		- Inputs:	Articulation state (joint positions and velocities, and base transform and spatial velocity),
+					articulation mass matrix, Coriolis and Centrifugal compensation forces.
+		- Outputs:	Centroidal momentum matrix and bias force (in cache).
+
+		commonInit(), computeMassMatrix() and computeCoriolisCompensation() must be called before the computation,
+		and after setting the articulation pose and velocities via applyCache().
+
+		\param[out] cache Out: PxArticulationCache::centroidalMomentumMatrix and PxArticulationCache::centroidalMomentumBias.
+
+		\note This call may only be made on articulations that are in a scene, and may not be made during simulation.
+		This call may also only be made for floating-base articulations.
+
+		\see commonInit, computeMassMatrix, computeCoriolisCompensation
+		*/
+		virtual		void					computeCentroidalMomentumMatrix(PxArticulationCache& cache) const = 0;
 
 		/**
 		\deprecated The API related to loop joints will be removed in a future version once a replacement is made available.
@@ -1029,7 +1163,7 @@ namespace physx
 
 		\note This call may not be made during simulation.
 
-		\see PxContactJoint, PxFixedJoint, PxSphericalJoint, PxRevoluteJoint, PxPrismaticJoint, PxDistanceJoint, PxD6Joint
+		\see PxFixedJoint, PxSphericalJoint, PxRevoluteJoint, PxPrismaticJoint, PxDistanceJoint, PxD6Joint
 		*/
 		virtual	PX_DEPRECATED	void		addLoopJoint(PxConstraint* joint) = 0;
 
@@ -1094,6 +1228,8 @@ namespace physx
 		\note PxArticulationCache::rootLinkData similarly allows the root link pose to be updated and potentially offers better performance 
 		if the root link pose is to be updated along with other state variables. 
 
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
+
 		\see getRootGlobalPose, updateKinematic, PxArticulationCache, applyCache
 		*/
 		virtual		void					setRootGlobalPose(const PxTransform& pose, bool autowake = true) = 0;
@@ -1108,6 +1244,8 @@ namespace physx
 
 		\note PxArticulationCache::rootLinkData similarly allows the root link pose to be queried and potentially offers better performance if the root
 		link pose is to be queried along with other state variables. 
+
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
 
 		\see setRootGlobalPose, PxArticulationCache, copyInternalStateToCache
 		*/
@@ -1130,6 +1268,8 @@ namespace physx
 		\note PxArticulationCache::rootLinkData similarly allows the root link linear velocity to be updated and potentially offers better performance 
 		if the root link linear velocity is to be updated along with other state variables. 
 
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
+
 		\see updateKinematic, getRootLinearVelocity, setRootAngularVelocity, getRootAngularVelocity, PxRigidBody::getCMassLocalPose, PxArticulationCache, applyCache
 		*/
 		virtual		void					setRootLinearVelocity(const PxVec3& linearVelocity, bool autowake = true) = 0;
@@ -1147,9 +1287,11 @@ namespace physx
 		\note PxArticulationCache::rootLinkData similarly allows the root link linear velocity to be queried and potentially offers better performance 
 		if the root link linear velocity is to be queried along with other state variables. 
 
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
+
 		\see setRootLinearVelocity, setRootAngularVelocity, getRootAngularVelocity, PxRigidBody::getCMassLocalPose, PxArticulationCache, applyCache
 		*/
-		virtual		PxVec3					getRootLinearVelocity(void) const = 0;
+		virtual		PxVec3					getRootLinearVelocity() const = 0;
 
 		/**
 		\brief Sets the root link angular velocity.
@@ -1167,6 +1309,8 @@ namespace physx
 		\note PxArticulationCache::rootLinkData similarly allows the root link angular velocity to be updated and potentially offers better performance 
 		if the root link angular velocity is to be updated along with other state variables. 
 
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
+
 		\see updateKinematic, getRootAngularVelocity, setRootLinearVelocity, getRootLinearVelocity, PxArticulationCache, applyCache
 		*/
 		virtual		void					setRootAngularVelocity(const PxVec3& angularVelocity, bool autowake = true) = 0;
@@ -1182,9 +1326,11 @@ namespace physx
 		\note PxArticulationCache::rootLinkData similarly allows the root link angular velocity to be queried and potentially offers better performance 
 		if the root link angular velocity is to be queried along with other state variables. 
 
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
+
 		\see setRootAngularVelocity, setRootLinearVelocity, getRootLinearVelocity, PxArticulationCache, applyCache
 		*/
-		virtual		PxVec3					getRootAngularVelocity(void) const = 0;
+		virtual		PxVec3					getRootAngularVelocity() const = 0;
 
 		/**
 		\brief Returns the (classical) link acceleration in world space for the given low-level link index.
@@ -1200,18 +1346,11 @@ namespace physx
 		is running.  The exceptions to this rule are a split simulation during #PxScene::collide() and up to #PxScene::advance(); 
 		in PxContactModifyCallback; and in contact report callbacks.
 
+		\note This method should not be used after the direct GPU API has been enabled and initialized. See #PxDirectGPUAPI for the details.
+
 		\see PxArticulationLink::getLinkIndex, PxRigidBody::getCMassLocalPose
 		*/
 		virtual		PxSpatialVelocity		getLinkAcceleration(const PxU32 linkId) = 0;
-
-		/**
-		\brief Returns the GPU articulation index.
-
-		\return The GPU index, or 0xFFFFFFFF if the articulation is not in a scene or PxSceneFlag::eENABLE_DIRECT_GPU_API is not set.
-
-		\deprecated use getGpuIndex() instead.
-		*/
-		virtual		PX_DEPRECATED PxU32					getGpuArticulationIndex() = 0;
 
 		/**
 		\brief Returns the GPU articulation index.
@@ -1301,11 +1440,23 @@ namespace physx
 		\param[in] jointB is the second joint of the joint pair controlled by the mimic joint.
 		\param[in] axisB specifies the degree of freedom of jointB that will be controlled by the mimic joint.
 		\param[in] gearRatio is the gearing ratio enforced by the mimic joint.
+		\param[in] naturalFrequency specifies the oscillation frequency of the mimic joint's compliance, specified in s^-1.
+		\param[in] dampingRatio specifies the damping ratio of the mimic joint's compliance.
 		\param[in] offset is the offset enforced by the mimic joint.
-		\note The mimic joint enforces the rule: qA + gearRatio*qB + offset = 0 with qA denoting the joint position of the specified
-		 degree of freedom of jointA and qB denoting the joint position of the specified degree of freedom of jointB.
+		\note If naturalFrequency is less than or equal to zero it is assumed that the mimic joint has no compliance and is a hard constraint.
+		\note If dampingRatio is less than or equal to zero it is assumed that the mimic joint has no compliance and is a hard constraint.
+		\note In the absence of compliance, the mimic joint enforces the rule: qA + gearRatio*qB + offset = 0 with qA denoting the 
+		joint position of the specified degree of freedom of jointA and qB denoting the joint position of the specified degree of freedom of jointB.
+		\note Larger values of naturalFrequency and dampingRatio will make the mimic joint stiffer and more akin to a hard constraint.
+		\note A damping ratio less than 1.0 is not recommended.
+		\note If dampingRatio is less than or equal to zero and naturalFrequency greater than zero, the mimic joint will behave as a hard constraint.  
+		If dampingRatio is greater than zero and naturalFrequency less than or equal to zero, the mimic joint will also behave as a hard constraint.  
 		*/
-		virtual		PxArticulationMimicJoint*		createMimicJoint(const PxArticulationJointReducedCoordinate& jointA, PxArticulationAxis::Enum axisA, const PxArticulationJointReducedCoordinate& jointB, PxArticulationAxis::Enum axisB, PxReal gearRatio, PxReal offset) = 0;
+		virtual		PxArticulationMimicJoint*		createMimicJoint(
+				const PxArticulationJointReducedCoordinate& jointA, PxArticulationAxis::Enum axisA, 
+				const PxArticulationJointReducedCoordinate& jointB, PxArticulationAxis::Enum axisB, 
+				PxReal gearRatio, PxReal offset, 
+				PxReal naturalFrequency = 0.0f, PxReal dampingRatio = 0.0f) = 0;
 
 		/**
 		\brief Returns the mimic joints added to the articulation.
@@ -1366,6 +1517,13 @@ namespace physx
 		*/
 		virtual		PxArticulationResidual	getSolverResidual() const = 0;
 
+		/**
+		\brief Returns the string name of the dynamic type.
+
+		\return The string name.
+		*/
+		virtual		const char*				getConcreteTypeName() const	PX_OVERRIDE	PX_FINAL { return "PxArticulationReducedCoordinate"; }
+
 		virtual								~PxArticulationReducedCoordinate() {}
 
 		void*								userData;	//!< user can assign this to whatever, usually to create a 1:1 relationship with a user object.
@@ -1374,6 +1532,7 @@ namespace physx
 		PX_INLINE							PxArticulationReducedCoordinate(PxType concreteType, PxBaseFlags baseFlags) : PxBase(concreteType, baseFlags) {}
 		PX_INLINE							PxArticulationReducedCoordinate(PxBaseFlags baseFlags) : PxBase(baseFlags) {}
 
+		virtual		bool			isKindOf(const char* name) const { PX_IS_KIND_OF(name, "PxArticulationReducedCoordinate", PxBase); }
 	};
 
 #if PX_VC

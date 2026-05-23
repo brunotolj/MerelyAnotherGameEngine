@@ -22,7 +22,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Copyright (c) 2008-2024 NVIDIA Corporation. All rights reserved.
+// Copyright (c) 2008-2025 NVIDIA Corporation. All rights reserved.
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.
 
@@ -41,6 +41,7 @@ namespace physx
 #endif
 
 class PxGeometry;
+class PxPlane;
 
 /**
 \brief Class representing a bounding volume hierarchy.
@@ -249,7 +250,7 @@ public:
 	*/
 	virtual	bool				traverse(TraversalCallback& cb)	const	= 0;
 
-	virtual	const char*			getConcreteTypeName() const	{ return "PxBVH";	}
+	virtual	const char*			getConcreteTypeName() const	PX_OVERRIDE	PX_FINAL	{ return "PxBVH";	}
 protected:
 	PX_INLINE					PxBVH(PxType concreteType, PxBaseFlags baseFlags) : PxBase(concreteType, baseFlags)	{}
 	PX_INLINE					PxBVH(PxBaseFlags baseFlags) : PxBase(baseFlags)									{}
