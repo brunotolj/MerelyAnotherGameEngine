@@ -9,5 +9,5 @@ CameraComponent::CameraComponent(TransformableObject& owner, const ComponentTemp
 
 glm::mat4 CameraComponent::GetViewTransform() const
 {
-	return glm::inverse(mOwner.Transform.Matrix());
+	return glm::inverse(mOwner.mTransform.Matrix());
 }

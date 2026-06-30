@@ -1,5 +1,5 @@
 #include "Game/GameWorld.h"
-#include "Game/InputSystem.h"
+#include "Engine/Engine.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsCommon.h"
@@ -18,7 +18,7 @@ BallSpawnerComponent::BallSpawnerComponent(TransformableObject& owner, const Com
 
 void BallSpawnerComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	world.mInputSystem.BindKeyInputHandler(mInputSpawn, 1, [this]() { mPendingBallSpawn = true; }); // #FixMe: GLFW_PRESS
+	gEngine->mInputHandler.BindKeyInputHandler(mInputSpawn, 1, [this]() { mPendingBallSpawn = true; }); // #FixMe: GLFW_PRESS
 }
 
 void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
@@ -32,25 +32,18 @@ void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
 
 void BallSpawnerComponent::SpawnBall()
 {
-	const glm::vec3 forward = mOwner.Transform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
-
-	std::shared_ptr<TransformableObject> ballPtr = std::make_shared<TransformableObject>();
-	TransformableObject& ball = *ballPtr.get();
-	ball.Transform = mOwner.Transform;
+	const glm::vec3 forward = mOwner.mTransform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
 
 	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
 	rigidBodyTemplate.RigidBodyParams = mRigidBodyParams;
 	rigidBodyTemplate.InitialLinearVelocity = mSpeed * reinterpret_cast<const physx::PxVec3&>(forward);
-	GameObject::CreateComponent(ball, rigidBodyTemplate);
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
 	staticMeshTemplate.Mesh = mMesh;
 	staticMeshTemplate.Texture = mTexture;
-	GameObject::CreateComponent(ball, staticMeshTemplate);
 
 	ComponentTemplate<KillZObjectComponent> killZTemplate;
 	killZTemplate.KillZ = -10.0f;
-	GameObject::CreateComponent(ball, killZTemplate);
 
-	mOwner.GetWorld()->AddObject(ballPtr);
+	mOwner.GetWorld()->CreateObject<TransformableObject>(mOwner.mTransform, rigidBodyTemplate, staticMeshTemplate, killZTemplate);
 }

@@ -70,6 +70,10 @@ WindowHandle WindowManager::CreateWindow(WindowInfo const& inWindowInfo)
 	glfwSetCursorPosCallback(window, CursorPositionCallback);
 	glfwSetWindowFocusCallback(window, FocusCallback);
 
+	f64 x, y;
+	glfwGetCursorPos(window, &x, &y);
+	CursorPositionCallback(window, x, y);
+
 	return window;
 }
 

@@ -13,11 +13,11 @@ RigidBodyObjectComponent::RigidBodyObjectComponent(TransformableObject& owner, c
 void RigidBodyObjectComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
 	physx::PxTransform pose;
-	pose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.Transform.Position);
-	pose.q.w = mOwner.Transform.Rotation.S;
-	pose.q.x = -mOwner.Transform.Rotation.YZ;
-	pose.q.y = -mOwner.Transform.Rotation.ZX;
-	pose.q.z = -mOwner.Transform.Rotation.XY;
+	pose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.mTransform.Position);
+	pose.q.w = mOwner.mTransform.Rotation.S;
+	pose.q.x = -mOwner.mTransform.Rotation.YZ;
+	pose.q.y = -mOwner.mTransform.Rotation.ZX;
+	pose.q.z = -mOwner.mTransform.Rotation.XY;
 
 	mPhysicsActor = world.mPhysicsSystem.AddRigidBody(mRigidBodyParams, pose, mLinearVelocity, mAngularVelocity);
 }
@@ -32,11 +32,11 @@ void RigidBodyObjectComponent::UpdatePrePhysics(f32 deltaTime)
 	if (mRigidBodyParams.Type == PhysicsSystemObjectType::RigidKinematic)
 	{
 		physx::PxTransform pose;
-		pose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.Transform.Position);
-		pose.q.w = mOwner.Transform.Rotation.S;
-		pose.q.x = -mOwner.Transform.Rotation.YZ;
-		pose.q.y = -mOwner.Transform.Rotation.ZX;
-		pose.q.z = -mOwner.Transform.Rotation.XY;
+		pose.p = reinterpret_cast<const physx::PxVec3&>(mOwner.mTransform.Position);
+		pose.q.w = mOwner.mTransform.Rotation.S;
+		pose.q.x = -mOwner.mTransform.Rotation.YZ;
+		pose.q.y = -mOwner.mTransform.Rotation.ZX;
+		pose.q.z = -mOwner.mTransform.Rotation.XY;
 
 		reinterpret_cast<physx::PxRigidDynamic*>(mPhysicsActor)->setKinematicTarget(pose);
 	}
@@ -47,11 +47,11 @@ void RigidBodyObjectComponent::UpdatePostPhysics(f32 deltaTime)
 	if (mRigidBodyParams.Type == PhysicsSystemObjectType::RigidDynamic)
 	{
 		const physx::PxTransform pose = mPhysicsActor->getGlobalPose();
-		mOwner.Transform.Position = reinterpret_cast<const glm::vec3&>(pose.p);
-		mOwner.Transform.Rotation.S = pose.q.w;
-		mOwner.Transform.Rotation.XY = -pose.q.z;
-		mOwner.Transform.Rotation.YZ = -pose.q.x;
-		mOwner.Transform.Rotation.ZX = -pose.q.y;
+		mOwner.mTransform.Position = reinterpret_cast<const glm::vec3&>(pose.p);
+		mOwner.mTransform.Rotation.S = pose.q.w;
+		mOwner.mTransform.Rotation.XY = -pose.q.z;
+		mOwner.mTransform.Rotation.YZ = -pose.q.x;
+		mOwner.mTransform.Rotation.ZX = -pose.q.y;
 	}
 
 	if (mRigidBodyParams.Type != PhysicsSystemObjectType::RigidStatic)

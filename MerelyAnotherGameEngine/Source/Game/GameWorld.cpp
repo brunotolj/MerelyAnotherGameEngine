@@ -12,7 +12,7 @@
 void GameWorld::Update(f32 deltaTime)
 {
 	mIsCurrentlyUpdatingObjects = true;
-	for (const std::shared_ptr<GameObject>& object : mObjects)
+	for (GameObject* object : mObjects)
 	{
 		if (object->mIsDestoryed)
 			continue;
@@ -21,17 +21,17 @@ void GameWorld::Update(f32 deltaTime)
 	}
 
 	mIsCurrentlyUpdatingObjects = false;
-	for (std::shared_ptr<GameObject>& newObject : mNewObjects)
+	for (GameObject* newObject : mNewObjects)
 	{
 		newObject->UpdatePrePhysics(deltaTime);
-		mObjects.push_back(std::move(newObject));
+		mObjects.Add(newObject);
 	}
-	mNewObjects.clear();
+	mNewObjects.Empty();
 
 	mPhysicsSystem.Update(deltaTime);
 
 	mIsCurrentlyUpdatingObjects = true;
-	for (const std::shared_ptr<GameObject>& object : mObjects)
+	for (GameObject* object : mObjects)
 	{
 		if (object->mIsDestoryed)
 			continue;
@@ -40,33 +40,21 @@ void GameWorld::Update(f32 deltaTime)
 	}
 
 	mIsCurrentlyUpdatingObjects = false;
-	for (std::shared_ptr<GameObject>& newObject : mNewObjects)
+	for (GameObject* newObject : mNewObjects)
 	{
 		newObject->UpdatePostPhysics(deltaTime);
-		mObjects.push_back(std::move(newObject));
+		mObjects.Add(newObject);
 	}
-	mNewObjects.clear();
+	mNewObjects.Empty();
 
-	u64 currentObject = 0;
-	u64 destroyedObjectCount = 0;
-	const u64 totalObjectCount = mObjects.size();
-
-	while (currentObject + destroyedObjectCount < mObjects.size())
+	for (u32 i = 0; i < mObjects.GetSize(); ++i)
 	{
-		if (mObjects[currentObject]->mIsDestoryed)
-		{
-			std::swap(mObjects[currentObject], mObjects[totalObjectCount - destroyedObjectCount - 1]);
-			destroyedObjectCount++;
+		if (!mObjects[i]->mIsDestoryed)
+			continue;
 
-			RemoveObject(mObjects[totalObjectCount - destroyedObjectCount]);
-		}
-		else
-		{
-			currentObject++;
-		}
+		mObjects[i]->OnRemovedFromWorld(*this);
+		mObjects.RemoveAtSwap(i--);
 	}
-
-	mObjects.resize(totalObjectCount - destroyedObjectCount);
 }
 
 glm::mat4 CalcProjectionTransform(f32 nearPlane, f32 farPlane, f32 horizontalFOV, f32 aspectRatio)
@@ -96,15 +84,15 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 	sceneData.AmbientLightIntensity = 0.05f;
 
 	bool foundCamera = false;
-	for (std::shared_ptr<GameObject> const& object : mObjects)
+	for (GameObject const* object : mObjects)
 	{
-		for (std::shared_ptr<StaticMeshObjectComponent> const& staticMeshComp : object->GetComponentsOfClass<StaticMeshObjectComponent>())
+		for (StaticMeshObjectComponent const* staticMeshComp : object->GetComponentsOfClass<StaticMeshObjectComponent>())
 			sceneData.Meshes.AddConstruct(
 				staticMeshComp->GetTransform().Matrix(),
 				staticMeshComp->GetMesh(),
 				staticMeshComp->GetTexture());
 
-		for (std::shared_ptr<SpriteObjectComponent> const& spriteComp : object->GetComponentsOfClass<SpriteObjectComponent>())
+		for (SpriteObjectComponent const* spriteComp : object->GetComponentsOfClass<SpriteObjectComponent>())
 			spriteData.AddConstruct(
 				spriteComp->GetScreenCoordsMin(),
 				spriteComp->GetScreenCoordsMax(),
@@ -112,7 +100,7 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 				spriteComp->GetTextureCoordsMax(),
 				spriteComp->GetTexture());
 
-		for (std::shared_ptr<TextObjectComponent> const& textComp : object->GetComponentsOfClass<TextObjectComponent>())
+		for (TextObjectComponent const* textComp : object->GetComponentsOfClass<TextObjectComponent>())
 			textData.AddConstruct(
 				textComp->GetText(),
 				textComp->GetColor(),
@@ -121,7 +109,7 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 				textComp->GetFont());
 
 		if (!foundCamera)
-			for (std::shared_ptr<CameraComponent> const& cameraComp : object->GetComponentsOfClass<CameraComponent>())
+			for (CameraComponent const* cameraComp : object->GetComponentsOfClass<CameraComponent>())
 			{
 				sceneData.ViewTransform = cameraComp->GetViewTransform();
 				foundCamera = true;
@@ -138,19 +126,4 @@ void GameWorld::Render(Vulkan::Renderer& renderer) const
 			mSpriteRenderSystem.RenderSprites(inFrameData, spriteData);
 			mTextRenderSystem.RenderText(inFrameData, textData);
 		});
-}
-
-void GameWorld::AddObject(const std::shared_ptr<GameObject>& object)
-{
-	if (mIsCurrentlyUpdatingObjects)
-		mNewObjects.push_back(object);
-	else
-		mObjects.push_back(object);
-
-	object->OnAddedToWorld(*this);
-}
-
-void GameWorld::RemoveObject(const std::shared_ptr<GameObject>& object)
-{
-	object->OnRemovedFromWorld(*this);
 }

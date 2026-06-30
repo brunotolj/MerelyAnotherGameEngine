@@ -3,9 +3,7 @@
 #include "Game/GameObjectCommon.h"
 
 #include <map>
-#include <memory>
 #include <typeindex>
-#include <vector>
 
 class GameObjectComponentBase;
 class GameWorld;
@@ -15,34 +13,45 @@ class GameObject : public NonCopyableClass
 	friend GameWorld;
 
 public:
-	template<GameObjectClass ObjectClass, GameObjectComponentClass ComponentClass>
-	static ComponentClass& CreateComponent(ObjectClass& owner, const ComponentTemplate<ComponentClass>& creationTemplate)
-	{
-		std::unique_ptr<ComponentClass> component = std::make_unique<ComponentClass>(owner, creationTemplate);
-		ComponentClass& componentRef = *component.get();
-
-		const u64 index = owner.mComponents.size();
-		owner.mComponents.push_back(std::move(component));
-		owner.mComponentsByClass[typeid(ComponentClass)].push_back(index);
-
-		return componentRef;
-	}
-
 	template<GameObjectComponentClass ComponentClass>
-	std::vector<std::shared_ptr<ComponentClass>> GetComponentsOfClass()
+	mage::Array<ComponentClass*> GetComponentsOfClass()
 	{
-		std::vector<std::shared_ptr<ComponentClass>> result;
+		mage::Array<ComponentClass*> result;
 
 		auto componentArray = mComponentsByClass.find(typeid(ComponentClass));
 
 		if (componentArray == mComponentsByClass.end())
 			return result;
 
-		for (u64 index : componentArray->second)
-			result.push_back(std::reinterpret_pointer_cast<ComponentClass>(mComponents[index]));
+		for (u32 index : componentArray->second)
+			result.Add((ComponentClass*)mComponents[index]);
 
 		return result;
 	}
+
+	template<GameObjectComponentClass ComponentClass>
+	mage::Array<ComponentClass const*> GetComponentsOfClass() const
+	{
+		mage::Array<ComponentClass const*> result;
+
+		auto componentArray = mComponentsByClass.find(typeid(ComponentClass));
+
+		if (componentArray == mComponentsByClass.end())
+			return result;
+
+		for (u32 index : componentArray->second)
+			result.Add((ComponentClass*)mComponents[index]);
+
+		return result;
+	}
+
+	template<typename... ComponentTemplates>
+	GameObject(ComponentTemplates... inComponents)
+	{
+		(CreateComponent(*this, inComponents), ...);
+	}
+
+	~GameObject();
 
 	bool IsDestroyed() const { return mIsDestoryed; }
 	void Destroy() { mIsDestoryed = true; }
@@ -50,6 +59,18 @@ public:
 	GameWorld* GetWorld() const { return mWorld; }
 
 protected:
+	template<GameObjectClass ObjectClass, GameObjectComponentClass ComponentClass>
+	static ComponentClass& CreateComponent(ObjectClass& owner, const ComponentTemplate<ComponentClass>& creationTemplate)
+	{
+		ComponentClass* component = new ComponentClass(owner, creationTemplate);
+
+		u32 index = owner.mComponents.GetSize();
+		owner.mComponents.Add(component);
+		owner.mComponentsByClass[typeid(ComponentClass)].Add(index);
+
+		return *component;
+	}
+
 	void OnAddedToWorld(GameWorld& world);
 
 	void OnRemovedFromWorld(GameWorld& world);
@@ -61,9 +82,9 @@ protected:
 private:
 	GameWorld* mWorld = nullptr;
 
-	std::vector<std::shared_ptr<GameObjectComponentBase>> mComponents;
+	mage::Array<GameObjectComponentBase*> mComponents;
 
-	std::map<std::type_index, std::vector<u64>> mComponentsByClass;
+	std::map<std::type_index, mage::Array<u32>> mComponentsByClass;
 
 	bool mIsDestoryed = false;
 };
@@ -71,5 +92,12 @@ private:
 class TransformableObject : public GameObject
 {
 public:
-	mage::Transform Transform;
+	template<typename... ComponentTemplates>
+	TransformableObject(mage::Transform inInitialTransform, ComponentTemplates... inComponents)
+	{
+		mTransform = inInitialTransform;
+		(CreateComponent(*this, inComponents), ...);
+	}
+
+	mage::Transform mTransform;
 };

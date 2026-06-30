@@ -1,7 +1,7 @@
-#include "Game/InputSystem.h"
+#include "Engine/InputHandler.h"
 #include "Engine/Engine.h"
 
-InputSystem::InputSystem()
+InputHandler::InputHandler()
 {
 	WindowManager& windowManager = gEngine->mWindowManager;
 
@@ -11,13 +11,13 @@ InputSystem::InputSystem()
 	mCursorPosition = windowManager.GetFocusedWindow().GetCursorPosition();
 }
 
-bool InputSystem::IsKeyPressed(i32 key)
+bool InputHandler::IsKeyPressed(i32 key)
 {
 	WindowHandle window = gEngine->mWindowManager.GetFocusedWindow();
 	return window.IsKeyPressed(key);
 }
 
-void InputSystem::KeyCallback(i32 key, i32 action, i32 mods)
+void InputHandler::KeyCallback(i32 key, i32 action, i32 mods)
 {
 	const std::function<void()>& handler = mKeyInputHandlers[std::make_pair(key, action)];
 
@@ -27,7 +27,7 @@ void InputSystem::KeyCallback(i32 key, i32 action, i32 mods)
 	}
 }
 
-void InputSystem::CursorPositionCallback(glm::dvec2 position)
+void InputHandler::CursorPositionCallback(glm::dvec2 position)
 {
 	const glm::dvec2 movement = position - mCursorPosition;
 

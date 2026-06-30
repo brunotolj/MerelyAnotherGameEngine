@@ -1,5 +1,5 @@
 #include "Game/GameWorld.h"
-#include "Game/InputSystem.h"
+#include "Engine/Engine.h"
 #include "Utility/BoundedLineMovementComponent.h"
 
 BoundedLineMovementComponent::BoundedLineMovementComponent(TransformableObject& owner, const ComponentTemplate<BoundedLineMovementComponent>& creationTemplate) :
@@ -16,16 +16,14 @@ BoundedLineMovementComponent::BoundedLineMovementComponent(TransformableObject& 
 
 void BoundedLineMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	mCenter = mOwner.Transform.Position;
+	mCenter = mOwner.mTransform.Position;
 }
 
 void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
 {
-	InputSystem& inputSystem = mOwner.GetWorld()->mInputSystem;
-
 	f32 input = 0.0f;
-	if (inputSystem.IsKeyPressed(mInputNeg)) input -= 1.0f;
-	if (inputSystem.IsKeyPressed(mInputPos)) input += 1.0f;
+	if (gEngine->mInputHandler.IsKeyPressed(mInputNeg)) input -= 1.0f;
+	if (gEngine->mInputHandler.IsKeyPressed(mInputPos)) input += 1.0f;
 
 	f32 remainingTime = deltaTime;
 	f32 movement = 0.0f;
@@ -80,5 +78,5 @@ void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
 		mSpeed = 0.0f;
 	}
 
-	mOwner.Transform.Position = mCenter + mPosition / mLength * mExtent;
+	mOwner.mTransform.Position = mCenter + mPosition / mLength * mExtent;
 }

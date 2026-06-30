@@ -4,12 +4,12 @@
 
 enum class CursorInputMode : u8;
 
-class InputSystem : public NonCopyableClass
+class InputHandler : public NonMovableClass
 {
 public:
-	InputSystem();
+	InputHandler();
 
-	~InputSystem() {}
+	~InputHandler() {}
 
 	bool IsKeyPressed(i32 key);
 

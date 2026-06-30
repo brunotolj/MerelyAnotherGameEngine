@@ -17,7 +17,7 @@ class StaticMeshObjectComponent : public GameObjectComponent<TransformableObject
 public:
 	StaticMeshObjectComponent(TransformableObject& owner, const ComponentTemplate<StaticMeshObjectComponent>& creationTemplate);
 
-	mage::Transform const& GetTransform() const { return mOwner.Transform; }
+	mage::Transform const& GetTransform() const { return mOwner.mTransform; }
 	AssetHandle<StaticMesh> GetMesh() const { return mMesh; }
 	AssetHandle<Texture> GetTexture() const { return mTexture; }
 

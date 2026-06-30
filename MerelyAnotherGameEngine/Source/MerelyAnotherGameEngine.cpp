@@ -4,16 +4,12 @@
 #include "Engine/Engine.h"
 #include "Game/GameObject.h"
 #include "Game/GameWorld.h"
-#include "Game/InputSystem.h"
 #include "Game/CameraComponent.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/SpriteObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Game/TextObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
-#include "Rendering/Systems/MeshRenderSystem.h"
-#include "Rendering/Systems/SpriteRenderSystem.h"
-#include "Rendering/Systems/TextRenderSystem.h"
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
@@ -21,12 +17,12 @@
 #include "Vulkan/Renderer.h"
 
 #include <chrono>
-#include <memory>
 
 static constexpr i32 gWindowWidth = 1920;
 static constexpr i32 gWindowHeight = 1080;
 
-std::shared_ptr<TransformableObject> CreateControllableCamera(
+TransformableObject* CreateControllableCamera(
+	GameWorld& world,
 	const mage::Transform& transform,
 	f32 speed,
 	PhysicsRigidBodyParams ballRigidBodyParams,
@@ -35,16 +31,10 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 	f32 ballSpeed,
 	i32 inputSpawnBall)
 {
-	std::shared_ptr<TransformableObject> objectPtr = std::make_shared<TransformableObject>();
-	TransformableObject& object = *objectPtr.get();
-	object.Transform = transform;
-
 	ComponentTemplate<DefaultMovementComponent> movementTemplate;
 	movementTemplate.Speed = speed;
-	GameObject::CreateComponent(object, movementTemplate);
 
 	ComponentTemplate<CameraComponent> cameraTemplate;
-	GameObject::CreateComponent(object, cameraTemplate);
 
 	ComponentTemplate<BallSpawnerComponent> ballSpawnerTemplate;
 	ballSpawnerTemplate.RigidBodyParams = ballRigidBodyParams;
@@ -52,34 +42,29 @@ std::shared_ptr<TransformableObject> CreateControllableCamera(
 	ballSpawnerTemplate.Texture = ballTexture;
 	ballSpawnerTemplate.Speed = ballSpeed;
 	ballSpawnerTemplate.InputSpawn = inputSpawnBall;
-	GameObject::CreateComponent(object, ballSpawnerTemplate);
 
-	return objectPtr;
+	return world.CreateObject<TransformableObject>(transform, movementTemplate, cameraTemplate, ballSpawnerTemplate);
 }
 
-std::shared_ptr<TransformableObject> CreateLevelObject(
+TransformableObject* CreateLevelObject(
+	GameWorld& world,
 	const mage::Transform& transform,
 	PhysicsRigidBodyParams rigidBodyParams,
 	AssetHandle<StaticMesh> mesh,
 	AssetHandle<Texture> texture)
 {
-	std::shared_ptr<TransformableObject> objectPtr = std::make_shared<TransformableObject>();
-	TransformableObject& object = *objectPtr.get();
-	object.Transform = transform;
-
 	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
 	rigidBodyTemplate.RigidBodyParams = rigidBodyParams;
-	GameObject::CreateComponent(object, rigidBodyTemplate);
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
 	staticMeshTemplate.Mesh = mesh;
 	staticMeshTemplate.Texture = texture;
-	GameObject::CreateComponent(object, staticMeshTemplate);
 
-	return objectPtr;
+	return world.CreateObject<TransformableObject>(transform, rigidBodyTemplate, staticMeshTemplate);
 }
 
-std::shared_ptr<TransformableObject> CreateCapsule(
+TransformableObject* CreateCapsule(
+	GameWorld& world,
 	const mage::Transform& transform,
 	PhysicsRigidBodyParams rigidBodyParams,
 	AssetHandle<StaticMesh> mesh,
@@ -87,10 +72,6 @@ std::shared_ptr<TransformableObject> CreateCapsule(
 	i32 inputNeg,
 	i32 inputPos)
 {
-	std::shared_ptr<TransformableObject> capsulePtr = std::make_shared<TransformableObject>();
-	TransformableObject& capsule = *capsulePtr.get();
-	capsulePtr->Transform = transform;
-
 	ComponentTemplate<BoundedLineMovementComponent> movementTemplate;
 	movementTemplate.Extent = 10.0f * transform.Rotation.Rotate({0.0f, -1.0f, 0.0f});
  	movementTemplate.InputNeg = inputNeg;
@@ -98,28 +79,23 @@ std::shared_ptr<TransformableObject> CreateCapsule(
  	movementTemplate.Acceleration = 80.0f;
  	movementTemplate.Deceleration = 150.0f;
  	movementTemplate.MaxSpeed = 80.0f;
-	GameObject::CreateComponent(capsule, movementTemplate);
 
 	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
 	rigidBodyTemplate.RigidBodyParams = rigidBodyParams;
-	GameObject::CreateComponent(capsule, rigidBodyTemplate);
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
 	staticMeshTemplate.Mesh = mesh;
 	staticMeshTemplate.Texture = texture;
-	GameObject::CreateComponent(capsule, staticMeshTemplate);
 
-	return capsulePtr;
+	return world.CreateObject<TransformableObject>(transform, movementTemplate, rigidBodyTemplate, staticMeshTemplate);
 }
 
-std::shared_ptr<GameObject> CreateUserInterface(
+GameObject* CreateUserInterface(
+	GameWorld& world,
 	AssetHandle<Texture> texture,
 	AssetHandle<Font> fontA,
 	AssetHandle<Font> fontB)
 {
-	std::shared_ptr<GameObject> objectPtr = std::make_shared<GameObject>();
-	GameObject& object = *objectPtr.get();
-
 	ComponentTemplate<SpriteObjectComponent> spriteTemplate
 	{
 		.ScreenCoordsMin = { 50.0f, 50.0f },
@@ -128,8 +104,6 @@ std::shared_ptr<GameObject> CreateUserInterface(
 		.TextureCoordsMax = { 1.0f, 1.0f },
 		.Texture = texture
 	};
-
-	GameObject::CreateComponent(object, spriteTemplate);
 
 	ComponentTemplate<TextObjectComponent> textTemplateA
 	{
@@ -140,8 +114,6 @@ std::shared_ptr<GameObject> CreateUserInterface(
 		.Font = fontA
 	};
 
-	GameObject::CreateComponent(object, textTemplateA);
-
 	ComponentTemplate<TextObjectComponent> textTemplateB
 	{
 		.Text = "M.A.G.E.",
@@ -151,15 +123,12 @@ std::shared_ptr<GameObject> CreateUserInterface(
 		.Font = fontB
 	};
 
-	GameObject::CreateComponent(object, textTemplateB);
-
-	return objectPtr;
+	return world.CreateObject<GameObject>(spriteTemplate, textTemplateA, textTemplateB);
 }
 
 i32 main()
 {
 	Engine engine;
-	gEngine = &engine;
 
 	WindowInfo windowInfo
 	{
@@ -226,59 +195,57 @@ i32 main()
 	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, ballCollision, defaultMaterial };
 
 	{
-		world.AddObject(CreateUserInterface(spriteTexture, fontArianaVioleta, fontOrbitron));
+		CreateUserInterface(world, spriteTexture, fontArianaVioleta, fontOrbitron);
 
 		mage::Transform transform;
 
-		world.AddObject(CreateLevelObject(transform, boxRigidBodyParams, boxMesh, cubeTexture));
+		CreateLevelObject(world, transform, boxRigidBodyParams, boxMesh, cubeTexture);
 
 		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
-		world.AddObject(CreateControllableCamera(transform, 10.0f, ballRigidBodyParams, ballMesh, ballTexture, 10.0f, GLFW_KEY_F));
+		CreateControllableCamera(world, transform, 10.0f, ballRigidBodyParams, ballMesh, ballTexture, 10.0f, GLFW_KEY_F);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
 		
 		transform.Position = {};
-		world.AddObject(CreateLevelObject(transform, coneRigidBodyParams, coneMesh, coneTexture));
+		CreateLevelObject(world, transform, coneRigidBodyParams, coneMesh, coneTexture);
 		
 		transform.Position = glm::vec3(cornerPosition, cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
+		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
 		
 		transform.Position = glm::vec3(-cornerPosition, cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
+		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
 		
 		transform.Position = glm::vec3(-cornerPosition, -cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
+		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
 		
 		transform.Position = glm::vec3(cornerPosition, -cornerPosition, cornerHalfHeight);
-		world.AddObject(CreateLevelObject(transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture));
+		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
 		
 		transform.Rotation = {};
 		transform.Position = glm::vec3(-capsuleDistance, 0.0f, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_H, GLFW_KEY_J));
+		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_H, GLFW_KEY_J);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
 		transform.Position = glm::vec3(0.0f, capsuleDistance, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_U, GLFW_KEY_I));
+		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_U, GLFW_KEY_I);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.0f));
 		transform.Position = glm::vec3(capsuleDistance, 0.0f, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_O, GLFW_KEY_P));
+		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_O, GLFW_KEY_P);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
 		transform.Position = glm::vec3(0.0f, -capsuleDistance, capsuleElevation);
-		world.AddObject(CreateCapsule(transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_K, GLFW_KEY_L));
+		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_K, GLFW_KEY_L);
 	}
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
 
-	world.mInputSystem.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
-	world.mInputSystem.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
-	world.mInputSystem.BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
+	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
+	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
+	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
 
 	while (!engine.ShouldExit())
 	{
-		engine.mWindowManager.PollEvents();
-
 		std::chrono::steady_clock::time_point newTime = std::chrono::high_resolution_clock::now();
 		f32 frameTime = std::chrono::duration<f32, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
@@ -286,6 +253,8 @@ i32 main()
 		world.Update(frameTime);
 
 		world.Render(renderer);
+
+		engine.mWindowManager.PollEvents();
 	}
 
 	engine.mVulkanDevice.GetVkDevice().waitIdle();
