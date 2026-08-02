@@ -16,7 +16,7 @@ BoundedLineMovementComponent::BoundedLineMovementComponent(TransformableObject& 
 
 void BoundedLineMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
 {
-	mCenter = mOwner.mTransform.Position;
+	mCenter = mOwner.GetTransform().Position;
 }
 
 void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
@@ -78,5 +78,7 @@ void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
 		mSpeed = 0.0f;
 	}
 
-	mOwner.mTransform.Position = mCenter + mPosition / mLength * mExtent;
+	mage::Transform transform = mOwner.GetTransform();
+	transform.Position = mCenter + mPosition / mLength * mExtent;
+	mOwner.SetTransform(transform);
 }

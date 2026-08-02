@@ -98,7 +98,7 @@ namespace Vulkan
 				return i;
 
 		mage_check(false);
-		return u32(-1);
+		return mage::InvalidIndex;
     }
 
 	mage::Array<cstr> Device::GetRequiredInstanceLayers() const
@@ -273,7 +273,7 @@ namespace Vulkan
 	void Device::CreateLogicalDevice()
 	{
 		mage::Array<vk::QueueFamilyProperties> queueFamilies = mVkPhysicalDevice.getQueueFamilyProperties();
-		u32 graphicsQueueIndex = u32(-1);
+		u32 graphicsQueueIndex = mage::InvalidIndex;
 
 		for (u32 i = 0; i < queueFamilies.GetSize(); ++i)
 		{
@@ -289,7 +289,7 @@ namespace Vulkan
 			break;
 		}
 
-		mage_check(graphicsQueueIndex != u32(-1));
+		mage_check(graphicsQueueIndex != mage::InvalidIndex);
 
 		using FeatureChain = vk::StructureChain<
 			vk::PhysicalDeviceFeatures2,

@@ -1,6 +1,4 @@
 #include "Game/CameraComponent.h"
-#include "Game/GameWorld.h"
-#include "Rendering/Systems/MeshRenderSystem.h"
 
 CameraComponent::CameraComponent(TransformableObject& owner, const ComponentTemplate<CameraComponent>& creationTemplate) :
 	GameObjectComponent(owner)
@@ -9,5 +7,5 @@ CameraComponent::CameraComponent(TransformableObject& owner, const ComponentTemp
 
 glm::mat4 CameraComponent::GetViewTransform() const
 {
-	return glm::inverse(mOwner.mTransform.Matrix());
+	return mOwner.GetTransform().Inverse().Matrix();
 }

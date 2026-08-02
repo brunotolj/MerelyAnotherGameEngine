@@ -25,19 +25,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -68,10 +68,12 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,12 +95,14 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
       <Optimization>MaxSpeed</Optimization>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,10 +126,12 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)\Source;$(SolutionDir)\ThirdParty\glfw-3.3.8\Include;$(SolutionDir)\ThirdParty\glm-master\Include;$(SolutionDir)\ThirdParty\physx\Include;$(SolutionDir)\ThirdParty\single_header_libraries;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,6 +164,7 @@
     <ClCompile Include="Source\Engine\InputHandler.cpp" />
     <ClCompile Include="Source\Engine\ShaderCompiler.cpp" />
     <ClCompile Include="Source\Engine\WindowManager.cpp" />
+    <ClCompile Include="Source\Framework\TransformTree.cpp" />
     <ClCompile Include="Source\Game\CameraComponent.cpp" />
     <ClCompile Include="Source\Game\GameObject.cpp" />
     <ClCompile Include="Source\Game\GameWorld.cpp" />
@@ -191,6 +198,8 @@
     <ClInclude Include="Source\Assets\TextureFactory.h" />
     <ClInclude Include="Source\Core\Array.h" />
     <ClInclude Include="Source\Core\Asserts.h" />
+    <ClInclude Include="Source\Core\Constants.h" />
+    <ClInclude Include="Source\Core\Flagset.h" />
     <ClInclude Include="Source\Core\NonCopyable.h" />
     <ClInclude Include="Source\Core\Types.h" />
     <ClInclude Include="Source\Core\_PCH.h" />
@@ -203,6 +212,7 @@
     <ClInclude Include="Source\Engine\InputHandler.h" />
     <ClInclude Include="Source\Engine\ShaderCompiler.h" />
     <ClInclude Include="Source\Engine\WindowManager.h" />
+    <ClInclude Include="Source\Framework\TransformTree.h" />
     <ClInclude Include="Source\Game\CameraComponent.h" />
     <ClInclude Include="Source\Game\GameObject.h" />
     <ClInclude Include="Source\Game\GameObjectComponent.h" />

@@ -59,7 +59,7 @@ namespace Vulkan
 
 		vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
 
-		u32 mCurrentImageIndex = u32(-1);
+		u32 mCurrentImageIndex = mage::InvalidIndex;
 		u32 mCurrentFrameIndex = 0;
 
 		vk::Extent2D mWindowSize;

@@ -28,7 +28,9 @@ void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
 	mRotation.y = glm::clamp(mRotation.y, -glm::radians(80.0f), glm::radians(80.0f));
 	mCursorMovement = glm::dvec2(0.0f);
 
-	mOwner.mTransform.Rotation = mage::Rotor::Combine(
+	mage::Transform transform = mOwner.GetTransform();
+
+	transform.Rotation = mage::Rotor::Combine(
 		mage::Rotor({ 0.0f, 0.0f, 1.0f }, mRotation.x),
 		mage::Rotor({ 1.0f, 0.0f, 0.0f }, mRotation.y));
 
@@ -38,10 +40,12 @@ void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
 	if (gEngine->mInputHandler.IsKeyPressed(GLFW_KEY_W)) movement.y += 1.0f;
 	if (gEngine->mInputHandler.IsKeyPressed(GLFW_KEY_S)) movement.y -= 1.0f;
 
-	movement = mOwner.mTransform.Matrix() * glm::vec4(movement, 0.0f);
+	movement = transform.Matrix() * glm::vec4(movement, 0.0f);
 
 	if (gEngine->mInputHandler.IsKeyPressed(GLFW_KEY_E)) movement.z += 1.0f;
 	if (gEngine->mInputHandler.IsKeyPressed(GLFW_KEY_Q)) movement.z -= 1.0f;
 
-	mOwner.mTransform.Position += mSpeed * deltaTime * movement;
+	transform.Position += mSpeed * deltaTime * movement;
+
+	mOwner.SetTransform(transform);
 }

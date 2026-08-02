@@ -1,5 +1,6 @@
 #include "Game/GameObject.h"
 #include "Game/GameObjectComponent.h"
+#include "Engine/Engine.h"
 
 GameObject::~GameObject()
 {
@@ -44,4 +45,27 @@ void GameObject::UpdatePostPhysics(f32 deltaTime)
 	{
 		component->UpdatePostPhysics(deltaTime);
 	}
+}
+
+mage::Transform TransformableObject::GetTransform() const
+{
+	return gEngine->mTransformTree.GetGlobalTransform(mTransformId);
+}
+
+void TransformableObject::SetTransform(mage::Transform inTransform)
+{
+	gEngine->mTransformTree.SetGlobalTransform(mTransformId, inTransform);
+}
+
+void TransformableObject::Destroy()
+{
+	GameObject::Destroy();
+
+	gEngine->mTransformTree.RemoveEntry(mTransformId);
+	mTransformId = mage::InvalidIndex;
+}
+
+void TransformableObject::InitTransform(mage::Transform inInitialTransform)
+{
+	mTransformId = gEngine->mTransformTree.AddEntry(inInitialTransform);
 }

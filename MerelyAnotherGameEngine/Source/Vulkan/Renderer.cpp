@@ -231,7 +231,7 @@ namespace Vulkan
 		result = graphicsQueue.presentKHR(presentInfoChain.get<vk::PresentInfoKHR>());
 		mage_check(result == vk::Result::eSuccess);
 
-		mCurrentImageIndex = u32(-1);
+		mCurrentImageIndex = mage::InvalidIndex;
 		mCurrentFrameIndex = (mCurrentFrameIndex + 1) % cMaxFramesInFlight;
 	}
 
@@ -356,7 +356,7 @@ namespace Vulkan
 
 	vk::Extent2D Renderer::ChooseSwapchainExtent(vk::SurfaceCapabilitiesKHR const& inCapabilities, vk::Extent2D inWindowExtent) const
 	{
-		if (inCapabilities.currentExtent.width != u32(-1))
+		if (inCapabilities.currentExtent.width != mage::InvalidIndex)
 			return inCapabilities.currentExtent;
 
 		return

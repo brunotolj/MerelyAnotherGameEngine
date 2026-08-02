@@ -41,7 +41,7 @@ namespace mage
 		f32 YZ;
 		f32 ZX;
 
-		static Rotor Invert(Rotor inRotor)
+		static Rotor Inverse(Rotor inRotor)
 		{
 			Rotor result;
 			result.S = inRotor.S;
@@ -64,7 +64,7 @@ namespace mage
 
 	inline Rotor operator-(Rotor inRotor)
 	{
-		return Rotor::Invert(inRotor);
+		return Rotor::Inverse(inRotor);
 	}
 
 	inline Rotor operator*(Rotor inLhs, Rotor inRhs)

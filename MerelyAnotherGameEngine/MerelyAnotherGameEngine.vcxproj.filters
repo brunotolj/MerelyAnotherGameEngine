@@ -43,6 +43,9 @@
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{3fbb0c8a-5223-4a5d-ab95-f3e1315baa94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Framework">
+      <UniqueIdentifier>{9b191e31-436e-4260-ba0a-27c9ff9c6032}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -149,6 +152,9 @@
     </ClCompile>
     <ClCompile Include="Source\Engine\InputHandler.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Framework\TransformTree.cpp">
+      <Filter>Source Files\Framework</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -283,6 +289,15 @@
     </ClInclude>
     <ClInclude Include="Source\Engine\InputHandler.h">
       <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\TransformTree.h">
+      <Filter>Source Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Constants.h">
+      <Filter>Source Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Flagset.h">
+      <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

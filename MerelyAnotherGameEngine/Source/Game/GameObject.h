@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Framework/TransformTree.h"
 #include "Game/GameObjectCommon.h"
 
 #include <map>
@@ -54,7 +55,7 @@ public:
 	~GameObject();
 
 	bool IsDestroyed() const { return mIsDestoryed; }
-	void Destroy() { mIsDestoryed = true; }
+	virtual void Destroy() { mIsDestoryed = true; }
 
 	GameWorld* GetWorld() const { return mWorld; }
 
@@ -95,9 +96,17 @@ public:
 	template<typename... ComponentTemplates>
 	TransformableObject(mage::Transform inInitialTransform, ComponentTemplates... inComponents)
 	{
-		mTransform = inInitialTransform;
+		InitTransform(inInitialTransform);
 		(CreateComponent(*this, inComponents), ...);
 	}
 
-	mage::Transform mTransform;
+	mage::Transform GetTransform() const;
+	void SetTransform(mage::Transform inTransform);
+
+	virtual void Destroy() override;
+
+private:
+	void InitTransform(mage::Transform inInitialTransform);
+
+	TransformTreeEntryId mTransformId = mage::InvalidIndex;
 };

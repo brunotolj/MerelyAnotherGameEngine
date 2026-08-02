@@ -32,7 +32,7 @@ void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
 
 void BallSpawnerComponent::SpawnBall()
 {
-	const glm::vec3 forward = mOwner.mTransform.Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::vec3 forward = mOwner.GetTransform().Rotation.Rotate(glm::vec3(0.0f, 1.0f, 0.0f));
 
 	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
 	rigidBodyTemplate.RigidBodyParams = mRigidBodyParams;
@@ -45,5 +45,5 @@ void BallSpawnerComponent::SpawnBall()
 	ComponentTemplate<KillZObjectComponent> killZTemplate;
 	killZTemplate.KillZ = -10.0f;
 
-	mOwner.GetWorld()->CreateObject<TransformableObject>(mOwner.mTransform, rigidBodyTemplate, staticMeshTemplate, killZTemplate);
+	mOwner.GetWorld()->CreateObject<TransformableObject>(mOwner.GetTransform(), rigidBodyTemplate, staticMeshTemplate, killZTemplate);
 }

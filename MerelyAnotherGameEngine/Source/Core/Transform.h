@@ -34,7 +34,38 @@ namespace mage
 			};
 		}
 
+		Transform Inverse() const
+		{
+			return Inverse(*this);
+		}
+
 		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
 		mage::Rotor Rotation;
+
+		static Transform Inverse(Transform const& inTransform)
+		{
+			Transform result;
+
+			result.Rotation = -inTransform.Rotation;
+			result.Position = result.Rotation.Rotate(-inTransform.Position);
+
+			return result;
+		}
+
+		static Transform Combine(Transform const& inLhs, Transform const& inRhs)
+		{
+			Transform result;
+
+			result.Rotation = Rotor::Combine(inLhs.Rotation, inRhs.Rotation);
+			result.Position = inLhs.Position + inLhs.Rotation.Rotate(inRhs.Position);
+
+			return result;
+		}
+
 	};
+
+	inline Transform operator*(Transform const& inLhs, Transform const& inRhs)
+	{
+		return Transform::Combine(inLhs, inRhs);
+	}
 }

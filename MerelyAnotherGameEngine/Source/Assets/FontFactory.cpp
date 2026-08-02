@@ -107,7 +107,7 @@ AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath)
 			compoundGlyphData.AddDefault();
 			CompoundGlyphData& compoundData = compoundGlyphData.GetLast();
 
-			compoundData.Index = glyphIndex;
+			compoundData.Index = u16(glyphIndex);
 
 			while (true)
 			{
@@ -225,7 +225,7 @@ AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath)
 				u32 existingPointCount = rawData.Points.GetSize();
 
 				for (u16 contourEndIndex : componentRawData.ContourEndIndices)
-					rawData.ContourEndIndices.Add(contourEndIndex + existingPointCount);
+					rawData.ContourEndIndices.Add(u16(contourEndIndex + existingPointCount));
 
 				glm::mat2x3 transform = compoundData.Transforms[componentIndex];
 
