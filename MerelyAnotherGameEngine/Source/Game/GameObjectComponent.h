@@ -5,18 +5,16 @@
 class GameObject;
 class GameWorld;
 
-class GameObjectComponentBase : public NonCopyableClass
+class GameObjectComponentBase : public NonCopyable
 {
 	friend GameObject;
 
 protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) {}
+	virtual void OnOwnerAddedToWorld() {}
+	virtual void OnOwnerRemovedFromWorld() {}
 
-	virtual void OnOwnerRemovedFromWorld(GameWorld& world) {}
-
-	virtual void UpdatePrePhysics(f32 deltaTime) {}
-
-	virtual void UpdatePostPhysics(f32 deltaTime) {}
+	virtual void UpdatePrePhysics(f32 inDeltaTime) {}
+	virtual void UpdatePostPhysics(f32 inDeltaTime) {}
 };
 
 template<GameObjectClass OwnerClass>
@@ -25,7 +23,7 @@ class GameObjectComponent : public GameObjectComponentBase
 	friend GameObject;
 
 public:
-	GameObjectComponent(OwnerClass& owner) : mOwner(owner) {}
+	GameObjectComponent(OwnerClass& inOwner) : mOwner(inOwner) {}
 
 protected:
 	OwnerClass& mOwner;

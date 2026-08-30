@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Assets/Texture.h"
+#include "Framework/GameWorld.h"
 #include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
+#include "Vulkan/Renderer.h"
 
 class AssetManager;
 
@@ -25,7 +27,7 @@ struct SpriteRenderData
 	AssetHandle<Texture> Texture;
 };
 
-class SpriteRenderSystem : public NonCopyableClass
+class SpriteRenderSystem : public GameSystemWithPrerequisites<Vulkan::Renderer>
 {
 	struct PushConstantData
 	{
@@ -35,8 +37,9 @@ class SpriteRenderSystem : public NonCopyableClass
 	};
 
 public:
-	SpriteRenderSystem();
+	SpriteRenderSystem(GameWorld& inWorld);
 
+	virtual void Update(f32 inDeltaTime) override;
 	void RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data) const;
 
 private:

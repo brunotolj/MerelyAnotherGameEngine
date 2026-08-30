@@ -1,8 +1,10 @@
 #include "Rendering/Systems/SpriteRenderSystem.h"
 #include "Engine/Engine.h"
+#include "Framework/GameWorld.h"
+#include "Game/SpriteObjectComponent.h"
 #include "Vulkan/Renderer.h"
 
-SpriteRenderSystem::SpriteRenderSystem()
+SpriteRenderSystem::SpriteRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	CreatePipeline();
 
@@ -23,6 +25,27 @@ SpriteRenderSystem::SpriteRenderSystem()
 	}
 
 	CreateVertexBuffer();
+}
+
+void SpriteRenderSystem::Update(f32 inDeltaTime)
+{
+	Vulkan::RenderFrameData frameData = Get<Vulkan::Renderer>().GetCurrentFrameData();
+	mage::Array<SpriteRenderData> spriteData;
+
+	mWorld.ForEachObject([&spriteData](GameObject* object)
+	{
+		for (SpriteObjectComponent const* spriteComp : object->GetComponentsOfClass<SpriteObjectComponent>())
+			spriteData.AddConstruct(
+				spriteComp->GetScreenCoordsMin(),
+				spriteComp->GetScreenCoordsMax(),
+				spriteComp->GetTextureCoordsMin(),
+				spriteComp->GetTextureCoordsMax(),
+				spriteComp->GetTexture());
+
+		return true;
+	});
+
+	RenderSprites(frameData, spriteData);
 }
 
 void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData, mage::Array<SpriteRenderData> const& data) const

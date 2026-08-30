@@ -25,9 +25,9 @@ public:
 	BoundedLineMovementComponent(TransformableObject& owner, const ComponentTemplate<BoundedLineMovementComponent>& creationTemplate);
 
 protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
+	virtual void OnOwnerAddedToWorld() override final;
 
-	virtual void UpdatePrePhysics(f32 deltaTime) override final;
+	virtual void UpdatePrePhysics(f32 inDeltaTime) override final;
 
 private:
 	glm::vec3 mCenter;

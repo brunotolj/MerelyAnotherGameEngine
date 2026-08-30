@@ -2,7 +2,7 @@
 
 #include <typeindex>
 
-class Asset : public NonMovableClass
+class Asset : public NonMovable
 {
 public:
 	virtual ~Asset() {};

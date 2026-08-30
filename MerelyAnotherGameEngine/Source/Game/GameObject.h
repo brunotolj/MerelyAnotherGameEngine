@@ -9,11 +9,31 @@
 class GameObjectComponentBase;
 class GameWorld;
 
-class GameObject : public NonCopyableClass
+class GameObject : public NonCopyable
 {
 	friend GameWorld;
 
 public:
+	template<typename... ComponentTemplates>
+	GameObject(GameWorld& inWorld, ComponentTemplates... inComponents) : mWorld(inWorld)
+	{
+		(CreateComponent(*this, inComponents), ...);
+	}
+
+	~GameObject();
+	
+	template<GameObjectClass ObjectClass, GameObjectComponentClass ComponentClass>
+	static ComponentClass& CreateComponent(ObjectClass& owner, const ComponentTemplate<ComponentClass>& creationTemplate)
+	{
+		ComponentClass* component = new ComponentClass(owner, creationTemplate);
+
+		u32 index = owner.mComponents.GetSize();
+		owner.mComponents.Add(component);
+		owner.mComponentsByClass[typeid(ComponentClass)].Add(index);
+
+		return *component;
+	}
+
 	template<GameObjectComponentClass ComponentClass>
 	mage::Array<ComponentClass*> GetComponentsOfClass()
 	{
@@ -46,45 +66,20 @@ public:
 		return result;
 	}
 
-	template<typename... ComponentTemplates>
-	GameObject(ComponentTemplates... inComponents)
-	{
-		(CreateComponent(*this, inComponents), ...);
-	}
-
-	~GameObject();
-
 	bool IsDestroyed() const { return mIsDestoryed; }
 	virtual void Destroy() { mIsDestoryed = true; }
 
-	GameWorld* GetWorld() const { return mWorld; }
+	GameWorld& mWorld;
 
 protected:
-	template<GameObjectClass ObjectClass, GameObjectComponentClass ComponentClass>
-	static ComponentClass& CreateComponent(ObjectClass& owner, const ComponentTemplate<ComponentClass>& creationTemplate)
-	{
-		ComponentClass* component = new ComponentClass(owner, creationTemplate);
-
-		u32 index = owner.mComponents.GetSize();
-		owner.mComponents.Add(component);
-		owner.mComponentsByClass[typeid(ComponentClass)].Add(index);
-
-		return *component;
-	}
-
-	void OnAddedToWorld(GameWorld& world);
-
-	void OnRemovedFromWorld(GameWorld& world);
+	void OnAddedToWorld();
+	void OnRemovedFromWorld();
 	
-	void UpdatePrePhysics(f32 deltaTime);
-
-	void UpdatePostPhysics(f32 deltaTime);
+	void UpdatePrePhysics(f32 inDeltaTime);
+	void UpdatePostPhysics(f32 inDeltaTime);
 
 private:
-	GameWorld* mWorld = nullptr;
-
 	mage::Array<GameObjectComponentBase*> mComponents;
-
 	std::map<std::type_index, mage::Array<u32>> mComponentsByClass;
 
 	bool mIsDestoryed = false;
@@ -94,10 +89,10 @@ class TransformableObject : public GameObject
 {
 public:
 	template<typename... ComponentTemplates>
-	TransformableObject(mage::Transform inInitialTransform, ComponentTemplates... inComponents)
+	TransformableObject(GameWorld& inWorld, mage::Transform inInitialTransform, ComponentTemplates... inComponents) : GameObject(inWorld)
 	{
-		InitTransform(inInitialTransform);
 		(CreateComponent(*this, inComponents), ...);
+		InitTransform(inInitialTransform);
 	}
 
 	mage::Transform GetTransform() const;

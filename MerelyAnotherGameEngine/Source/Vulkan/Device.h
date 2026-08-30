@@ -4,7 +4,7 @@
 
 namespace Vulkan
 {
-	class Device : public NonMovableClass
+	class Device : public NonMovable
 	{
 	public:
 		Device();

@@ -1,5 +1,5 @@
 #include "Game/RigidBodyObjectComponent.h"
-#include "Game/GameWorld.h"
+#include "Framework/GameWorld.h"
 #include "Physics/PhysicsSystem.h"
 
 RigidBodyObjectComponent::RigidBodyObjectComponent(TransformableObject& owner, const ComponentTemplate<RigidBodyObjectComponent>& creationTemplate) :
@@ -10,7 +10,7 @@ RigidBodyObjectComponent::RigidBodyObjectComponent(TransformableObject& owner, c
 {
 }
 
-void RigidBodyObjectComponent::OnOwnerAddedToWorld(GameWorld& world)
+void RigidBodyObjectComponent::OnOwnerAddedToWorld()
 {
 	mage::Transform transform = mOwner.GetTransform();
 	physx::PxTransform pose;
@@ -20,12 +20,12 @@ void RigidBodyObjectComponent::OnOwnerAddedToWorld(GameWorld& world)
 	pose.q.y = -transform.Rotation.ZX;
 	pose.q.z = -transform.Rotation.XY;
 
-	mPhysicsActor = world.mPhysicsSystem.AddRigidBody(mRigidBodyParams, pose, mLinearVelocity, mAngularVelocity);
+	mPhysicsActor = mOwner.mWorld.GetComponent<PhysicsSystem>()->AddRigidBody(mRigidBodyParams, pose, mLinearVelocity, mAngularVelocity);
 }
 
-void RigidBodyObjectComponent::OnOwnerRemovedFromWorld(GameWorld& world)
+void RigidBodyObjectComponent::OnOwnerRemovedFromWorld()
 {
-	world.mPhysicsSystem.RemoveActor(mPhysicsActor);
+	mOwner.mWorld.GetComponent<PhysicsSystem>()->RemoveActor(mPhysicsActor);
 }
 
 void RigidBodyObjectComponent::UpdatePrePhysics(f32 deltaTime)

@@ -10,7 +10,7 @@ namespace slang
 
 namespace Vulkan
 {
-	class Pipeline : public NonMovableClass
+	class Pipeline : public NonMovable
 	{
 	public:
 		struct ShaderStageInfo

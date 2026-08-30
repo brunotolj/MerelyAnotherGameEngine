@@ -1,33 +1,17 @@
 #pragma once
 
-class NonCopyableClass
+class NonCopyable
 {
 protected:
-	NonCopyableClass() {}
-	NonCopyableClass(NonCopyableClass const&) = delete;
-	NonCopyableClass& operator=(NonCopyableClass const&) = delete;
+	NonCopyable() {}
+	NonCopyable(NonCopyable const&) = delete;
+	NonCopyable& operator=(NonCopyable const&) = delete;
 };
 
-class NonMovableClass : public NonCopyableClass
+class NonMovable : public NonCopyable
 {
 protected:
-	NonMovableClass() {}
-	NonMovableClass(NonMovableClass&&) = delete;
-	NonMovableClass& operator=(NonMovableClass&&) = delete;
-};
-
-struct NonCopyableStruct
-{
-protected:
-	NonCopyableStruct() {}
-	NonCopyableStruct(NonCopyableStruct const&) = delete;
-	NonCopyableStruct& operator=(NonCopyableStruct const&) = delete;
-};
-
-class NonMovableStruct : public NonCopyableStruct
-{
-protected:
-	NonMovableStruct() {}
-	NonMovableStruct(NonMovableStruct&&) = delete;
-	NonMovableStruct& operator=(NonMovableStruct&&) = delete;
+	NonMovable() {}
+	NonMovable(NonMovable&&) = delete;
+	NonMovable& operator=(NonMovable&&) = delete;
 };

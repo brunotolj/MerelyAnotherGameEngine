@@ -6,7 +6,7 @@ namespace Vulkan
 {
 	class Buffer;
 
-	class Image : public NonMovableClass
+	class Image : public NonMovable
 	{
 	public:
 		struct CreateInfo

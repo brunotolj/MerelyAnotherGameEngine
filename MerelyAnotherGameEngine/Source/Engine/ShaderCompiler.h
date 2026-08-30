@@ -10,7 +10,7 @@ namespace slang
 
 using SpirVBinary = mage::Array<u32>;
 
-class ShaderCompiler : public NonMovableClass
+class ShaderCompiler : public NonMovable
 {
 public:
 	ShaderCompiler();

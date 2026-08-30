@@ -1,4 +1,4 @@
-#include "Game/GameWorld.h"
+#include "Framework/GameWorld.h"
 #include "Engine/Engine.h"
 #include "Utility/BoundedLineMovementComponent.h"
 
@@ -14,7 +14,7 @@ BoundedLineMovementComponent::BoundedLineMovementComponent(TransformableObject& 
 {
 }
 
-void BoundedLineMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
+void BoundedLineMovementComponent::OnOwnerAddedToWorld()
 {
 	mCenter = mOwner.GetTransform().Position;
 }

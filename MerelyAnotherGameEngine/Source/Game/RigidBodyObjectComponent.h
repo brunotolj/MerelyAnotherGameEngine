@@ -27,13 +27,11 @@ public:
 	RigidBodyObjectComponent(TransformableObject& owner, const ComponentTemplate<RigidBodyObjectComponent>& creationTemplate);
 
 protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
+	virtual void OnOwnerAddedToWorld() override final;
+	virtual void OnOwnerRemovedFromWorld() override final;
 
-	virtual void OnOwnerRemovedFromWorld(GameWorld& world) override final;
-
-	virtual void UpdatePrePhysics(f32 deltaTime) override final;
-
-	virtual void UpdatePostPhysics(f32 deltaTime) override final;
+	virtual void UpdatePrePhysics(f32 inDeltaTime) override final;
+	virtual void UpdatePostPhysics(f32 inDeltaTime) override final;
 
 private:
 	PhysicsRigidBodyParams mRigidBodyParams;

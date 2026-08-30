@@ -43,7 +43,7 @@ private:
 	GLFWwindow* mGlfwWindow = nullptr;
 };
 
-class WindowManager : public NonMovableClass
+class WindowManager : public NonMovable
 {
 public:
 	WindowManager();

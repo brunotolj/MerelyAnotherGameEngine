@@ -2,8 +2,10 @@
 
 #include "Assets/StaticMesh.h"
 #include "Assets/Texture.h"
+#include "Framework/GameWorld.h"
 #include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
+#include "Vulkan/Renderer.h"
 
 class AssetManager;
 
@@ -36,7 +38,7 @@ struct SceneRenderData
 	mage::Array<MeshRenderData> Meshes;
 };
 
-class MeshRenderSystem : public NonCopyableClass
+class MeshRenderSystem : public GameSystemWithPrerequisites<Vulkan::Renderer>
 {
 	struct PushConstantData
 	{
@@ -45,8 +47,9 @@ class MeshRenderSystem : public NonCopyableClass
 	};
 
 public:
-	MeshRenderSystem();
+	MeshRenderSystem(GameWorld& inWorld);
 
+	virtual void Update(f32 inDeltaTime) override;
 	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data) const;
 
 private:

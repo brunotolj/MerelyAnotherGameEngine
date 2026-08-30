@@ -1,4 +1,4 @@
-#include "Game/GameWorld.h"
+#include "Framework/GameWorld.h"
 #include "Utility/KillZObjectComponent.h"
 
 KillZObjectComponent::KillZObjectComponent(TransformableObject& owner, const ComponentTemplate<KillZObjectComponent>& creationTemplate) :

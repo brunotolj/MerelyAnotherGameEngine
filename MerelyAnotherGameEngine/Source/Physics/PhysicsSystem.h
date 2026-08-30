@@ -1,17 +1,18 @@
 #pragma once
 
+#include "Framework/GameWorld.h"
+#include "Framework/TransformTree.h"
 #include "Physics/PhysicsCommon.h"
 
 class RigidBodyObjectComponent;
 
-class PhysicsSystem : public NonCopyableClass
+class PhysicsSystem : public GameSystemWithPrerequisites<TransformTree>
 {
 public:
-	PhysicsSystem();
+	PhysicsSystem(GameWorld& inWorld);
+	virtual ~PhysicsSystem();
 
-	~PhysicsSystem();
-
-	void Update(f32 deltaTime);
+	virtual void Update(f32 deltaTime) override;
 
 	physx::PxRigidActor* AddRigidBody(
 		const PhysicsRigidBodyParams& params,

@@ -25,7 +25,7 @@ public:
 	DefaultMovementComponent(TransformableObject& owner, const ComponentTemplate<DefaultMovementComponent>& creationTemplate);
 
 protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
+	virtual void OnOwnerAddedToWorld() override final;
 
 	virtual void UpdatePrePhysics(f32 deltaTime) override final;
 

@@ -164,10 +164,10 @@
     <ClCompile Include="Source\Engine\InputHandler.cpp" />
     <ClCompile Include="Source\Engine\ShaderCompiler.cpp" />
     <ClCompile Include="Source\Engine\WindowManager.cpp" />
+    <ClCompile Include="Source\Framework\GameWorld.cpp" />
     <ClCompile Include="Source\Framework\TransformTree.cpp" />
     <ClCompile Include="Source\Game\CameraComponent.cpp" />
     <ClCompile Include="Source\Game\GameObject.cpp" />
-    <ClCompile Include="Source\Game\GameWorld.cpp" />
     <ClCompile Include="Source\Game\RigidBodyObjectComponent.cpp" />
     <ClCompile Include="Source\Game\SpriteObjectComponent.cpp" />
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp" />
@@ -212,11 +212,11 @@
     <ClInclude Include="Source\Engine\InputHandler.h" />
     <ClInclude Include="Source\Engine\ShaderCompiler.h" />
     <ClInclude Include="Source\Engine\WindowManager.h" />
+    <ClInclude Include="Source\Framework\GameWorld.h" />
     <ClInclude Include="Source\Framework\TransformTree.h" />
     <ClInclude Include="Source\Game\CameraComponent.h" />
     <ClInclude Include="Source\Game\GameObject.h" />
     <ClInclude Include="Source\Game\GameObjectComponent.h" />
-    <ClInclude Include="Source\Game\GameWorld.h" />
     <ClInclude Include="Source\Game\RigidBodyObjectComponent.h" />
     <ClInclude Include="Source\Game\SpriteObjectComponent.h" />
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h" />

@@ -1,4 +1,4 @@
-#include "Game/GameWorld.h"
+#include "Framework/GameWorld.h"
 #include "Engine/Engine.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
@@ -16,9 +16,9 @@ BallSpawnerComponent::BallSpawnerComponent(TransformableObject& owner, const Com
 {
 }
 
-void BallSpawnerComponent::OnOwnerAddedToWorld(GameWorld& world)
+void BallSpawnerComponent::OnOwnerAddedToWorld()
 {
-	gEngine->mInputHandler.BindKeyInputHandler(mInputSpawn, 1, [this]() { mPendingBallSpawn = true; }); // #FixMe: GLFW_PRESS
+	gEngine->mInputHandler.BindKeyInputHandler(mInputSpawn, 1, [this]() { mPendingBallSpawn = true; }); // #TODO: GLFW_PRESS
 }
 
 void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
@@ -45,5 +45,5 @@ void BallSpawnerComponent::SpawnBall()
 	ComponentTemplate<KillZObjectComponent> killZTemplate;
 	killZTemplate.KillZ = -10.0f;
 
-	mOwner.GetWorld()->CreateObject<TransformableObject>(mOwner.GetTransform(), rigidBodyTemplate, staticMeshTemplate, killZTemplate);
+	mOwner.mWorld.CreateObject<TransformableObject>(mOwner.GetTransform(), rigidBodyTemplate, staticMeshTemplate, killZTemplate);
 }

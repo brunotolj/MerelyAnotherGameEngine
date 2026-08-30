@@ -4,7 +4,7 @@
 
 #include <map>
 
-class AssetManager : public NonMovableClass
+class AssetManager : public NonMovable
 {
 	template <typename Type>
 	friend class Factory;

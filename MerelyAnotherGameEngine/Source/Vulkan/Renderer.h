@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Framework/GameWorld.h"
 #include "Vulkan/Image.h"
 
 #include <vulkan/vulkan_raii.hpp>
@@ -15,15 +16,18 @@ namespace Vulkan
 		u32 Index;
 	};
 
-	class Renderer : public NonMovableClass
+	class Renderer : public GameUtility
 	{
 	public:
-		Renderer(WindowHandle inWindow);
+		Renderer(GameWorld& inWorld, WindowHandle inWindow);
 
-		using RenderFrameFunction = std::function<void(RenderFrameData const&)>;
-		void RenderFrame(RenderFrameFunction&& inFunction);
+		virtual void PreSystemsUpdate() override;
+		virtual void PostSystemsUpdate() override;
 
-		using SingleTimeCommandsFunction = std::function<void(vk::CommandBuffer)>;
+		void BeginFrame(RenderFrameData& outFrameData);
+		void EndFrame();
+
+		const RenderFrameData& GetCurrentFrameData() const { return mCurrentFrameData; }
 
 		static constexpr u32 cMaxFramesInFlight = 2;
 
@@ -57,10 +61,13 @@ namespace Vulkan
 		Image mColorImage = nullptr;
 		Image mDepthImage = nullptr;
 
-		vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
+		vk::SampleCountFlagBits mMsaaSamples = vk::SampleCountFlagBits::e1;
 
+		bool mIsFrameInProgress = false;
 		u32 mCurrentImageIndex = mage::InvalidIndex;
 		u32 mCurrentFrameIndex = 0;
+
+		RenderFrameData mCurrentFrameData;
 
 		vk::Extent2D mWindowSize;
 		bool mShouldRecreateSwapchain = false;

@@ -1,11 +1,34 @@
 #include "Rendering/Systems/TextRenderSystem.h"
 #include "Engine/Engine.h"
+#include "Framework/GameWorld.h"
+#include "Game/TextObjectComponent.h"
 #include "Vulkan/Renderer.h"
 
-TextRenderSystem::TextRenderSystem()
+TextRenderSystem::TextRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	CreatePipeline();
 	CreateVertexBuffer();
+}
+
+void TextRenderSystem::Update(f32 inDeltaTime)
+{
+	Vulkan::RenderFrameData frameData = Get<Vulkan::Renderer>().GetCurrentFrameData();
+	mage::Array<TextRenderData> textData;
+
+	mWorld.ForEachObject([&textData](GameObject* object)
+	{
+		for (TextObjectComponent const* textComp : object->GetComponentsOfClass<TextObjectComponent>())
+			textData.AddConstruct(
+				textComp->GetText(),
+				textComp->GetColor(),
+				textComp->GetScreenPosition(),
+				textComp->GetScale(),
+				textComp->GetFont());
+
+		return true;
+	});
+
+	RenderText(frameData, textData);
 }
 
 void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data) const

@@ -1,6 +1,6 @@
 #include "Game/GameObject.h"
 #include "Game/GameObjectComponent.h"
-#include "Engine/Engine.h"
+#include "Framework/GameWorld.h"
 
 GameObject::~GameObject()
 {
@@ -10,24 +10,19 @@ GameObject::~GameObject()
 	}
 }
 
-void GameObject::OnAddedToWorld(GameWorld& world)
+void GameObject::OnAddedToWorld()
 {
-	mWorld = &world;
-
 	for (GameObjectComponentBase* component : mComponents)
 	{
-		component->OnOwnerAddedToWorld(world);
+		component->OnOwnerAddedToWorld();
 	}
 }
 
-void GameObject::OnRemovedFromWorld(GameWorld& world)
+void GameObject::OnRemovedFromWorld()
 {
-	mage_check(&world == mWorld);
-	mWorld = nullptr;
-
 	for (GameObjectComponentBase* component : mComponents)
 	{
-		component->OnOwnerRemovedFromWorld(world);
+		component->OnOwnerRemovedFromWorld();
 	}
 }
 
@@ -49,23 +44,23 @@ void GameObject::UpdatePostPhysics(f32 deltaTime)
 
 mage::Transform TransformableObject::GetTransform() const
 {
-	return gEngine->mTransformTree.GetGlobalTransform(mTransformId);
+	return mWorld.GetComponent<TransformTree>()->GetGlobalTransform(mTransformId);
 }
 
 void TransformableObject::SetTransform(mage::Transform inTransform)
 {
-	gEngine->mTransformTree.SetGlobalTransform(mTransformId, inTransform);
+	mWorld.GetComponent<TransformTree>()->SetGlobalTransform(mTransformId, inTransform);
 }
 
 void TransformableObject::Destroy()
 {
 	GameObject::Destroy();
 
-	gEngine->mTransformTree.RemoveEntry(mTransformId);
+	mWorld.GetComponent<TransformTree>()->RemoveEntry(mTransformId);
 	mTransformId = mage::InvalidIndex;
 }
 
 void TransformableObject::InitTransform(mage::Transform inInitialTransform)
 {
-	mTransformId = gEngine->mTransformTree.AddEntry(inInitialTransform);
+	mTransformId = mWorld.GetComponent<TransformTree>()->AddEntry(inInitialTransform);
 }

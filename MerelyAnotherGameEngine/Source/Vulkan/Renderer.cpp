@@ -5,7 +5,7 @@
 
 namespace Vulkan
 {
-	Renderer::Renderer(WindowHandle inWindow)
+	Renderer::Renderer(GameWorld& inWorld, WindowHandle inWindow) : GameUtility(inWorld)
 	{
 		vk::raii::Instance const& instance = gEngine->mVulkanDevice.GetVkInstance();
 		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
@@ -14,8 +14,8 @@ namespace Vulkan
 		vk::PhysicalDeviceProperties physicalDeviceProperties = physicalDevice.getProperties();
 		VkFlags supportedSampleCounts = VkFlags(physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts);
 
-		while (VkFlags(supportedSampleCounts) & (VkFlags(msaaSamples) << 1))
-			msaaSamples = vk::SampleCountFlagBits(VkFlags(msaaSamples) << 1);
+		while (VkFlags(supportedSampleCounts) & (VkFlags(mMsaaSamples) << 1))
+			mMsaaSamples = vk::SampleCountFlagBits(VkFlags(mMsaaSamples) << 1);
 
 		{
 			VkSurfaceKHR surface = nullptr;
@@ -59,8 +59,21 @@ namespace Vulkan
 		mWindowSize.height = u32(windowSize.y);
 	}
 
-	void Renderer::RenderFrame(Renderer::RenderFrameFunction&& inFunction)
+    void Renderer::PreSystemsUpdate()
+    {
+		BeginFrame(mCurrentFrameData);
+    }
+
+	void Renderer::PostSystemsUpdate()
 	{
+		EndFrame();
+	}
+
+	void Renderer::BeginFrame(RenderFrameData& outFrameData)
+	{
+		mage_check(!mIsFrameInProgress);
+		mIsFrameInProgress = true;
+
 		if (mShouldRecreateSwapchain)
 		{
 			RecreateSwapchain();
@@ -78,9 +91,7 @@ namespace Vulkan
 		vk::Fence currentDrawFence = mDrawFences[mCurrentFrameIndex];
 		vk::Fence currentPresentFence = mPresentFences[mCurrentFrameIndex];
 
-		vk::Result result;
-
-		result = device.waitForFences(currentDrawFence, vk::True, UINT64_MAX);
+		vk::Result result = device.waitForFences(currentDrawFence, vk::True, UINT64_MAX);
 		mage_check(result == vk::Result::eSuccess);
 
 		vk::ResultValue<u32> acquireNextImageResult = mSwapchain.acquireNextImage(UINT64_MAX, currentPresentCompleteSemaphore, nullptr);
@@ -174,7 +185,25 @@ namespace Vulkan
 
 		InitializeDynamicState(commandBuffer);
 
-		inFunction({ commandBuffer, mSwapchainExtent, mCurrentFrameIndex });
+		outFrameData = { commandBuffer, mSwapchainExtent, mCurrentFrameIndex };
+	}
+
+	void Renderer::EndFrame()
+	{
+		mage_check(mIsFrameInProgress);
+		mIsFrameInProgress = false;
+
+		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
+		vk::raii::Queue const& graphicsQueue = gEngine->mVulkanDevice.GetGraphicsQueue();
+
+		vk::raii::CommandBuffer& commandBuffer = mCommandBuffers[mCurrentFrameIndex];
+		vk::Semaphore currentPresentCompleteSemaphore = mPresentCompleteSemaphores[mCurrentFrameIndex];
+		vk::Semaphore currentRenderFinishedSemaphore = mRenderFinishedSemaphores[mCurrentFrameIndex];
+		vk::Fence currentDrawFence = mDrawFences[mCurrentFrameIndex];
+		vk::Fence currentPresentFence = mPresentFences[mCurrentFrameIndex];
+
+		vk::Image currentImage = mSwapchainImages[mCurrentImageIndex];
+		vk::ImageView currentImageView = mSwapchainImageViews[mCurrentImageIndex];
 
 		commandBuffer.endRendering();
 
@@ -194,7 +223,7 @@ namespace Vulkan
 
 		commandBuffer.end();
 
-		result = device.waitForFences(currentPresentFence, vk::True, UINT64_MAX);
+		vk::Result result = device.waitForFences(currentPresentFence, vk::True, UINT64_MAX);
 		mage_check(result == vk::Result::eSuccess);
 
 		device.resetFences(currentPresentFence);
@@ -305,7 +334,7 @@ namespace Vulkan
 			.AspectFlags = vk::ImageAspectFlagBits::eColor,
 			.UsageFlags = vk::ImageUsageFlagBits::eColorAttachment,
 			.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
-			.SampleCount = msaaSamples
+			.SampleCount = mMsaaSamples
 		};
 
 		mColorImage.Create(colorImageCreateInfo);
@@ -317,7 +346,7 @@ namespace Vulkan
 			.AspectFlags = vk::ImageAspectFlagBits::eDepth,
 			.UsageFlags = vk::ImageUsageFlagBits::eDepthStencilAttachment,
 			.MemoryFlags = vk::MemoryPropertyFlagBits::eDeviceLocal,
-			.SampleCount = msaaSamples
+			.SampleCount = mMsaaSamples
 		};
 
 		mDepthImage.Create(depthImageCreateInfo);
@@ -331,7 +360,7 @@ namespace Vulkan
 		inCommandBuffer.setScissorWithCount(vk::Rect2D(vk::Offset2D(0, 0), mSwapchainExtent));
 		inCommandBuffer.setDepthTestEnable(vk::True);
 		inCommandBuffer.setPolygonModeEXT(vk::PolygonMode::eFill);
-		inCommandBuffer.setRasterizationSamplesEXT(msaaSamples);
+		inCommandBuffer.setRasterizationSamplesEXT(mMsaaSamples);
 	}
 
 	vk::SurfaceFormatKHR Renderer::ChooseSwapchainFormat(mage::Array<vk::SurfaceFormatKHR> const& inFormats) const

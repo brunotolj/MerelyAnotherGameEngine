@@ -3,13 +3,16 @@
 #include "Assets/TextureFactory.h"
 #include "Engine/Engine.h"
 #include "Game/GameObject.h"
-#include "Game/GameWorld.h"
+#include "Framework/GameWorld.h"
 #include "Game/CameraComponent.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/SpriteObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Game/TextObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
+#include "Rendering/Systems/MeshRenderSystem.h"
+#include "Rendering/Systems/SpriteRenderSystem.h"
+#include "Rendering/Systems/TextRenderSystem.h"
 #include "Utility/BallSpawnerComponent.h"
 #include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
@@ -140,8 +143,6 @@ i32 main()
 
 	WindowHandle window = engine.mWindowManager.CreateWindow(windowInfo);
 
-	Vulkan::Renderer renderer(window);
-
 	constexpr f32 boardSize = 20.0f;
 
 	constexpr f32 cornerHalfHeight = 3.0f;
@@ -175,9 +176,15 @@ i32 main()
 	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf");
 
 	GameWorld world;
+	world.CreateComponent<TransformTree>();
+	world.CreateComponent<Vulkan::Renderer>(window);
+	world.CreateComponent<PhysicsSystem>();
+	world.CreateComponent<MeshRenderSystem>();
+	world.CreateComponent<SpriteRenderSystem>();
+	world.CreateComponent<TextRenderSystem>();
 
-	physx::PxMaterial* defaultMaterial = world.mPhysicsSystem.CreateMaterial({ 0.2f, 0.1f, 1.0f });
-	physx::PxMaterial* floorMaterial = world.mPhysicsSystem.CreateMaterial({ 0.2f, 0.05f, 0.0f });
+	physx::PxMaterial* defaultMaterial = world.GetComponent<PhysicsSystem>()->CreateMaterial({0.2f, 0.1f, 1.0f});
+	physx::PxMaterial* floorMaterial = world.GetComponent<PhysicsSystem>()->CreateMaterial({ 0.2f, 0.05f, 0.0f });
 	
 	physx::PxBoxGeometry boxCollision(boardSize, boardSize, 1.0f);
 	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, boxCollision, floorMaterial };
@@ -251,9 +258,6 @@ i32 main()
 		currentTime = newTime;
 
 		world.Update(frameTime);
-
-		world.Render(renderer);
-
 		engine.mWindowManager.PollEvents();
 	}
 

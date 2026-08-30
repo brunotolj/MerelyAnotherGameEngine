@@ -332,7 +332,7 @@ namespace Vulkan
 			}
 		};
 
-		float queuePriority = 1.0f;
+		f32 queuePriority = 1.0f;
 		vk::DeviceQueueCreateInfo queueCreateInfo
 		{
 			.queueFamilyIndex = graphicsQueueIndex,

@@ -1,8 +1,11 @@
 #include "Rendering/Systems/MeshRenderSystem.h"
 #include "Engine/Engine.h"
+#include "Game/CameraComponent.h"
+#include "Framework/GameWorld.h"
+#include "Game/StaticMeshObjectComponent.h"
 #include "Vulkan/Renderer.h"
 
-MeshRenderSystem::MeshRenderSystem()
+MeshRenderSystem::MeshRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	CreatePipeline();
 
@@ -21,6 +24,57 @@ MeshRenderSystem::MeshRenderSystem()
 		mUniformBuffers.AddConstruct(bufferCreateInfo);
 		mUniformBuffers[i].Map();
 	}
+}
+
+glm::mat4 CalcProjectionTransform(f32 nearPlane, f32 farPlane, f32 horizontalFOV, f32 aspectRatio)
+{
+	mage_check(nearPlane >= 0.0f && farPlane > nearPlane);
+	mage_check(horizontalFOV > 0.0f && glm::degrees(horizontalFOV) < 180.0f);
+
+	const f32 fovFactor = 1.0f / glm::tan(horizontalFOV / 2.0f);
+	const f32 planeDelta = farPlane - nearPlane;
+
+	return
+	{
+		{ fovFactor, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, farPlane / planeDelta, 1.0f },
+		{ 0.0f, -fovFactor * aspectRatio, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, -farPlane * nearPlane / planeDelta, 0.0f }
+	};
+}
+
+void MeshRenderSystem::Update(f32 inDeltaTime)
+{
+	Vulkan::RenderFrameData frameData = Get<Vulkan::Renderer>().GetCurrentFrameData();
+	SceneRenderData sceneData;
+
+	sceneData.LightDirection = glm::vec3(-3.0f, 2.0f, -2.5f);
+	sceneData.AmbientLightIntensity = 0.05f;
+
+	f32 aspectRatio = f32(frameData.Extent.width) / f32(frameData.Extent.height);
+	sceneData.ProjectionTransform = CalcProjectionTransform(0.1f, 1000.0f, glm::radians(90.0f), aspectRatio);
+
+	bool foundCamera = false;
+	mWorld.ForEachObject([&sceneData, &foundCamera](GameObject* object)
+	{
+		for (StaticMeshObjectComponent const* staticMeshComp : object->GetComponentsOfClass<StaticMeshObjectComponent>())
+			sceneData.Meshes.AddConstruct(
+				staticMeshComp->GetTransform().Matrix(),
+				staticMeshComp->GetMesh(),
+				staticMeshComp->GetTexture());
+
+		if (!foundCamera)
+			for (CameraComponent const* cameraComp : object->GetComponentsOfClass<CameraComponent>())
+			{
+				sceneData.ViewTransform = cameraComp->GetViewTransform();
+				foundCamera = true;
+				break;
+			}
+
+		return true;
+	});
+
+	RenderMeshes(frameData, sceneData);
 }
 
 void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data) const

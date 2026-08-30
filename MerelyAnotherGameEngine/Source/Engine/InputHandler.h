@@ -4,7 +4,7 @@
 
 enum class CursorInputMode : u8;
 
-class InputHandler : public NonMovableClass
+class InputHandler : public NonMovable
 {
 public:
 	InputHandler();

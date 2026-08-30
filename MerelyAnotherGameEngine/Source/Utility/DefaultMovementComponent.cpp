@@ -1,4 +1,4 @@
-#include "Game/GameWorld.h"
+#include "Framework/GameWorld.h"
 #include "Engine/Engine.h"
 #include "Utility/DefaultMovementComponent.h"
 
@@ -14,7 +14,7 @@ DefaultMovementComponent::DefaultMovementComponent(TransformableObject& owner, c
 {
 }
 
-void DefaultMovementComponent::OnOwnerAddedToWorld(GameWorld& world)
+void DefaultMovementComponent::OnOwnerAddedToWorld()
 {
 	gEngine->mInputHandler.BindCursorMovementHandler([this](glm::dvec2 movement, CursorInputMode cursorMode)
 		{ if (cursorMode == CursorInputMode::Disabled) mCursorMovement += movement; });

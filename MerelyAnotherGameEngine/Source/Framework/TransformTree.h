@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Framework/GameWorld.h"
+
 enum class TransformTreeEntryFlags : u8
 {
 	EntryExists = 1 << 0,
@@ -19,9 +21,12 @@ struct TransformTreeEntry
 	mutable Flagset<TransformTreeEntryFlags> Flags;
 };
 
-class TransformTree
+class TransformTree : public GameUtility
 {
 public:
+	TransformTree(GameWorld& inWorld) : GameUtility(inWorld) {}
+	virtual ~TransformTree() {}
+
 	TransformTreeEntryId AddEntry(mage::Transform inInitialTransform = mage::Transform(), TransformTreeEntryId inParentId = mage::InvalidIndex);
 	bool RemoveEntry(TransformTreeEntryId inEntryId);
 

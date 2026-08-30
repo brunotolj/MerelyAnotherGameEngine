@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Assets/Font.h"
+#include "Framework/GameWorld.h"
 #include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
+#include "Vulkan/Renderer.h"
 
 class AssetManager;
 
@@ -27,7 +29,7 @@ struct BezierCurve
 	glm::vec2 p2;
 };
 
-class TextRenderSystem : public NonCopyableClass
+class TextRenderSystem : public GameSystemWithPrerequisites<Vulkan::Renderer>
 {
 	struct PushConstantData
 	{
@@ -41,8 +43,9 @@ class TextRenderSystem : public NonCopyableClass
 	};
 
 public:
-	TextRenderSystem();
+	TextRenderSystem(GameWorld& inWorld);
 
+	virtual void Update(f32 inDeltaTime) override;
 	void RenderText(Vulkan::RenderFrameData const& frameData, mage::Array<TextRenderData> const& data) const;
 
 private:

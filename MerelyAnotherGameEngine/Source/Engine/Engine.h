@@ -4,10 +4,9 @@
 #include "Engine/InputHandler.h"
 #include "Engine/ShaderCompiler.h"
 #include "Engine/WindowManager.h"
-#include "Framework/TransformTree.h"
 #include "Vulkan/Device.h"
 
-class Engine : public NonMovableClass
+class Engine : public NonMovable
 {
 public:
 	Engine();
@@ -33,8 +32,6 @@ public:
 	ShaderCompiler mShaderCompiler;
 
 	InputHandler mInputHandler;
-
-	TransformTree mTransformTree;
 
 private:
 	bool mExitRequested = false;

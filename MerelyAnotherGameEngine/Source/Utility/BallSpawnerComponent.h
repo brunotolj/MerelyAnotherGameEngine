@@ -12,7 +12,7 @@ struct ComponentTemplate<class BallSpawnerComponent>
 	AssetHandle<StaticMesh> Mesh;
 	AssetHandle<Texture> Texture;
 	f32 Speed = 10.0f;
-	i32 InputSpawn = 70; // #FixMe: GLFW_KEY_F
+	i32 InputSpawn = 70; // #TODO: GLFW_KEY_F
 };
 
 class BallSpawnerComponent : public GameObjectComponent<TransformableObject>
@@ -21,7 +21,7 @@ public:
 	BallSpawnerComponent(TransformableObject& owner, const ComponentTemplate<BallSpawnerComponent>& creationTemplate);
 
 protected:
-	virtual void OnOwnerAddedToWorld(GameWorld& world) override final;
+	virtual void OnOwnerAddedToWorld() override final;
 
 	virtual void UpdatePrePhysics(f32 deltaTime) override final;
 
