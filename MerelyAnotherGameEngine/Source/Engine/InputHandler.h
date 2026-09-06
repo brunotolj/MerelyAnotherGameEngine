@@ -8,7 +8,6 @@ class InputHandler : public NonMovable
 {
 public:
 	InputHandler();
-
 	~InputHandler() {}
 
 	bool IsKeyPressed(i32 key);

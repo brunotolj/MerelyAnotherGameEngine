@@ -20,17 +20,8 @@ public:
 		physx::PxVec3 linearVelocity,
 		physx::PxVec3 angularVelocity);
 
-	physx::PxMaterial* CreateMaterial(const PhysicsSystemMaterialProperties& props);
-
 	void RemoveActor(physx::PxRigidActor* actor);
 
 private:
-	physx::PxDefaultAllocator mAllocator;
-	physx::PxDefaultErrorCallback mErrorCallback;
-	physx::PxFoundation* mFoundation = nullptr;
-	physx::PxPhysics* mPhysics = nullptr;
-	physx::PxDefaultCpuDispatcher* mDispatcher = nullptr;
 	physx::PxScene* mScene = nullptr;
-
-	mage::Array<physx::PxMaterial*> mMaterials;
 };

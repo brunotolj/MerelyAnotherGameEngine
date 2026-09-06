@@ -150,6 +150,10 @@
     <ClCompile Include="Source\Assets\Asset.cpp" />
     <ClCompile Include="Source\Assets\Font.cpp" />
     <ClCompile Include="Source\Assets\FontFactory.cpp" />
+    <ClCompile Include="Source\Assets\PhysicsMaterialFactory.cpp" />
+    <ClCompile Include="Source\Assets\PhysicsShape.cpp" />
+    <ClCompile Include="Source\Assets\PhysicsMaterial.cpp" />
+    <ClCompile Include="Source\Assets\PhysicsShapeFactory.cpp" />
     <ClCompile Include="Source\Assets\StaticMesh.cpp" />
     <ClCompile Include="Source\Assets\StaticMeshFactory.cpp" />
     <ClCompile Include="Source\Assets\Texture.cpp" />
@@ -162,6 +166,7 @@
     <ClCompile Include="Source\Engine\AssetManager.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="Source\Engine\InputHandler.cpp" />
+    <ClCompile Include="Source\Engine\PhysicsEngine_PhysX.cpp" />
     <ClCompile Include="Source\Engine\ShaderCompiler.cpp" />
     <ClCompile Include="Source\Engine\WindowManager.cpp" />
     <ClCompile Include="Source\Framework\GameWorld.cpp" />
@@ -173,7 +178,6 @@
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp" />
     <ClCompile Include="Source\Game\TextObjectComponent.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
-    <ClCompile Include="Source\Physics\PhysicsGeometry.cpp" />
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp" />
     <ClCompile Include="Source\Rendering\Systems\TextRenderSystem.cpp" />
     <ClCompile Include="Source\Rendering\Systems\MeshRenderSystem.cpp" />
@@ -192,6 +196,10 @@
     <ClInclude Include="Source\Assets\Asset.h" />
     <ClInclude Include="Source\Assets\Font.h" />
     <ClInclude Include="Source\Assets\FontFactory.h" />
+    <ClInclude Include="Source\Assets\PhysicsMaterialFactory.h" />
+    <ClInclude Include="Source\Assets\PhysicsShape.h" />
+    <ClInclude Include="Source\Assets\PhysicsMaterial.h" />
+    <ClInclude Include="Source\Assets\PhysicsShapeFactory.h" />
     <ClInclude Include="Source\Assets\StaticMesh.h" />
     <ClInclude Include="Source\Assets\StaticMeshFactory.h" />
     <ClInclude Include="Source\Assets\Texture.h" />
@@ -210,6 +218,7 @@
     <ClInclude Include="Source\Engine\AssetManager.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
     <ClInclude Include="Source\Engine\InputHandler.h" />
+    <ClInclude Include="Source\Engine\PhysicsEngine_PhysX.h" />
     <ClInclude Include="Source\Engine\ShaderCompiler.h" />
     <ClInclude Include="Source\Engine\WindowManager.h" />
     <ClInclude Include="Source\Framework\GameWorld.h" />
@@ -222,7 +231,6 @@
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h" />
     <ClInclude Include="Source\Game\TextObjectComponent.h" />
     <ClInclude Include="Source\Physics\PhysicsCommon.h" />
-    <ClInclude Include="Source\Physics\PhysicsGeometry.h" />
     <ClInclude Include="Source\Physics\PhysicsSystem.h" />
     <ClInclude Include="Source\Rendering\Systems\TextRenderSystem.h" />
     <ClInclude Include="Source\Rendering\Systems\MeshRenderSystem.h" />

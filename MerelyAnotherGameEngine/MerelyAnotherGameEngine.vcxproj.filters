@@ -144,9 +144,6 @@
     <ClCompile Include="Source\Engine\WindowManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Physics\PhysicsGeometry.cpp">
-      <Filter>Source Files\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\InputHandler.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -155,6 +152,21 @@
     </ClCompile>
     <ClCompile Include="Source\Framework\GameWorld.cpp">
       <Filter>Source Files\Framework</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\PhysicsShape.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\PhysicsMaterial.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Engine\PhysicsEngine_PhysX.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\PhysicsShapeFactory.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\PhysicsMaterialFactory.cpp">
+      <Filter>Source Files\Assets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -281,9 +293,6 @@
     <ClInclude Include="Source\Engine\WindowManager.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Physics\PhysicsGeometry.h">
-      <Filter>Source Files\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Engine\InputHandler.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
@@ -298,6 +307,21 @@
     </ClInclude>
     <ClInclude Include="Source\Framework\GameWorld.h">
       <Filter>Source Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\PhysicsShape.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\PhysicsMaterial.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Engine\PhysicsEngine_PhysX.h">
+      <Filter>Source Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\PhysicsShapeFactory.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\PhysicsMaterialFactory.h">
+      <Filter>Source Files\Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

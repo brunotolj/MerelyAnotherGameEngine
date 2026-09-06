@@ -1,4 +1,6 @@
 #include "Assets/FontFactory.h"
+#include "Assets/PhysicsMaterialFactory.h"
+#include "Assets/PhysicsShapeFactory.h"
 #include "Assets/StaticMeshFactory.h"
 #include "Assets/TextureFactory.h"
 #include "Engine/Engine.h"
@@ -175,6 +177,15 @@ i32 main()
 	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf");
 	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf");
 
+	AssetHandle<PhysicsShape> boardCollision = Factory<PhysicsShape>::MakeBox({ boardSize, boardSize, 1.0f });
+	AssetHandle<PhysicsShape> cornerCollision = Factory<PhysicsShape>::MakeCylinder(cornerRadius, 2.0f * cornerHalfHeight);
+	AssetHandle<PhysicsShape> capsuleCollision = Factory<PhysicsShape>::MakeCapsule(capsuleRadius, capsuleLength);
+	AssetHandle<PhysicsShape> coneCollision = Factory<PhysicsShape>::MakeCone(coneRadius, coneHeight);
+	AssetHandle<PhysicsShape> ballCollision = Factory<PhysicsShape>::MakeSphere(ballRadius);
+
+	AssetHandle<PhysicsMaterial> defaultMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.1f, 1.0f);
+	AssetHandle<PhysicsMaterial> floorMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.05f, 0.0f);
+
 	GameWorld world;
 	world.CreateComponent<TransformTree>();
 	world.CreateComponent<Vulkan::Renderer>(window);
@@ -183,22 +194,10 @@ i32 main()
 	world.CreateComponent<SpriteRenderSystem>();
 	world.CreateComponent<TextRenderSystem>();
 
-	physx::PxMaterial* defaultMaterial = world.GetComponent<PhysicsSystem>()->CreateMaterial({0.2f, 0.1f, 1.0f});
-	physx::PxMaterial* floorMaterial = world.GetComponent<PhysicsSystem>()->CreateMaterial({ 0.2f, 0.05f, 0.0f });
-	
-	physx::PxBoxGeometry boxCollision(boardSize, boardSize, 1.0f);
-	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, boxCollision, floorMaterial };
-	
-	physx::PxCustomGeometryExt::CylinderCallbacks cylinderCollisionCallbacks(2.0f * cornerHalfHeight, cornerRadius);
-	PhysicsRigidBodyParams cylinderRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cylinderCollisionCallbacks, defaultMaterial };
-	
-	physx::PxCapsuleGeometry capsuleCollision(capsuleRadius, capsuleLength);
+	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, boardCollision, floorMaterial };
+	PhysicsRigidBodyParams cylinderRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cornerCollision, defaultMaterial };
 	PhysicsRigidBodyParams capsuleRigidBodyParams = { PhysicsSystemObjectType::RigidKinematic, capsuleCollision, defaultMaterial };
-	
-	physx::PxCustomGeometryExt::ConeCallbacks coneCollisionCallbacks(coneHeight, coneRadius);
-	PhysicsRigidBodyParams coneRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, coneCollisionCallbacks, defaultMaterial };
-
-	physx::PxSphereGeometry ballCollision(ballRadius);
+	PhysicsRigidBodyParams coneRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, coneCollision, defaultMaterial };
 	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, ballCollision, defaultMaterial };
 
 	{

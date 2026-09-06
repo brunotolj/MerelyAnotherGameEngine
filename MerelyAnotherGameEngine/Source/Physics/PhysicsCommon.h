@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Physics/PhysicsGeometry.h"
+#include "Assets/PhysicsMaterial.h"
+#include "Assets/PhysicsShape.h"
 
 enum class PhysicsSystemObjectType : u8
 {
@@ -9,18 +10,9 @@ enum class PhysicsSystemObjectType : u8
 	RigidDynamic
 };
 
-struct PhysicsSystemMaterialProperties
-{
-	f32 StaticFriction;
-	f32 DynamicFriction;
-	f32 Restitution;
-};
-
 struct PhysicsRigidBodyParams
 {
 	PhysicsSystemObjectType Type = PhysicsSystemObjectType::RigidStatic;
-
-	PhysicsGeometry Geometry;
-
-	physx::PxMaterial* Material = nullptr;
+	AssetHandle<PhysicsShape> Shape;
+	AssetHandle<PhysicsMaterial> Material;
 };

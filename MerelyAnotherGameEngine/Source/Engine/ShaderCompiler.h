@@ -14,6 +14,7 @@ class ShaderCompiler : public NonMovable
 {
 public:
 	ShaderCompiler();
+	~ShaderCompiler() {}
 
 	SpirVBinary CompileFromFile(mage::StringView inPath) const;
 

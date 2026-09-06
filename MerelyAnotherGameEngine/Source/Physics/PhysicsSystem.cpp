@@ -1,29 +1,15 @@
 #include "Physics/PhysicsSystem.h"
 #include "Framework/GameWorld.h"
+#include "Engine/Engine.h"
 
 PhysicsSystem::PhysicsSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
-	mFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, mAllocator, mErrorCallback);
-
-	mPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *mFoundation, physx::PxTolerancesScale());
-
-	physx::PxSceneDesc sceneDesc(mPhysics->getTolerancesScale());
-	sceneDesc.gravity = physx::PxVec3(0.0f, 0.0f, -9.81f);
-	mDispatcher = physx::PxDefaultCpuDispatcherCreate(2);
-	sceneDesc.cpuDispatcher = mDispatcher;
-	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
-	mScene = mPhysics->createScene(sceneDesc);
+	mScene = gEngine->mPhysicsEngine.CreateScene();
 }
 
 PhysicsSystem::~PhysicsSystem()
 {
-	for (physx::PxMaterial* material : mMaterials)
-		PX_RELEASE(material);
-
 	PX_RELEASE(mScene);
-	PX_RELEASE(mDispatcher);
-	PX_RELEASE(mPhysics);
-	PX_RELEASE(mFoundation);
 }
 
 void PhysicsSystem::Update(f32 deltaTime)
@@ -39,16 +25,15 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(
 	physx::PxVec3 angularVelocity)
 {
 	physx::PxRigidActor* actor = nullptr;
-	physx::PxCustomGeometryExt::CylinderCallbacks* callbacks = (physx::PxCustomGeometryExt::CylinderCallbacks*)params.Geometry.CustomGeometry.Geometry.callbacks;
 
-	physx::PxShape* shape = mPhysics->createShape(params.Geometry.BaseGeometry, *params.Material, true);
+	physx::PxShape* shape = gEngine->mPhysicsEngine.CreateShape(params.Shape, params.Material);
 	mage_check(shape);
 
 	switch (params.Type)
 	{
 		case PhysicsSystemObjectType::RigidStatic:
 		{
-			physx::PxRigidStatic* rigidStatic = mPhysics->createRigidStatic(pose);
+			physx::PxRigidStatic* rigidStatic = gEngine->mPhysicsEngine.CreateStaticActor(pose);
 			rigidStatic->attachShape(*shape);
 
 			actor = rigidStatic;
@@ -57,7 +42,7 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(
 
 		case PhysicsSystemObjectType::RigidKinematic:
 		{
-			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(pose);
+			physx::PxRigidDynamic* rigidDynamic = gEngine->mPhysicsEngine.CreateDynamicActor(pose);
 			rigidDynamic->attachShape(*shape);
 			rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 
@@ -67,7 +52,7 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(
 
 		case PhysicsSystemObjectType::RigidDynamic:
 		{
-			physx::PxRigidDynamic* rigidDynamic = mPhysics->createRigidDynamic(pose);
+			physx::PxRigidDynamic* rigidDynamic = gEngine->mPhysicsEngine.CreateDynamicActor(pose);
 			rigidDynamic->attachShape(*shape);
 
 			rigidDynamic->setLinearVelocity(linearVelocity, false);
@@ -84,12 +69,6 @@ physx::PxRigidActor* PhysicsSystem::AddRigidBody(
 	shape->release();
 
 	return actor;
-}
-
-physx::PxMaterial* PhysicsSystem::CreateMaterial(const PhysicsSystemMaterialProperties& props)
-{
-	mMaterials.Add(mPhysics->createMaterial(props.StaticFriction, props.DynamicFriction, props.Restitution));
-	return mMaterials.GetLast();
 }
 
 void PhysicsSystem::RemoveActor(physx::PxRigidActor* actor)
