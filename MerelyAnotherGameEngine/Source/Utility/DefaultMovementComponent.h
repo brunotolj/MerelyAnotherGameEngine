@@ -27,7 +27,7 @@ public:
 protected:
 	virtual void OnOwnerAddedToWorld() override final;
 
-	virtual void UpdatePrePhysics(f32 deltaTime) override final;
+	virtual void Update(f32 deltaTime) override final;
 
 private:
 	i32 mInputR;

@@ -26,19 +26,11 @@ void GameObject::OnRemovedFromWorld()
 	}
 }
 
-void GameObject::UpdatePrePhysics(f32 deltaTime)
+void GameObject::Update(f32 deltaTime)
 {
 	for (GameObjectComponentBase* component : mComponents)
 	{
-		component->UpdatePrePhysics(deltaTime);
-	}
-}
-
-void GameObject::UpdatePostPhysics(f32 deltaTime)
-{
-	for (GameObjectComponentBase* component : mComponents)
-	{
-		component->UpdatePostPhysics(deltaTime);
+		component->Update(deltaTime);
 	}
 }
 

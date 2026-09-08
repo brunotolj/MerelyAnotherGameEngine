@@ -75,8 +75,7 @@ protected:
 	void OnAddedToWorld();
 	void OnRemovedFromWorld();
 	
-	void UpdatePrePhysics(f32 inDeltaTime);
-	void UpdatePostPhysics(f32 inDeltaTime);
+	void Update(f32 inDeltaTime);
 
 private:
 	mage::Array<GameObjectComponentBase*> mComponents;
@@ -95,6 +94,7 @@ public:
 		InitTransform(inInitialTransform);
 	}
 
+	TransformTreeEntryId GetTransformId() const { return mTransformId; }
 	mage::Transform GetTransform() const;
 	void SetTransform(mage::Transform inTransform);
 

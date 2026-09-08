@@ -33,40 +33,23 @@ void GameWorld::Update(f32 inDeltaTime)
 		utility->PreSystemsUpdate();
 
 	mIsCurrentlyUpdatingObjects = true;
+	
 	for (GameObject* object : mObjects)
 	{
 		if (object->mIsDestoryed)
 			continue;
 
-		object->UpdatePrePhysics(inDeltaTime);
+		object->Update(inDeltaTime);
 	}
 
-	mIsCurrentlyUpdatingObjects = false;
 	for (GameObject* newObject : mNewObjects)
 	{
-		newObject->UpdatePrePhysics(inDeltaTime);
+		newObject->Update(inDeltaTime);
 		mObjects.Add(newObject);
 	}
 	mNewObjects.Empty();
 
-	GetComponent<PhysicsSystem>()->Update(inDeltaTime);
-
-	mIsCurrentlyUpdatingObjects = true;
-	for (GameObject* object : mObjects)
-	{
-		if (object->mIsDestoryed)
-			continue;
-
-		object->UpdatePostPhysics(inDeltaTime);
-	}
-
 	mIsCurrentlyUpdatingObjects = false;
-	for (GameObject* newObject : mNewObjects)
-	{
-		newObject->UpdatePostPhysics(inDeltaTime);
-		mObjects.Add(newObject);
-	}
-	mNewObjects.Empty();
 
 	for (u32 i = 0; i < mObjects.GetSize(); ++i)
 	{
@@ -78,9 +61,8 @@ void GameWorld::Update(f32 inDeltaTime)
 		mObjects.RemoveAtSwap(i--);
 	}
 
-	GetComponent<MeshRenderSystem>()->Update(inDeltaTime);
-	GetComponent<SpriteRenderSystem>()->Update(inDeltaTime);
-	GetComponent<TextRenderSystem>()->Update(inDeltaTime);
+	for (GameSystem* system : mSystems)
+		system->Update(inDeltaTime);
 
 	for (GameUtility* utility : mUtilities)
 		utility->PostSystemsUpdate();

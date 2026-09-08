@@ -19,7 +19,7 @@ void BoundedLineMovementComponent::OnOwnerAddedToWorld()
 	mCenter = mOwner.GetTransform().Position;
 }
 
-void BoundedLineMovementComponent::UpdatePrePhysics(f32 deltaTime)
+void BoundedLineMovementComponent::Update(f32 deltaTime)
 {
 	f32 input = 0.0f;
 	if (gEngine->mInputHandler.IsKeyPressed(mInputNeg)) input -= 1.0f;

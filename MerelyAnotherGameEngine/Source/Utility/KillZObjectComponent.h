@@ -15,7 +15,7 @@ public:
 	KillZObjectComponent(TransformableObject& owner, const ComponentTemplate<KillZObjectComponent>& creationTemplate);
 
 protected:
-	virtual void UpdatePostPhysics(f32 deltaTime) override final;
+	virtual void Update(f32 deltaTime) override final;
 
 private:
 	f32 mKillZ;

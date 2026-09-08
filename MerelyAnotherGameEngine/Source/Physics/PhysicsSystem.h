@@ -12,16 +12,33 @@ public:
 	PhysicsSystem(GameWorld& inWorld);
 	virtual ~PhysicsSystem();
 
-	virtual void Update(f32 deltaTime) override;
+	virtual void Update(f32 inDeltaTime) override;
 
 	physx::PxRigidActor* AddRigidBody(
-		const PhysicsRigidBodyParams& params,
-		const physx::PxTransform& pose,
-		physx::PxVec3 linearVelocity,
-		physx::PxVec3 angularVelocity);
+		const PhysicsRigidBodyParams& inParams,
+		TransformTreeEntryId inTransformId,
+		physx::PxVec3 inLinearVelocity,
+		physx::PxVec3 inAngularVelocity);
 
-	void RemoveActor(physx::PxRigidActor* actor);
+	void RemoveActor(physx::PxRigidActor* inActor);
 
 private:
+	struct DynamicActor
+	{
+		physx::PxRigidDynamic* PhysxActor = nullptr;
+		TransformTreeEntryId TransformId = mage::InvalidIndex;
+
+		physx::PxVec3 mLinearVelocity = physx::PxVec3(physx::PxZero);
+		physx::PxVec3 mAngularVelocity = physx::PxVec3(physx::PxZero);
+	};
+
+	physx::PxTransform ReadTransformFromTransformTree(TransformTreeEntryId inTransformId);
+	void WriteTransformToTransformTree(TransformTreeEntryId inTransformId, const physx::PxTransform& inTransform);
+
 	physx::PxScene* mScene = nullptr;
+
+	mage::Array<physx::PxRigidStatic*> mStaticActors;
+
+	mage::Array<DynamicActor> mDynamicActors;
+	u32 mKinematicActorCount = 0;
 };

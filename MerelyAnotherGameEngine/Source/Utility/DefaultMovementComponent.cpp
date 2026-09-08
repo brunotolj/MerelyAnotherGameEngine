@@ -20,7 +20,7 @@ void DefaultMovementComponent::OnOwnerAddedToWorld()
 		{ if (cursorMode == CursorInputMode::Disabled) mCursorMovement += movement; });
 }
 
-void DefaultMovementComponent::UpdatePrePhysics(f32 deltaTime)
+void DefaultMovementComponent::Update(f32 deltaTime)
 {
 	glm::vec3 movement(0.0f);
 

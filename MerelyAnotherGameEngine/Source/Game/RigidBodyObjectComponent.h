@@ -30,15 +30,11 @@ protected:
 	virtual void OnOwnerAddedToWorld() override final;
 	virtual void OnOwnerRemovedFromWorld() override final;
 
-	virtual void UpdatePrePhysics(f32 inDeltaTime) override final;
-	virtual void UpdatePostPhysics(f32 inDeltaTime) override final;
-
 private:
 	PhysicsRigidBodyParams mRigidBodyParams;
 
-	physx::PxVec3 mLinearVelocity;
+	physx::PxVec3 mInitialLinearVelocity;
+	physx::PxVec3 mInitialAngularVelocity;
 
-	physx::PxVec3 mAngularVelocity;
-
-	physx::PxRigidActor* mPhysicsActor;
+	physx::PxRigidActor* mPhysicsActor = nullptr;
 };

@@ -225,7 +225,8 @@ namespace mage
 
 			--mSize;
 
-			mElements[inIndex] = std::move(mElements[mSize]);
+			if (inIndex < mSize)
+				mElements[inIndex] = std::move(mElements[mSize]);
 
 			mElements[mSize].~Type();
 			return true;
@@ -312,6 +313,18 @@ namespace mage
 			return nullptr;
 		}
 
+		u32 GetIndex(Type const& inElement) const
+		{
+			Type const* foundElement = Find(inElement);
+			return foundElement ? u32(foundElement - mElements) : mage::InvalidIndex;
+		}
+
+		u32 GetIndex(std::function<bool(Type const&)>&& inPredicate) const
+		{
+			Type const* foundElement = Find(std::move(inPredicate));
+			return foundElement ? u32(foundElement - mElements) : mage::InvalidIndex;
+		}
+
 		bool Contains(Type const& inElement) const
 		{
 			return Find(inElement) != nullptr;
@@ -325,6 +338,18 @@ namespace mage
 		void Sort()
 		{
 			std::sort(begin(), end());
+		}
+
+		bool Swap(u32 inIndexA, u32 inIndexB)
+		{
+			if (inIndexA >= mSize || inIndexB >= mSize)
+				return false;
+
+			if (inIndexA == inIndexB)
+				return true;
+
+			std::swap(mElements[inIndexA], mElements[inIndexB]);
+			return true;
 		}
 
 		Type* begin() const { return mElements; }

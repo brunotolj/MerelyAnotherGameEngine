@@ -21,7 +21,7 @@ void BallSpawnerComponent::OnOwnerAddedToWorld()
 	gEngine->mInputHandler.BindKeyInputHandler(mInputSpawn, 1, [this]() { mPendingBallSpawn = true; }); // #TODO: GLFW_PRESS
 }
 
-void BallSpawnerComponent::UpdatePrePhysics(f32 deltaTime)
+void BallSpawnerComponent::Update(f32 deltaTime)
 {
 	if (mPendingBallSpawn)
 	{

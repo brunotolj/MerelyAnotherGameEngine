@@ -27,7 +27,7 @@ public:
 protected:
 	virtual void OnOwnerAddedToWorld() override final;
 
-	virtual void UpdatePrePhysics(f32 inDeltaTime) override final;
+	virtual void Update(f32 inDeltaTime) override final;
 
 private:
 	glm::vec3 mCenter;
