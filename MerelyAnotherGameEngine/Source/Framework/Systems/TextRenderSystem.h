@@ -6,8 +6,6 @@
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/Renderer.h"
 
-class AssetManager;
-
 namespace Vulkan
 {
 	struct RenderFrameData;

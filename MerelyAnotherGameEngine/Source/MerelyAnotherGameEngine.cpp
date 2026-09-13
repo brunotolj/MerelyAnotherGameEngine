@@ -4,19 +4,19 @@
 #include "Assets/StaticMeshFactory.h"
 #include "Assets/TextureFactory.h"
 #include "Engine/Engine.h"
-#include "Game/GameObject.h"
 #include "Framework/GameWorld.h"
-#include "Game/CameraComponent.h"
+#include "Framework/Systems/MeshRenderSystem.h"
+#include "Framework/Systems/SpriteRenderSystem.h"
+#include "Framework/Systems/TextRenderSystem.h"
+#include "Framework/Systems/WorldBoundsSystem.h"
+#include "Game/GameObject.h"
+#include "Game/GameplaySystem.h"
 #include "Game/RigidBodyObjectComponent.h"
 #include "Game/SpriteObjectComponent.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Game/TextObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
-#include "Rendering/Systems/MeshRenderSystem.h"
-#include "Rendering/Systems/SpriteRenderSystem.h"
-#include "Rendering/Systems/TextRenderSystem.h"
 #include "Utility/BallSpawnerComponent.h"
-#include "Utility/BoundedLineMovementComponent.h"
 #include "Utility/DefaultMovementComponent.h"
 #include "Vulkan/Device.h"
 #include "Vulkan/Renderer.h"
@@ -39,8 +39,6 @@ TransformableObject* CreateControllableCamera(
 	ComponentTemplate<DefaultMovementComponent> movementTemplate;
 	movementTemplate.Speed = speed;
 
-	ComponentTemplate<CameraComponent> cameraTemplate;
-
 	ComponentTemplate<BallSpawnerComponent> ballSpawnerTemplate;
 	ballSpawnerTemplate.RigidBodyParams = ballRigidBodyParams;
 	ballSpawnerTemplate.Mesh = ballMesh;
@@ -48,7 +46,10 @@ TransformableObject* CreateControllableCamera(
 	ballSpawnerTemplate.Speed = ballSpeed;
 	ballSpawnerTemplate.InputSpawn = inputSpawnBall;
 
-	return world.CreateObject<TransformableObject>(transform, movementTemplate, cameraTemplate, ballSpawnerTemplate);
+	TransformableObject* camera = world.CreateObject<TransformableObject>(transform, movementTemplate, ballSpawnerTemplate);
+	world.GetComponent<MeshRenderSystem>()->SetCameraTransformId(camera->GetTransformId());
+
+	return camera;
 }
 
 TransformableObject* CreateLevelObject(
@@ -69,30 +70,26 @@ TransformableObject* CreateLevelObject(
 }
 
 TransformableObject* CreateCapsule(
-	GameWorld& world,
-	const mage::Transform& transform,
-	PhysicsRigidBodyParams rigidBodyParams,
-	AssetHandle<StaticMesh> mesh,
-	AssetHandle<Texture> texture,
-	i32 inputNeg,
-	i32 inputPos)
+	GameWorld& inWorld,
+	u32 inPlayerIndex,
+	const mage::Transform& inTransform,
+	PhysicsRigidBodyParams inRigidBodyParams,
+	AssetHandle<StaticMesh> inMesh,
+	AssetHandle<Texture> inTexture,
+	i32 inInputNeg,
+	i32 inInputPos)
 {
-	ComponentTemplate<BoundedLineMovementComponent> movementTemplate;
-	movementTemplate.Extent = 10.0f * transform.Rotation.Rotate({0.0f, -1.0f, 0.0f});
- 	movementTemplate.InputNeg = inputNeg;
- 	movementTemplate.InputPos = inputPos;
- 	movementTemplate.Acceleration = 80.0f;
- 	movementTemplate.Deceleration = 150.0f;
- 	movementTemplate.MaxSpeed = 80.0f;
-
 	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
-	rigidBodyTemplate.RigidBodyParams = rigidBodyParams;
+	rigidBodyTemplate.RigidBodyParams = inRigidBodyParams;
 
 	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Mesh = mesh;
-	staticMeshTemplate.Texture = texture;
+	staticMeshTemplate.Mesh = inMesh;
+	staticMeshTemplate.Texture = inTexture;
 
-	return world.CreateObject<TransformableObject>(transform, movementTemplate, rigidBodyTemplate, staticMeshTemplate);
+	TransformableObject* capsule = inWorld.CreateObject<TransformableObject>(inTransform, rigidBodyTemplate, staticMeshTemplate);
+	inWorld.GetComponent<GameplaySystem>()->SetupPlayer(inPlayerIndex, capsule->GetTransformId(), inInputNeg, inInputPos);
+
+	return capsule;
 }
 
 GameObject* CreateUserInterface(
@@ -189,7 +186,9 @@ i32 main()
 	GameWorld world;
 	world.CreateComponent<TransformTree>();
 	world.CreateComponent<Vulkan::Renderer>(window);
+	world.CreateComponent<GameplaySystem>(GameplaySystemSetup{ 10.0f, 80.0f, 80.0f, 150.0f });
 	world.CreateComponent<PhysicsSystem>();
+	world.CreateComponent<WorldBoundsSystem>(glm::vec3(-10000.0f, -10000.0f, -10.0f), glm::vec3(10000.0f, 10000.0f, 10000.0f));
 	world.CreateComponent<MeshRenderSystem>();
 	world.CreateComponent<SpriteRenderSystem>();
 	world.CreateComponent<TextRenderSystem>();
@@ -204,7 +203,6 @@ i32 main()
 		CreateUserInterface(world, spriteTexture, fontArianaVioleta, fontOrbitron);
 
 		mage::Transform transform;
-
 		CreateLevelObject(world, transform, boxRigidBodyParams, boxMesh, cubeTexture);
 
 		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
@@ -229,19 +227,19 @@ i32 main()
 		
 		transform.Rotation = {};
 		transform.Position = glm::vec3(-capsuleDistance, 0.0f, capsuleElevation);
-		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_H, GLFW_KEY_J);
+		CreateCapsule(world, 0, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_H, GLFW_KEY_J);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
 		transform.Position = glm::vec3(0.0f, capsuleDistance, capsuleElevation);
-		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_U, GLFW_KEY_I);
+		CreateCapsule(world, 1, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_U, GLFW_KEY_I);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.0f));
 		transform.Position = glm::vec3(capsuleDistance, 0.0f, capsuleElevation);
-		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_O, GLFW_KEY_P);
+		CreateCapsule(world, 2, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_O, GLFW_KEY_P);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
 		transform.Position = glm::vec3(0.0f, -capsuleDistance, capsuleElevation);
-		CreateCapsule(world, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_K, GLFW_KEY_L);
+		CreateCapsule(world, 3, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_K, GLFW_KEY_L);
 	}
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();

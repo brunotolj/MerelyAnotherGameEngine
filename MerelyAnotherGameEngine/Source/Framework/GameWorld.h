@@ -42,7 +42,7 @@ public:
 
 	void Update(f32 inDeltaTime);
 
-	void ForEachObject(std::function<bool(GameObject*)> inPredicate);
+	void ForEachObject(std::function<mage::BreakOrContinue(GameObject*)> inPredicate);
 
 	template <typename ComponentClass, typename... Args>
 	ComponentClass* CreateComponent(Args&&... inArgs)

@@ -3,11 +3,10 @@
 #include "Assets/StaticMesh.h"
 #include "Assets/Texture.h"
 #include "Framework/GameWorld.h"
+#include "Framework/TransformTree.h"
 #include "Vulkan/Buffer.h"
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/Renderer.h"
-
-class AssetManager;
 
 namespace Vulkan
 {
@@ -38,7 +37,7 @@ struct SceneRenderData
 	mage::Array<MeshRenderData> Meshes;
 };
 
-class MeshRenderSystem : public GameSystemWithPrerequisites<Vulkan::Renderer>
+class MeshRenderSystem : public GameSystemWithPrerequisites<TransformTree, Vulkan::Renderer>
 {
 	struct PushConstantData
 	{
@@ -50,7 +49,9 @@ public:
 	MeshRenderSystem(GameWorld& inWorld);
 
 	virtual void Update(f32 inDeltaTime) override;
-	void RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data) const;
+	void RenderMeshes(Vulkan::RenderFrameData const& inFrameData, SceneRenderData const& inData) const;
+
+	void SetCameraTransformId(TransformTreeEntryId inTransformId) { mCameraTransformId = inTransformId; }
 
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
@@ -59,4 +60,6 @@ private:
 	Vulkan::Pipeline mPipeline = nullptr;
 
 	mage::Array<Vulkan::Buffer> mUniformBuffers;
+
+	TransformTreeEntryId mCameraTransformId = mage::InvalidIndex;
 };

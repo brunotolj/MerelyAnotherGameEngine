@@ -16,9 +16,6 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{7c1ad365-6480-4ef1-9d5d-4ddbbeeca5ad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Rendering">
-      <UniqueIdentifier>{5d2d507c-ae16-48d8-9467-941ccf36837c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{e4017cb5-3937-4616-b5ff-99bff706f675}</UniqueIdentifier>
     </Filter>
@@ -31,9 +28,6 @@
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Rendering\Systems">
-      <UniqueIdentifier>{65bda673-7838-4360-875e-5dc75fa7ed67}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Vulkan">
       <UniqueIdentifier>{974dfce2-5b9c-4236-9599-0b14cd965c9c}</UniqueIdentifier>
     </Filter>
@@ -45,6 +39,9 @@
     </Filter>
     <Filter Include="Source Files\Framework">
       <UniqueIdentifier>{9b191e31-436e-4260-ba0a-27c9ff9c6032}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Framework\Systems">
+      <UniqueIdentifier>{03607a11-348d-4f0c-aef1-29b14b1a004d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,26 +60,11 @@
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Utility\BoundedLineMovementComponent.cpp">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Utility\KillZObjectComponent.cpp">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Utility\DefaultMovementComponent.cpp">
       <Filter>Source Files\Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\CameraComponent.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp">
       <Filter>Source Files\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Systems\MeshRenderSystem.cpp">
-      <Filter>Source Files\Rendering\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Systems\SpriteRenderSystem.cpp">
-      <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
     <ClCompile Include="Source\Vulkan\Renderer.cpp">
       <Filter>Source Files\Vulkan</Filter>
@@ -98,9 +80,6 @@
     </ClCompile>
     <ClCompile Include="Source\Vulkan\Pipeline.cpp">
       <Filter>Source Files\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Rendering\Systems\TextRenderSystem.cpp">
-      <Filter>Source Files\Rendering\Systems</Filter>
     </ClCompile>
     <ClCompile Include="Source\Assets\Font.cpp">
       <Filter>Source Files\Assets</Filter>
@@ -168,6 +147,21 @@
     <ClCompile Include="Source\Assets\PhysicsMaterialFactory.cpp">
       <Filter>Source Files\Assets</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Framework\Systems\MeshRenderSystem.cpp">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Framework\Systems\SpriteRenderSystem.cpp">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Framework\Systems\TextRenderSystem.cpp">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Framework\Systems\WorldBoundsSystem.cpp">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Game\GameplaySystem.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -203,26 +197,11 @@
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h">
       <Filter>Source Files\Game</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Utility\BoundedLineMovementComponent.h">
-      <Filter>Source Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Utility\KillZObjectComponent.h">
-      <Filter>Source Files\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Utility\DefaultMovementComponent.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Game\CameraComponent.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Utility\BallSpawnerComponent.h">
       <Filter>Source Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Systems\MeshRenderSystem.h">
-      <Filter>Source Files\Rendering\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Systems\SpriteRenderSystem.h">
-      <Filter>Source Files\Rendering\Systems</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\String.h">
       <Filter>Source Files\Core</Filter>
@@ -247,9 +226,6 @@
     </ClInclude>
     <ClInclude Include="Source\Vulkan\Pipeline.h">
       <Filter>Source Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Rendering\Systems\TextRenderSystem.h">
-      <Filter>Source Files\Rendering\Systems</Filter>
     </ClInclude>
     <ClInclude Include="Source\Assets\Font.h">
       <Filter>Source Files\Assets</Filter>
@@ -322,6 +298,21 @@
     </ClInclude>
     <ClInclude Include="Source\Assets\PhysicsMaterialFactory.h">
       <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Systems\MeshRenderSystem.h">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Systems\SpriteRenderSystem.h">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Systems\TextRenderSystem.h">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Systems\WorldBoundsSystem.h">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\GameplaySystem.h">
+      <Filter>Source Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,6 @@
 #include "Game/StaticMeshObjectComponent.h"
 #include "Physics/PhysicsCommon.h"
 #include "Utility/BallSpawnerComponent.h"
-#include "Utility/KillZObjectComponent.h"
 
 BallSpawnerComponent::BallSpawnerComponent(TransformableObject& owner, const ComponentTemplate<BallSpawnerComponent>& creationTemplate) :
 	GameObjectComponent(owner),
@@ -42,8 +41,5 @@ void BallSpawnerComponent::SpawnBall()
 	staticMeshTemplate.Mesh = mMesh;
 	staticMeshTemplate.Texture = mTexture;
 
-	ComponentTemplate<KillZObjectComponent> killZTemplate;
-	killZTemplate.KillZ = -10.0f;
-
-	mOwner.mWorld.CreateObject<TransformableObject>(mOwner.GetTransform(), rigidBodyTemplate, staticMeshTemplate, killZTemplate);
+	mOwner.mWorld.CreateObject<TransformableObject>(mOwner.GetTransform(), rigidBodyTemplate, staticMeshTemplate);
 }

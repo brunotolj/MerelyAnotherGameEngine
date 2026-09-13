@@ -1,8 +1,6 @@
-#include "Rendering/Systems/SpriteRenderSystem.h"
+#include "Framework/Systems/SpriteRenderSystem.h"
 #include "Engine/Engine.h"
-#include "Framework/GameWorld.h"
 #include "Game/SpriteObjectComponent.h"
-#include "Vulkan/Renderer.h"
 
 SpriteRenderSystem::SpriteRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
@@ -42,7 +40,7 @@ void SpriteRenderSystem::Update(f32 inDeltaTime)
 				spriteComp->GetTextureCoordsMax(),
 				spriteComp->GetTexture());
 
-		return true;
+		return mage::Continue;
 	});
 
 	RenderSprites(frameData, spriteData);

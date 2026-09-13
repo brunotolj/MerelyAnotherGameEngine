@@ -1,8 +1,6 @@
-#include "Rendering/Systems/TextRenderSystem.h"
+#include "Framework/Systems/TextRenderSystem.h"
 #include "Engine/Engine.h"
-#include "Framework/GameWorld.h"
 #include "Game/TextObjectComponent.h"
-#include "Vulkan/Renderer.h"
 
 TextRenderSystem::TextRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
@@ -25,7 +23,7 @@ void TextRenderSystem::Update(f32 inDeltaTime)
 				textComp->GetScale(),
 				textComp->GetFont());
 
-		return true;
+		return mage::Continue;
 	});
 
 	RenderText(frameData, textData);

@@ -1,7 +1,5 @@
-#include "Rendering/Systems/MeshRenderSystem.h"
+#include "Framework/Systems/MeshRenderSystem.h"
 #include "Engine/Engine.h"
-#include "Game/CameraComponent.h"
-#include "Framework/GameWorld.h"
 #include "Game/StaticMeshObjectComponent.h"
 #include "Vulkan/Renderer.h"
 
@@ -54,8 +52,12 @@ void MeshRenderSystem::Update(f32 inDeltaTime)
 	f32 aspectRatio = f32(frameData.Extent.width) / f32(frameData.Extent.height);
 	sceneData.ProjectionTransform = CalcProjectionTransform(0.1f, 1000.0f, glm::radians(90.0f), aspectRatio);
 
-	bool foundCamera = false;
-	mWorld.ForEachObject([&sceneData, &foundCamera](GameObject* object)
+	if (mCameraTransformId != mage::InvalidIndex)
+		sceneData.ViewTransform = Get<TransformTree>().GetGlobalTransform(mCameraTransformId).Inverse().Matrix();
+	else
+		sceneData.ViewTransform = mage::Transform().Matrix();
+
+	mWorld.ForEachObject([&sceneData](GameObject* object)
 	{
 		for (StaticMeshObjectComponent const* staticMeshComp : object->GetComponentsOfClass<StaticMeshObjectComponent>())
 			sceneData.Meshes.AddConstruct(
@@ -63,35 +65,27 @@ void MeshRenderSystem::Update(f32 inDeltaTime)
 				staticMeshComp->GetMesh(),
 				staticMeshComp->GetTexture());
 
-		if (!foundCamera)
-			for (CameraComponent const* cameraComp : object->GetComponentsOfClass<CameraComponent>())
-			{
-				sceneData.ViewTransform = cameraComp->GetViewTransform();
-				foundCamera = true;
-				break;
-			}
-
-		return true;
+		return mage::Continue;
 	});
 
 	RenderMeshes(frameData, sceneData);
 }
 
-void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, SceneRenderData const& data) const
+void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& inFrameData, SceneRenderData const& inData) const
 {
-	SetupDynamicState(frameData.CommandBuffer);
-	mPipeline.Bind(frameData.CommandBuffer);
+	SetupDynamicState(inFrameData.CommandBuffer);
+	mPipeline.Bind(inFrameData.CommandBuffer);
 
 	MeshUBO ubo;
-	ubo.CameraTransform = data.ProjectionTransform * data.ViewTransform;
-	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(data.LightDirection, 0.0f));
-	ubo.LightDirectionAndAmbient.w = data.AmbientLightIntensity;
+	ubo.CameraTransform = inData.ProjectionTransform * inData.ViewTransform;
+	ubo.LightDirectionAndAmbient = glm::normalize(glm::vec4(inData.LightDirection, 0.0f));
+	ubo.LightDirectionAndAmbient.w = inData.AmbientLightIntensity;
 
-	Vulkan::Buffer const& uniformBuffer = mUniformBuffers[frameData.Index];
+	Vulkan::Buffer const& uniformBuffer = mUniformBuffers[inFrameData.Index];
 	uniformBuffer.Write(&ubo, sizeof(ubo));
 	uniformBuffer.Flush();
 
-	for (const MeshRenderData& meshData : data.Meshes)
+	for (const MeshRenderData& meshData : inData.Meshes)
 	{
 		StaticMesh const* mesh = meshData.Mesh.GetAsset();
 		mage_check(mesh);
@@ -112,7 +106,7 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, Sc
 				.pValues = &push
 			};
 
-			mPipeline.PushConstants(frameData.CommandBuffer, pushInfo);
+			mPipeline.PushConstants(inFrameData.CommandBuffer, pushInfo);
 		}
 
 		{
@@ -137,11 +131,11 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& frameData, Sc
 				.pDescriptorWrites = descriptorWrites.GetData()
 			};
 
-			mPipeline.PushDescriptorSet(frameData.CommandBuffer, pushInfo);
+			mPipeline.PushDescriptorSet(inFrameData.CommandBuffer, pushInfo);
 		}
 
-		mesh->Bind(frameData.CommandBuffer);
-		mesh->Draw(frameData.CommandBuffer);
+		mesh->Bind(inFrameData.CommandBuffer);
+		mesh->Draw(inFrameData.CommandBuffer);
 	}
 }
 

@@ -10,6 +10,16 @@ GameObject::~GameObject()
 	}
 }
 
+void GameObject::Destroy()
+{
+	if (mIsDestoryed)
+		return;
+
+	mIsDestoryed = true;
+
+	OnRemovedFromWorld();
+}
+
 void GameObject::OnAddedToWorld()
 {
 	for (GameObjectComponentBase* component : mComponents)

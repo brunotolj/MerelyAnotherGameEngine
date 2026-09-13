@@ -61,7 +61,6 @@ namespace mage
 
 			return result;
 		}
-
 	};
 
 	inline Transform operator*(Transform const& inLhs, Transform const& inRhs)

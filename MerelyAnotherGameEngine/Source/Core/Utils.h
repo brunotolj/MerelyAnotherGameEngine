@@ -27,4 +27,10 @@ namespace mage
 
 		return data;
 	}
+
+	enum BreakOrContinue : bool
+	{
+		Break,
+		Continue
+	};
 }

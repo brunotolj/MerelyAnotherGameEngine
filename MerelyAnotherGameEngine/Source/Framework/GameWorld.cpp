@@ -1,16 +1,11 @@
 #include "Framework/GameWorld.h"
 #include "Game/GameObject.h"
-#include "Physics/PhysicsSystem.h"
-#include "Rendering/Systems/MeshRenderSystem.h"
-#include "Rendering/Systems/SpriteRenderSystem.h"
-#include "Rendering/Systems/TextRenderSystem.h"
 
 GameWorld::~GameWorld()
 {
 	for (GameObject* object : mObjects)
 	{
 		object->Destroy();
-		object->OnRemovedFromWorld();
 		delete object;
 	}
 
@@ -51,26 +46,30 @@ void GameWorld::Update(f32 inDeltaTime)
 
 	mIsCurrentlyUpdatingObjects = false;
 
-	for (u32 i = 0; i < mObjects.GetSize(); ++i)
-	{
-		if (!mObjects[i]->mIsDestoryed)
-			continue;
-
-		mObjects[i]->OnRemovedFromWorld();
-		delete mObjects[i];
-		mObjects.RemoveAtSwap(i--);
-	}
-
 	for (GameSystem* system : mSystems)
 		system->Update(inDeltaTime);
 
 	for (GameUtility* utility : mUtilities)
 		utility->PostSystemsUpdate();
+
+	for (u32 i = 0; i < mObjects.GetSize(); ++i)
+	{
+		if (!mObjects[i]->mIsDestoryed)
+			continue;
+
+		delete mObjects[i];
+		mObjects.RemoveAtSwap(i--);
+	}
 }
 
-void GameWorld::ForEachObject(std::function<bool(GameObject*)> inPredicate)
+void GameWorld::ForEachObject(std::function<mage::BreakOrContinue(GameObject*)> inPredicate)
 {
 	for (GameObject* object : mObjects)
-		if (!inPredicate(object))
+	{
+		if (object->IsDestroyed())
+			continue;
+
+		if (inPredicate(object) == mage::Break)
 			break;
+	}
 }

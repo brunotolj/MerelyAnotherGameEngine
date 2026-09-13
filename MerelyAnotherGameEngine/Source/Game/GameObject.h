@@ -67,7 +67,7 @@ public:
 	}
 
 	bool IsDestroyed() const { return mIsDestoryed; }
-	virtual void Destroy() { mIsDestoryed = true; }
+	virtual void Destroy();
 
 	GameWorld& mWorld;
 
