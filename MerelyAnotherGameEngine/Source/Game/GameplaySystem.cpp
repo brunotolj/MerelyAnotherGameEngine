@@ -1,5 +1,7 @@
-#include "Game/GameplaySystem.h"
 #include "Engine/Engine.h"
+#include "Game/GameplaySystem.h"
+#include "Game/RigidBodyObjectComponent.h"
+#include "Game/StaticMeshObjectComponent.h"
 
 GameplaySystem::GameplaySystem(GameWorld& inWorld, GameplaySystemSetup const& inSetup)
 	: GameSystemWithPrerequisites(inWorld), mSetup(inSetup)
@@ -8,6 +10,16 @@ GameplaySystem::GameplaySystem(GameWorld& inWorld, GameplaySystemSetup const& in
 
 void GameplaySystem::Update(f32 inDeltaTime)
 {
+	if (mSetup.BallSpawnInterval > 0.0f)
+	{
+		mBallSpawnTime += inDeltaTime;
+		while (mBallSpawnTime > mSetup.BallSpawnInterval)
+		{
+			mBallSpawnTime -= mSetup.BallSpawnInterval;
+			SpawnBall();
+		}
+	}
+
 	for (u32 i = 0; i < 4; ++i)
 	{
 		PlayerData& playerData = mPlayerData[i];
@@ -21,10 +33,10 @@ void GameplaySystem::Update(f32 inDeltaTime)
 
 		if (remainingTime > 0.0f && playerData.Speed != 0.0f && input * playerData.Speed <= 0.0f)
 		{
-			const f32 decelTime = std::fabsf(playerData.Speed) / mSetup.Deceleration;
+			f32 decelTime = std::fabsf(playerData.Speed) / mSetup.Deceleration;
 			if (decelTime > remainingTime)
 			{
-				const f32 deltaSpeed = playerData.Speed / std::fabsf(playerData.Speed) * mSetup.Deceleration * remainingTime;
+				f32 deltaSpeed = playerData.Speed / std::fabsf(playerData.Speed) * mSetup.Deceleration * remainingTime;
 				movement += (playerData.Speed - 0.5f * deltaSpeed) * remainingTime;
 				playerData.Speed -= deltaSpeed;
 				remainingTime = 0.0f;
@@ -39,10 +51,10 @@ void GameplaySystem::Update(f32 inDeltaTime)
 
 		if (remainingTime > 0.0f && ((playerData.Speed == 0.0f && input != 0.0f) || input * playerData.Speed > 0.0f))
 		{
-			const f32 accelTime = (mSetup.MaxSpeed - input * playerData.Speed) / mSetup.Acceleration;
+			f32 accelTime = (mSetup.MaxSpeed - input * playerData.Speed) / mSetup.Acceleration;
 			if (accelTime > remainingTime)
 			{
-				const f32 deltaSpeed = input * mSetup.Acceleration * remainingTime;
+				f32 deltaSpeed = input * mSetup.Acceleration * remainingTime;
 				movement += (playerData.Speed + 0.5f * deltaSpeed) * remainingTime;
 				playerData.Speed += deltaSpeed;
 				remainingTime = 0.0f;
@@ -84,4 +96,36 @@ void GameplaySystem::SetupPlayer(u32 inPlayerIndex, TransformTreeEntryId inTrans
 	playerData.TransformId = inTransformId;
 	playerData.InputCodeNegative = inInputCodeNegative;
 	playerData.InputCodePositive = inInputCodePositive;
+}
+
+void GameplaySystem::AddBallSpawner(TransformTreeEntryId inTransformId, glm::vec3 inVelocity, f32 inVelocityVariance)
+{
+	mBallSpawners.AddConstruct(inTransformId, inVelocity, inVelocityVariance);
+}
+
+void GameplaySystem::SpawnBall()
+{
+	if (mBallSpawners.GetSize() == 0)
+		return;
+
+	u32 index = rand() % mBallSpawners.GetSize();
+
+	BallSpawnerData const& spawner = mBallSpawners[index];
+
+	glm::vec3 velocity = Get<TransformTree>().GetGlobalTransform(spawner.TransformId).Rotation.Rotate(spawner.Velocity);
+	velocity.x += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
+	velocity.y += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
+	velocity.z += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
+
+	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
+	rigidBodyTemplate.RigidBodyParams = mSetup.BallRigidBodyParams;
+	rigidBodyTemplate.InitialLinearVelocity = reinterpret_cast<physx::PxVec3 const&>(velocity);
+
+	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
+	staticMeshTemplate.Mesh = mSetup.BallMesh;
+	staticMeshTemplate.Texture = mSetup.BallTexture;
+
+	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner.TransformId);
+
+	mWorld.CreateObject<TransformableObject>(transform, rigidBodyTemplate, staticMeshTemplate);
 }

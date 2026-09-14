@@ -27,7 +27,7 @@ namespace Vulkan
 		void BeginFrame(RenderFrameData& outFrameData);
 		void EndFrame();
 
-		const RenderFrameData& GetCurrentFrameData() const { return mCurrentFrameData; }
+		RenderFrameData const& GetCurrentFrameData() const { return mCurrentFrameData; }
 
 		static constexpr u32 cMaxFramesInFlight = 2;
 

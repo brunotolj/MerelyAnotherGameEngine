@@ -33,10 +33,10 @@ physx::PxMaterial* PhysicsEngine_PhysX::CreateMaterial(MaterialProperties inProp
 
 physx::PxShape* PhysicsEngine_PhysX::CreateShape(AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial) const
 {
-	const PhysicsShape* shapeAsset = inShape.GetAsset();
+	PhysicsShape const* shapeAsset = inShape.GetAsset();
 	mage_check(shapeAsset);
 
-	const PhysicsMaterial* materialAsset = inMaterial.GetAsset();
+	PhysicsMaterial const* materialAsset = inMaterial.GetAsset();
 	mage_check(materialAsset);
 
 	return mPhysics->createShape(shapeAsset->GetRaw(), materialAsset->GetRaw(), true);

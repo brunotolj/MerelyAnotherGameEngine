@@ -22,9 +22,6 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{30da2de5-abc3-4d58-b202-3926c7d422ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Utility">
-      <UniqueIdentifier>{b387ea45-02c5-4683-97e3-ad4a88894c77}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
     </Filter>
@@ -59,12 +56,6 @@
     </ClCompile>
     <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp">
       <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Utility\DefaultMovementComponent.cpp">
-      <Filter>Source Files\Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Utility\BallSpawnerComponent.cpp">
-      <Filter>Source Files\Utility</Filter>
     </ClCompile>
     <ClCompile Include="Source\Vulkan\Renderer.cpp">
       <Filter>Source Files\Vulkan</Filter>
@@ -162,6 +153,9 @@
     <ClCompile Include="Source\Game\GameplaySystem.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Framework\Systems\FreeMoveSystem.cpp">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -196,12 +190,6 @@
     </ClInclude>
     <ClInclude Include="Source\Game\StaticMeshObjectComponent.h">
       <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Utility\DefaultMovementComponent.h">
-      <Filter>Source Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Utility\BallSpawnerComponent.h">
-      <Filter>Source Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\String.h">
       <Filter>Source Files\Core</Filter>
@@ -313,6 +301,9 @@
     </ClInclude>
     <ClInclude Include="Source\Game\GameplaySystem.h">
       <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Systems\FreeMoveSystem.h">
+      <Filter>Source Files\Framework\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

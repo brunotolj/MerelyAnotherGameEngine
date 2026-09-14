@@ -77,12 +77,7 @@ public:
 	ObjectClass* CreateObject(Args&&... inArgs)
 	{
 		ObjectClass* object = new ObjectClass(*this, inArgs...);
-
-		if (mIsCurrentlyUpdatingObjects)
-			mNewObjects.Add(object);
-		else
-			mObjects.Add(object);
-
+		mObjects.Add(object);
 		object->OnAddedToWorld();
 		return object;
 	}
@@ -93,9 +88,6 @@ private:
 	std::unordered_map<std::type_index, GameWorldComponent*> mComponentByClass;
 
 	mage::Array<GameObject*> mObjects;
-	mage::Array<GameObject*> mNewObjects;
-
-	bool mIsCurrentlyUpdatingObjects = false;
 };
 
 template <typename Prerequisite>

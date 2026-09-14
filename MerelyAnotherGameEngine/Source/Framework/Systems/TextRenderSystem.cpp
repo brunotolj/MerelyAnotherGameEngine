@@ -153,7 +153,7 @@ void TextRenderSystem::CreateVertexBuffer()
 	mVertexBuffer.Create(vertexBufferCreateInfo);
 
 	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
-		{
-			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		});
+	{
+		mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
+	});
 }

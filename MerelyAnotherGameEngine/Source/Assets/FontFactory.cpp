@@ -8,9 +8,9 @@ AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath)
 	u8* reader;
 	std::unordered_map<u32, u32> tableLocations;
 
-	auto read8 = [&reader]() -> u8 { return *(reader++); };
-	auto read16 = [&reader]() -> u16 { u16 res = *(reader++); res = (res << 8) | *(reader++); return res; };
-	auto read32 = [&reader]() -> u32 { u32 res = *(reader++); res = (res << 8) | *(reader++); res = (res << 8) | *(reader++); res = (res << 8) | *(reader++); return res; };
+	auto read8 = [&reader]() { return *(reader++); };
+	auto read16 = [&reader]() { u16 res = *(reader++); res = (res << 8) | *(reader++); return res; };
+	auto read32 = [&reader]() { u32 res = *(reader++); res = (res << 8) | *(reader++); res = (res << 8) | *(reader++); res = (res << 8) | *(reader++); return res; };
 	auto location = [&tableLocations](cstr table) { return tableLocations[u32(table[0]) << 24 | u32(table[1]) << 16 | u32(table[2]) << 8 | u32(table[3])]; };
 
 	mage::Array<u8> file = mage::ReadFile(inPath);

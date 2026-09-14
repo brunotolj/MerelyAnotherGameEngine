@@ -16,7 +16,7 @@ void PhysicsSystem::Update(f32 inDeltaTime)
 {
 	for (u32 i = 0; i < mKinematicActorCount; ++i)
 	{
-		const physx::PxTransform pose = ReadTransformFromTransformTree(mDynamicActors[i].TransformId);
+		physx::PxTransform pose = ReadTransformFromTransformTree(mDynamicActors[i].TransformId);
 		mDynamicActors[i].PhysxActor->setKinematicTarget(pose);
 	}
 
@@ -34,13 +34,13 @@ void PhysicsSystem::Update(f32 inDeltaTime)
 		mDynamicActors[i].mLinearVelocity = mDynamicActors[i].PhysxActor->getLinearVelocity();
 		mDynamicActors[i].mAngularVelocity = mDynamicActors[i].PhysxActor->getAngularVelocity();
 
-		const physx::PxTransform pose = mDynamicActors[i].PhysxActor->getGlobalPose();
+		physx::PxTransform pose = mDynamicActors[i].PhysxActor->getGlobalPose();
 		WriteTransformToTransformTree(mDynamicActors[i].TransformId, pose);
 	}
 }
 
 physx::PxRigidActor* PhysicsSystem::AddRigidBody(
-	const PhysicsRigidBodyParams& inParams,
+	PhysicsRigidBodyParams const& inParams,
 	TransformTreeEntryId inTransformId,
 	physx::PxVec3 inLinearVelocity,
 	physx::PxVec3 inAngularVelocity)
@@ -106,7 +106,7 @@ void PhysicsSystem::RemoveActor(physx::PxRigidActor* inActor)
 
 	mStaticActors.Remove(reinterpret_cast<physx::PxRigidStatic*>(inActor));
 
-	u32 index = mDynamicActors.GetIndex([inActor](const DynamicActor& element)
+	u32 index = mDynamicActors.GetIndex([inActor](DynamicActor const& element)
 	{
 		return element.PhysxActor == reinterpret_cast<physx::PxRigidDynamic*>(inActor);
 	});
@@ -129,7 +129,7 @@ physx::PxTransform PhysicsSystem::ReadTransformFromTransformTree(TransformTreeEn
 	mage::Transform transform = Get<TransformTree>().GetGlobalTransform(inTransformId);
 
 	physx::PxTransform result;
-	result.p = reinterpret_cast<const physx::PxVec3&>(transform.Position);
+	result.p = reinterpret_cast<physx::PxVec3 const&>(transform.Position);
 	result.q.w = transform.Rotation.S;
 	result.q.x = -transform.Rotation.YZ;
 	result.q.y = -transform.Rotation.ZX;
@@ -138,10 +138,10 @@ physx::PxTransform PhysicsSystem::ReadTransformFromTransformTree(TransformTreeEn
 	return result;
 }
 
-void PhysicsSystem::WriteTransformToTransformTree(TransformTreeEntryId inTransformId, const physx::PxTransform& inTransform)
+void PhysicsSystem::WriteTransformToTransformTree(TransformTreeEntryId inTransformId, physx::PxTransform const& inTransform)
 {
 	mage::Transform transform;
-	transform.Position = reinterpret_cast<const glm::vec3&>(inTransform.p);
+	transform.Position = reinterpret_cast<glm::vec3 const&>(inTransform.p);
 	transform.Rotation.S = inTransform.q.w;
 	transform.Rotation.XY = -inTransform.q.z;
 	transform.Rotation.YZ = -inTransform.q.x;

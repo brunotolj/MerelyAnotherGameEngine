@@ -23,7 +23,7 @@ public:
 	~GameObject();
 	
 	template<GameObjectClass ObjectClass, GameObjectComponentClass ComponentClass>
-	static ComponentClass& CreateComponent(ObjectClass& owner, const ComponentTemplate<ComponentClass>& creationTemplate)
+	static ComponentClass& CreateComponent(ObjectClass& owner, ComponentTemplate<ComponentClass> const& creationTemplate)
 	{
 		ComponentClass* component = new ComponentClass(owner, creationTemplate);
 
@@ -75,8 +75,6 @@ protected:
 	void OnAddedToWorld();
 	void OnRemovedFromWorld();
 	
-	void Update(f32 inDeltaTime);
-
 private:
 	mage::Array<GameObjectComponentBase*> mComponents;
 	std::map<std::type_index, mage::Array<u32>> mComponentsByClass;

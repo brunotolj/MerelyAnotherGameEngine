@@ -9,7 +9,7 @@ class PhysicsShape : public Asset
 	friend class Factory<PhysicsShape>;
 
 public:
-	const physx::PxGeometry& GetRaw() const { return mGeometry.BaseGeometry; }
+	physx::PxGeometry const& GetRaw() const { return mGeometry.BaseGeometry; }
 
 private:
 	PhysicsShape() {}

@@ -27,25 +27,6 @@ void GameWorld::Update(f32 inDeltaTime)
 	for (GameUtility* utility : mUtilities)
 		utility->PreSystemsUpdate();
 
-	mIsCurrentlyUpdatingObjects = true;
-	
-	for (GameObject* object : mObjects)
-	{
-		if (object->mIsDestoryed)
-			continue;
-
-		object->Update(inDeltaTime);
-	}
-
-	for (GameObject* newObject : mNewObjects)
-	{
-		newObject->Update(inDeltaTime);
-		mObjects.Add(newObject);
-	}
-	mNewObjects.Empty();
-
-	mIsCurrentlyUpdatingObjects = false;
-
 	for (GameSystem* system : mSystems)
 		system->Update(inDeltaTime);
 

@@ -171,7 +171,7 @@ namespace Vulkan
 
 	void Device::PickPhysicalDevice()
 	{
-		auto predicate = [this](vk::PhysicalDevice const& inDevice) -> u32
+		auto predicate = [this](vk::PhysicalDevice const& inDevice)
 			{
 				vk::PhysicalDeviceProperties deviceProperties = inDevice.getProperties();
 

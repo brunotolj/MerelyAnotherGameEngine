@@ -43,14 +43,14 @@ namespace Vulkan
 		}
 
 		gEngine->mWindowManager.AddResizedCallback([this, inWindow](WindowHandle inResizedWindow, glm::i32vec2 inNewSize)
-			{
-				if (inResizedWindow != inWindow)
-					return;
+		{
+			if (inResizedWindow != inWindow)
+				return;
 
-				mShouldRecreateSwapchain = true;
-				mWindowSize.width = u32(inNewSize.x);
-				mWindowSize.height = u32(inNewSize.y);
-			});
+			mShouldRecreateSwapchain = true;
+			mWindowSize.width = u32(inNewSize.x);
+			mWindowSize.height = u32(inNewSize.y);
+		});
 
 		mShouldRecreateSwapchain = true;
 		

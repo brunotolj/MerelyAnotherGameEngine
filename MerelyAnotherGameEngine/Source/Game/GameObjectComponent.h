@@ -12,8 +12,6 @@ class GameObjectComponentBase : public NonCopyable
 protected:
 	virtual void OnOwnerAddedToWorld() {}
 	virtual void OnOwnerRemovedFromWorld() {}
-
-	virtual void Update(f32 inDeltaTime) {}
 };
 
 template<GameObjectClass OwnerClass>

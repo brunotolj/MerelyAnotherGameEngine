@@ -62,7 +62,7 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 
 	mVertexBuffer.BindVertexBuffer(frameData.CommandBuffer);
 
-	for (const SpriteRenderData& spriteData : data)
+	for (SpriteRenderData const& spriteData : data)
 	{
 		Texture const* texture = spriteData.Texture.GetAsset();
 		mage_check(texture);
@@ -191,7 +191,7 @@ void SpriteRenderSystem::CreateVertexBuffer()
 	mVertexBuffer.Create(vertexBufferCreateInfo);
 
 	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
-		{
-			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		});
+	{
+		mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
+	});
 }

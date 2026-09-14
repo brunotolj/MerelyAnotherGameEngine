@@ -12,7 +12,7 @@ class PhysicsMaterial : public Asset
 	friend class Factory<PhysicsMaterial>;
 
 public:
-	const physx::PxMaterial& GetRaw() const { return *mMaterial; }
+	physx::PxMaterial const& GetRaw() const { return *mMaterial; }
 
 private:
 	PhysicsMaterial() {}

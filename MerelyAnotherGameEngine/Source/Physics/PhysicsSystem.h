@@ -15,7 +15,7 @@ public:
 	virtual void Update(f32 inDeltaTime) override;
 
 	physx::PxRigidActor* AddRigidBody(
-		const PhysicsRigidBodyParams& inParams,
+		PhysicsRigidBodyParams const& inParams,
 		TransformTreeEntryId inTransformId,
 		physx::PxVec3 inLinearVelocity,
 		physx::PxVec3 inAngularVelocity);
@@ -33,7 +33,7 @@ private:
 	};
 
 	physx::PxTransform ReadTransformFromTransformTree(TransformTreeEntryId inTransformId);
-	void WriteTransformToTransformTree(TransformTreeEntryId inTransformId, const physx::PxTransform& inTransform);
+	void WriteTransformToTransformTree(TransformTreeEntryId inTransformId, physx::PxTransform const& inTransform);
 
 	physx::PxScene* mScene = nullptr;
 

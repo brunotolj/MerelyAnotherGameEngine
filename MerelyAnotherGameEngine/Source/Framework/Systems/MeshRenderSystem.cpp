@@ -29,8 +29,8 @@ glm::mat4 CalcProjectionTransform(f32 nearPlane, f32 farPlane, f32 horizontalFOV
 	mage_check(nearPlane >= 0.0f && farPlane > nearPlane);
 	mage_check(horizontalFOV > 0.0f && glm::degrees(horizontalFOV) < 180.0f);
 
-	const f32 fovFactor = 1.0f / glm::tan(horizontalFOV / 2.0f);
-	const f32 planeDelta = farPlane - nearPlane;
+	f32 fovFactor = 1.0f / glm::tan(horizontalFOV / 2.0f);
+	f32 planeDelta = farPlane - nearPlane;
 
 	return
 	{
@@ -85,7 +85,7 @@ void MeshRenderSystem::RenderMeshes(Vulkan::RenderFrameData const& inFrameData, 
 	uniformBuffer.Write(&ubo, sizeof(ubo));
 	uniformBuffer.Flush();
 
-	for (const MeshRenderData& meshData : inData.Meshes)
+	for (MeshRenderData const& meshData : inData.Meshes)
 	{
 		StaticMesh const* mesh = meshData.Mesh.GetAsset();
 		mage_check(mesh);

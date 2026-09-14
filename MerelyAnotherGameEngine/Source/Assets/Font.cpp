@@ -61,7 +61,7 @@ void Font::CreateGlyphBuffer()
 	mGlyphBuffer.Create(glyphBufferCreateInfo);
 
 	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
-		{
-			mGlyphBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		});
+	{
+		mGlyphBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
+	});
 }

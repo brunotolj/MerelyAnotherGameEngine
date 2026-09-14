@@ -19,7 +19,7 @@ bool InputHandler::IsKeyPressed(i32 key)
 
 void InputHandler::KeyCallback(i32 key, i32 action, i32 mods)
 {
-	const std::function<void()>& handler = mKeyInputHandlers[std::make_pair(key, action)];
+	std::function<void()> const& handler = mKeyInputHandlers[std::make_pair(key, action)];
 
 	if (handler != nullptr)
 	{
@@ -29,7 +29,7 @@ void InputHandler::KeyCallback(i32 key, i32 action, i32 mods)
 
 void InputHandler::CursorPositionCallback(glm::dvec2 position)
 {
-	const glm::dvec2 movement = position - mCursorPosition;
+	glm::dvec2 movement = position - mCursorPosition;
 
 	if (mCursorMovementHandler != nullptr)
 	{

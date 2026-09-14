@@ -36,14 +36,6 @@ void GameObject::OnRemovedFromWorld()
 	}
 }
 
-void GameObject::Update(f32 deltaTime)
-{
-	for (GameObjectComponentBase* component : mComponents)
-	{
-		component->Update(deltaTime);
-	}
-}
-
 mage::Transform TransformableObject::GetTransform() const
 {
 	return mWorld.GetComponent<TransformTree>()->GetGlobalTransform(mTransformId);

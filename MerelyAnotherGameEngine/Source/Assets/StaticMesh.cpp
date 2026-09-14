@@ -80,9 +80,9 @@ void StaticMesh::CreateVertexBuffer()
 	mVertexBuffer.Create(vertexBufferCreateInfo);
 
 	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
-		{
-			mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		});
+	{
+		mVertexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
+	});
 }
 
 void StaticMesh::CreateIndexBuffer()
@@ -115,7 +115,7 @@ void StaticMesh::CreateIndexBuffer()
 	mIndexBuffer.Create(indexBufferCreateInfo);
 
 	gEngine->mVulkanDevice.SubmitSingleTimeCommands([this, &stagingBuffer](vk::CommandBuffer inCommandBuffer)
-		{
-			mIndexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
-		});
+	{
+		mIndexBuffer.CopyFromBuffer(inCommandBuffer, stagingBuffer);
+	});
 }
