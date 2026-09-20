@@ -1,15 +1,9 @@
 #include "Framework/GameWorld.h"
-#include "Game/GameObject.h"
 
 GameWorld::~GameWorld()
 {
-	for (GameObject* object : mObjects)
-	{
-		object->Destroy();
-		delete object;
-	}
-
-	mObjects.Empty();
+	while (mEntities.GetSize() > 0)
+		DestroyEntity(mEntities.GetLast());
 
 	for (i32 i = mSystems.GetSize() - 1; i >= 0; --i)
 		delete mSystems[i];
@@ -33,24 +27,28 @@ void GameWorld::Update(f32 inDeltaTime)
 	for (GameUtility* utility : mUtilities)
 		utility->PostSystemsUpdate();
 
-	for (u32 i = 0; i < mObjects.GetSize(); ++i)
+	u32 destroyedEntities = 0;
+	for (u32 i = 0; i < mEntities.GetSize() - destroyedEntities; ++i)
 	{
-		if (!mObjects[i]->mIsDestoryed)
+		if (!mEntities[i]->IsDestroyed())
 			continue;
 
-		delete mObjects[i];
-		mObjects.RemoveAtSwap(i--);
+		destroyedEntities++;
+		mEntities.Swap(i--, mEntities.GetSize() - destroyedEntities);
 	}
+
+	u32 remainingEntities = mEntities.GetSize() - destroyedEntities;
+	while (mEntities.GetSize() > remainingEntities)
+		DestroyEntity(mEntities.GetLast());
 }
 
-void GameWorld::ForEachObject(std::function<mage::BreakOrContinue(GameObject*)> inPredicate)
+void GameWorld::DestroyEntity(GameEntity* inEntity)
 {
-	for (GameObject* object : mObjects)
-	{
-		if (object->IsDestroyed())
-			continue;
+	for (GameEntity* childEntity : inEntity->mChildEntities)
+		DestroyEntity(childEntity);
 
-		if (inPredicate(object) == mage::Break)
-			break;
-	}
+	mEntities.RemoveSwap(inEntity);
+	mEntitiesByClass.at(inEntity->mTypeIndex).RemoveSwap(inEntity);
+
+	delete inEntity;
 }

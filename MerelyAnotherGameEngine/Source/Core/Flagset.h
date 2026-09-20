@@ -4,7 +4,7 @@ template <typename T>
 concept Enumeration = std::is_enum<T>::value;
 
 template <Enumeration E>
-class Flagset
+class FlagSet
 {
 public:
 	template <Enumeration Flag, Enumeration... Rest>
@@ -36,7 +36,7 @@ public:
 	template <Enumeration... Flags>
 	bool HasAny(Flags... inFlags) const
 	{
-		Flagset test;
+		FlagSet test;
 		test.Set(inFlags...);
 
 		return (u64(mValue) & u64(test.mValue)) != 0;
@@ -45,7 +45,7 @@ public:
 	template <Enumeration... Flags>
 	bool HasAll(Flags... inFlags) const
 	{
-		Flagset test;
+		FlagSet test;
 		test.Set(inFlags...);
 
 		return (u64(mValue) & u64(test.mValue)) == u64(test.mValue);

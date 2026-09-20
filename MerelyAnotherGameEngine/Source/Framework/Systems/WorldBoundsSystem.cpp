@@ -1,5 +1,4 @@
 #include "Framework/Systems/WorldBoundsSystem.h"
-#include "Game/GameObject.h"
 
 WorldBoundsSystem::WorldBoundsSystem(GameWorld& inWorld, glm::vec3 inBoundsMin, glm::vec3 inBoundsMax)
 	: GameSystemWithPrerequisites(inWorld), mBoundsMin(inBoundsMin), mBoundsMax(inBoundsMax)
@@ -11,25 +10,20 @@ WorldBoundsSystem::WorldBoundsSystem(GameWorld& inWorld, glm::vec3 inBoundsMin, 
 
 void WorldBoundsSystem::Update(f32 inDeltaTime)
 {
-	mWorld.ForEachObject([&](GameObject* object)
+	for (TransformEntity* transformEntity : mWorld.GetEntities<TransformEntity>())
 	{
-		if (TransformableObject* transformableObject = dynamic_cast<TransformableObject*>(object))
-		{
-			TransformTreeEntryId transformId = transformableObject->GetTransformId();
-			glm::vec3 position = Get<TransformTree>().GetGlobalTransform(transformId).Position;
+		TransformTreeEntryId transformId = transformEntity->mTransformId;
+		glm::vec3 position = Get<TransformTree>().GetGlobalTransform(transformId).Position;
 
-			bool outOfBounds = false;
-			outOfBounds |= position.x < mBoundsMin.x;
-			outOfBounds |= position.y < mBoundsMin.y;
-			outOfBounds |= position.z < mBoundsMin.z;
-			outOfBounds |= position.x > mBoundsMax.x;
-			outOfBounds |= position.y > mBoundsMax.y;
-			outOfBounds |= position.z > mBoundsMax.z;
+		bool outOfBounds = false;
+		outOfBounds |= position.x < mBoundsMin.x;
+		outOfBounds |= position.y < mBoundsMin.y;
+		outOfBounds |= position.z < mBoundsMin.z;
+		outOfBounds |= position.x > mBoundsMax.x;
+		outOfBounds |= position.y > mBoundsMax.y;
+		outOfBounds |= position.z > mBoundsMax.z;
 
-			if (outOfBounds)
-				object->Destroy();
-		}
-
-		return mage::Continue;
-	});
+		if (outOfBounds)
+			transformEntity->MarkDestroyed();
+	}
 }

@@ -1,6 +1,5 @@
 #include "Framework/Systems/TextRenderSystem.h"
 #include "Engine/Engine.h"
-#include "Game/TextObjectComponent.h"
 
 TextRenderSystem::TextRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
@@ -13,18 +12,15 @@ void TextRenderSystem::Update(f32 inDeltaTime)
 	Vulkan::RenderFrameData frameData = Get<Vulkan::Renderer>().GetCurrentFrameData();
 	mage::Array<TextRenderData> textData;
 
-	mWorld.ForEachObject([&textData](GameObject* object)
+	for (TextEntity* textEntity : mWorld.GetEntities<TextEntity>())
 	{
-		for (TextObjectComponent const* textComp : object->GetComponentsOfClass<TextObjectComponent>())
-			textData.AddConstruct(
-				textComp->GetText(),
-				textComp->GetColor(),
-				textComp->GetScreenPosition(),
-				textComp->GetScale(),
-				textComp->GetFont());
-
-		return mage::Continue;
-	});
+		textData.AddConstruct(
+			textEntity->mText,
+			textEntity->mColor,
+			textEntity->mScreenPosition,
+			textEntity->mScale,
+			textEntity->mFont);
+	}
 
 	RenderText(frameData, textData);
 }

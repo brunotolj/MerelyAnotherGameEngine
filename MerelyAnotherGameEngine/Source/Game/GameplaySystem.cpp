@@ -1,7 +1,5 @@
 #include "Engine/Engine.h"
 #include "Game/GameplaySystem.h"
-#include "Game/RigidBodyObjectComponent.h"
-#include "Game/StaticMeshObjectComponent.h"
 
 GameplaySystem::GameplaySystem(GameWorld& inWorld, GameplaySystemSetup const& inSetup)
 	: GameSystemWithPrerequisites(inWorld), mSetup(inSetup)
@@ -117,15 +115,10 @@ void GameplaySystem::SpawnBall()
 	velocity.y += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
 	velocity.z += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
 
-	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
-	rigidBodyTemplate.RigidBodyParams = mSetup.BallRigidBodyParams;
-	rigidBodyTemplate.InitialLinearVelocity = reinterpret_cast<physx::PxVec3 const&>(velocity);
-
-	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Mesh = mSetup.BallMesh;
-	staticMeshTemplate.Texture = mSetup.BallTexture;
-
 	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner.TransformId);
+	physx::PxVec3 pxVelocity = reinterpret_cast<physx::PxVec3 const&>(velocity);
 
-	mWorld.CreateObject<TransformableObject>(transform, rigidBodyTemplate, staticMeshTemplate);
+	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transform);
+	RigidBodyEntity* rigidBodyEntity = mWorld.CreateEntity<RigidBodyEntity>(*transformEntity, mSetup.BallRigidBodyParams, pxVelocity);
+	StaticMeshEntity* staticMeshEntity = mWorld.CreateEntity<StaticMeshEntity>(*transformEntity, mSetup.BallMesh, mSetup.BallTexture);
 }

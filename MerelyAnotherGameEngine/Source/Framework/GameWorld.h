@@ -1,38 +1,9 @@
 #pragma once
 
+#include "Framework/Entity.h"
+#include "Framework/GameWorldComponent.h"
+
 #include <typeindex>
-
-class GameObject;
-class GameWorld;
-
-class GameWorldComponent : public NonMovable
-{
-public:
-	static bool CheckPrerequisites(GameWorld& inWorld) { return true; }
-
-	GameWorldComponent(GameWorld& inWorld) : mWorld(inWorld) {}
-	virtual ~GameWorldComponent() {}
-
-protected:
-	GameWorld& mWorld;
-};
-
-class GameUtility : public GameWorldComponent
-{
-public:
-	GameUtility(GameWorld& inWorld) : GameWorldComponent(inWorld) {}
-
-	virtual void PreSystemsUpdate() {};
-	virtual void PostSystemsUpdate() {};
-};
-
-class GameSystem : public GameWorldComponent
-{
-public:
-	GameSystem(GameWorld& inWorld) : GameWorldComponent(inWorld) {}
-
-	virtual void Update(f32 inDeltaTime) {};
-};
 
 class GameWorld : public NonCopyable
 {
@@ -42,7 +13,13 @@ public:
 
 	void Update(f32 inDeltaTime);
 
-	void ForEachObject(std::function<mage::BreakOrContinue(GameObject*)> inPredicate);
+	mage::Array<GameEntity*> const& GetEntities() const { return mEntities; }
+
+	template <typename EntityClass>
+	mage::Array<EntityClass*> const& GetEntities() const
+	{
+		return reinterpret_cast<mage::Array<EntityClass*> const&>(mEntitiesByClass.at(typeid(EntityClass)));
+	}
 
 	template <typename ComponentClass, typename... Args>
 	ComponentClass* CreateComponent(Args&&... inArgs)
@@ -73,21 +50,24 @@ public:
 		return reinterpret_cast<ComponentClass*>(component->second);
 	}
 
-	template <typename ObjectClass, typename... Args>
-	ObjectClass* CreateObject(Args&&... inArgs)
+	template <typename EntityClass, typename... Args>
+	EntityClass* CreateEntity(Args&&... inArgs)
 	{
-		ObjectClass* object = new ObjectClass(*this, inArgs...);
-		mObjects.Add(object);
-		object->OnAddedToWorld();
-		return object;
+		EntityClass* entity = new EntityClass(*this, typeid(EntityClass), inArgs...);
+		mEntities.Add(entity);
+		mEntitiesByClass[entity->mTypeIndex].Add(entity);
+		return entity;
 	}
 
 private:
+	void DestroyEntity(GameEntity* inEntity);
+
 	mage::Array<GameUtility*> mUtilities;
 	mage::Array<GameSystem*> mSystems;
 	std::unordered_map<std::type_index, GameWorldComponent*> mComponentByClass;
 
-	mage::Array<GameObject*> mObjects;
+	mage::Array<GameEntity*> mEntities;
+	std::unordered_map<std::type_index, mage::Array<GameEntity*>> mEntitiesByClass;
 };
 
 template <typename Prerequisite>

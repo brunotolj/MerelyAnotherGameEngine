@@ -10,12 +10,7 @@
 #include "Framework/Systems/SpriteRenderSystem.h"
 #include "Framework/Systems/TextRenderSystem.h"
 #include "Framework/Systems/WorldBoundsSystem.h"
-#include "Game/GameObject.h"
 #include "Game/GameplaySystem.h"
-#include "Game/RigidBodyObjectComponent.h"
-#include "Game/SpriteObjectComponent.h"
-#include "Game/StaticMeshObjectComponent.h"
-#include "Game/TextObjectComponent.h"
 #include "Physics/PhysicsSystem.h"
 #include "Vulkan/Device.h"
 #include "Vulkan/Renderer.h"
@@ -27,104 +22,45 @@
 static constexpr i32 gWindowWidth = 1920;
 static constexpr i32 gWindowHeight = 1080;
 
-TransformableObject* CreateControllableCamera(
-	GameWorld& world,
-	const mage::Transform& transform,
-	f32 speed)
+void CreateControllableCamera(GameWorld& inWorld, mage::Transform const& inTransform, f32 inSpeed)
 {
-	TransformableObject* camera = world.CreateObject<TransformableObject>(transform);
-	world.GetComponent<FreeMoveSystem>()->Setup(camera->GetTransformId(), speed);
-	world.GetComponent<MeshRenderSystem>()->SetCameraTransformId(camera->GetTransformId());
-
-	return camera;
+	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
+	inWorld.GetComponent<FreeMoveSystem>()->Setup(transformEntity->mTransformId, inSpeed);
+	inWorld.GetComponent<MeshRenderSystem>()->SetCameraTransformId(transformEntity->mTransformId);
 }
 
-TransformableObject* CreateLevelObject(
-	GameWorld& world,
-	const mage::Transform& transform,
-	PhysicsRigidBodyParams rigidBodyParams,
-	AssetHandle<StaticMesh> mesh,
-	AssetHandle<Texture> texture)
-{
-	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
-	rigidBodyTemplate.RigidBodyParams = rigidBodyParams;
-
-	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Mesh = mesh;
-	staticMeshTemplate.Texture = texture;
-
-	return world.CreateObject<TransformableObject>(transform, rigidBodyTemplate, staticMeshTemplate);
-}
-
-TransformableObject* CreateBallSpawnPoint(
+void CreateLevelObject(
 	GameWorld& inWorld,
 	mage::Transform const& inTransform,
-	glm::vec3 inVelocity,
-	f32 inVelocityVariance)
-{
-	TransformableObject* spawnPoint = inWorld.CreateObject<TransformableObject>(inTransform);
-	inWorld.GetComponent<GameplaySystem>()->AddBallSpawner(spawnPoint->GetTransformId(), inVelocity, inVelocityVariance);
-
-	return spawnPoint;
-}
-
-TransformableObject* CreateCapsule(
-	GameWorld& inWorld,
-	u32 inPlayerIndex,
-	const mage::Transform& inTransform,
 	PhysicsRigidBodyParams inRigidBodyParams,
 	AssetHandle<StaticMesh> inMesh,
-	AssetHandle<Texture> inTexture,
-	i32 inInputNeg,
-	i32 inInputPos)
+	AssetHandle<Texture> inTexture)
 {
-	ComponentTemplate<RigidBodyObjectComponent> rigidBodyTemplate;
-	rigidBodyTemplate.RigidBodyParams = inRigidBodyParams;
-
-	ComponentTemplate<StaticMeshObjectComponent> staticMeshTemplate;
-	staticMeshTemplate.Mesh = inMesh;
-	staticMeshTemplate.Texture = inTexture;
-
-	TransformableObject* capsule = inWorld.CreateObject<TransformableObject>(inTransform, rigidBodyTemplate, staticMeshTemplate);
-	inWorld.GetComponent<GameplaySystem>()->SetupPlayer(inPlayerIndex, capsule->GetTransformId(), inInputNeg, inInputPos);
-
-	return capsule;
+	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
+	RigidBodyEntity* rigidBodyEntity = inWorld.CreateEntity<RigidBodyEntity>(*transformEntity, inRigidBodyParams);
+	StaticMeshEntity* staticMeshEntity = inWorld.CreateEntity<StaticMeshEntity>(*transformEntity, inMesh, inTexture);
 }
 
-GameObject* CreateUserInterface(
-	GameWorld& world,
-	AssetHandle<Texture> texture,
-	AssetHandle<Font> fontA,
-	AssetHandle<Font> fontB)
+void CreateBallSpawnPoint(GameWorld& inWorld, mage::Transform const& inTransform, glm::vec3 inVelocity, f32 inVelocityVariance)
 {
-	ComponentTemplate<SpriteObjectComponent> spriteTemplate
-	{
-		.ScreenCoordsMin = { 50.0f, 50.0f },
-		.ScreenCoordsMax = { 150.0f, 150.0f },
-		.TextureCoordsMin = { 0.0f, 0.0f },
-		.TextureCoordsMax = { 1.0f, 1.0f },
-		.Texture = texture
-	};
+	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
+	inWorld.GetComponent<GameplaySystem>()->AddBallSpawner(transformEntity->mTransformId, inVelocity, inVelocityVariance);
+}
 
-	ComponentTemplate<TextObjectComponent> textTemplateA
-	{
-		.Text = "Merely Another Game Engine",
-		.Color = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f),
-		.ScreenPosition = glm::vec2(180.0f, 90.0f),
-		.Scale = 40.0f,
-		.Font = fontA
-	};
+void CreateCapsule(GameWorld& inWorld, u32 inPlayerIndex, const mage::Transform& inTransform, PhysicsRigidBodyParams inRigidBodyParams,
+	AssetHandle<StaticMesh> inMesh, AssetHandle<Texture> inTexture, i32 inInputNeg, i32 inInputPos)
+{
+	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
+	RigidBodyEntity* rigidBodyEntity = inWorld.CreateEntity<RigidBodyEntity>(*transformEntity, inRigidBodyParams);
+	StaticMeshEntity* staticMeshEntity = inWorld.CreateEntity<StaticMeshEntity>(*transformEntity, inMesh, inTexture);
+	inWorld.GetComponent<GameplaySystem>()->SetupPlayer(inPlayerIndex, transformEntity->mTransformId, inInputNeg, inInputPos);
+}
 
-	ComponentTemplate<TextObjectComponent> textTemplateB
-	{
-		.Text = "M.A.G.E.",
-		.Color = glm::vec4(0.5f, 1.0f, 1.0f, 1.0f),
-		.ScreenPosition = glm::vec2(180.0f, 140.0f),
-		.Scale = 40.0f,
-		.Font = fontB
-	};
-
-	return world.CreateObject<GameObject>(spriteTemplate, textTemplateA, textTemplateB);
+void CreateUserInterface(GameWorld& inWorld, AssetHandle<Texture> inTexture, AssetHandle<Font> inFontA, AssetHandle<Font> inFontB)
+{
+	inWorld.CreateEntity<SpriteEntity>(nullptr, glm::vec2(50.0f), glm::vec2(150.0f), glm::vec2(0.0f), glm::vec2(1.0f), inTexture);
+	inWorld.CreateEntity<TextEntity>(nullptr, "Merely Another Game Engine", glm::vec4(1.0f, 0.5f, 0.0f, 1.0f), glm::vec2(180.0f, 90.0f), 40.0f, inFontA);
+	inWorld.CreateEntity<TextEntity>(nullptr, "M.A.G.E", glm::vec4(0.5f, 1.0f, 1.0f, 1.0f), glm::vec2(180.0f, 140.0f), 40.0f, inFontB);
 }
 
 i32 main()

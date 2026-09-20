@@ -1,6 +1,5 @@
 #include "Framework/Systems/SpriteRenderSystem.h"
 #include "Engine/Engine.h"
-#include "Game/SpriteObjectComponent.h"
 
 SpriteRenderSystem::SpriteRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
@@ -30,18 +29,15 @@ void SpriteRenderSystem::Update(f32 inDeltaTime)
 	Vulkan::RenderFrameData frameData = Get<Vulkan::Renderer>().GetCurrentFrameData();
 	mage::Array<SpriteRenderData> spriteData;
 
-	mWorld.ForEachObject([&spriteData](GameObject* object)
+	for (SpriteEntity* spriteEntity : mWorld.GetEntities<SpriteEntity>())
 	{
-		for (SpriteObjectComponent const* spriteComp : object->GetComponentsOfClass<SpriteObjectComponent>())
-			spriteData.AddConstruct(
-				spriteComp->GetScreenCoordsMin(),
-				spriteComp->GetScreenCoordsMax(),
-				spriteComp->GetTextureCoordsMin(),
-				spriteComp->GetTextureCoordsMax(),
-				spriteComp->GetTexture());
-
-		return mage::Continue;
-	});
+		spriteData.AddConstruct(
+			spriteEntity->mScreenCoordsMin,
+			spriteEntity->mScreenCoordsMax,
+			spriteEntity->mTextureCoordsMin,
+			spriteEntity->mTextureCoordsMax,
+			spriteEntity->mTexture);
+	}
 
 	RenderSprites(frameData, spriteData);
 }

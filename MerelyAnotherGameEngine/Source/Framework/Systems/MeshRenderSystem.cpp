@@ -1,6 +1,5 @@
 #include "Framework/Systems/MeshRenderSystem.h"
 #include "Engine/Engine.h"
-#include "Game/StaticMeshObjectComponent.h"
 #include "Vulkan/Renderer.h"
 
 MeshRenderSystem::MeshRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
@@ -57,16 +56,13 @@ void MeshRenderSystem::Update(f32 inDeltaTime)
 	else
 		sceneData.ViewTransform = mage::Transform().Matrix();
 
-	mWorld.ForEachObject([&sceneData](GameObject* object)
+	for (StaticMeshEntity* staticMeshEntity : mWorld.GetEntities<StaticMeshEntity>())
 	{
-		for (StaticMeshObjectComponent const* staticMeshComp : object->GetComponentsOfClass<StaticMeshObjectComponent>())
-			sceneData.Meshes.AddConstruct(
-				staticMeshComp->GetTransform().Matrix(),
-				staticMeshComp->GetMesh(),
-				staticMeshComp->GetTexture());
-
-		return mage::Continue;
-	});
+		sceneData.Meshes.AddConstruct(
+			Get<TransformTree>().GetGlobalTransform(staticMeshEntity->GetParentEntity().mTransformId).Matrix(),
+			staticMeshEntity->mMesh,
+			staticMeshEntity->mTexture);
+	}
 
 	RenderMeshes(frameData, sceneData);
 }

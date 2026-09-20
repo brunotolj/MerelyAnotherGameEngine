@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Framework/GameWorld.h"
+#include "Framework/GameWorldComponent.h"
 
 enum class TransformTreeEntryFlags : u8
 {
@@ -18,7 +18,7 @@ struct TransformTreeEntry
 	TransformTreeEntryId ParentId = mage::InvalidIndex;
 	mage::Array<TransformTreeEntryId> ChildIds;
 
-	mutable Flagset<TransformTreeEntryFlags> Flags;
+	mutable FlagSet<TransformTreeEntryFlags> Flags;
 };
 
 class TransformTree : public GameUtility

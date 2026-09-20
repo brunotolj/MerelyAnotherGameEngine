@@ -48,15 +48,6 @@
     <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Game\GameObject.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\RigidBodyObjectComponent.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\StaticMeshObjectComponent.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Vulkan\Renderer.cpp">
       <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
@@ -92,12 +83,6 @@
     </ClCompile>
     <ClCompile Include="Source\Assets\StaticMeshFactory.cpp">
       <Filter>Source Files\Assets</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\SpriteObjectComponent.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Game\TextObjectComponent.cpp">
-      <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Engine.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -156,6 +141,9 @@
     <ClCompile Include="Source\Framework\Systems\FreeMoveSystem.cpp">
       <Filter>Source Files\Framework\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Framework\Entity.cpp">
+      <Filter>Source Files\Framework</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -178,18 +166,6 @@
     </ClInclude>
     <ClInclude Include="Source\Physics\PhysicsCommon.h">
       <Filter>Source Files\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\GameObject.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\GameObjectComponent.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\RigidBodyObjectComponent.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\StaticMeshObjectComponent.h">
-      <Filter>Source Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\String.h">
       <Filter>Source Files\Core</Filter>
@@ -235,12 +211,6 @@
     </ClInclude>
     <ClInclude Include="Source\Assets\StaticMeshFactory.h">
       <Filter>Source Files\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\SpriteObjectComponent.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Game\TextObjectComponent.h">
-      <Filter>Source Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Engine.h">
       <Filter>Source Files\Engine</Filter>
@@ -304,6 +274,12 @@
     </ClInclude>
     <ClInclude Include="Source\Framework\Systems\FreeMoveSystem.h">
       <Filter>Source Files\Framework\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Entity.h">
+      <Filter>Source Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\GameWorldComponent.h">
+      <Filter>Source Files\Framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
