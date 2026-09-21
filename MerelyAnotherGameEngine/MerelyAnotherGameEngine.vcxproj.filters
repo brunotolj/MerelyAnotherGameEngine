@@ -22,9 +22,6 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{30da2de5-abc3-4d58-b202-3926c7d422ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Physics">
-      <UniqueIdentifier>{61556eca-77bc-4b99-87af-eb844b6f64d2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Vulkan">
       <UniqueIdentifier>{974dfce2-5b9c-4236-9599-0b14cd965c9c}</UniqueIdentifier>
     </Filter>
@@ -44,9 +41,6 @@
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Physics\PhysicsSystem.cpp">
-      <Filter>Source Files\Physics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Vulkan\Renderer.cpp">
       <Filter>Source Files\Vulkan</Filter>
@@ -144,6 +138,12 @@
     <ClCompile Include="Source\Framework\Entity.cpp">
       <Filter>Source Files\Framework</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Game\GameplayEntities.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Framework\Systems\PhysicsSystem.cpp">
+      <Filter>Source Files\Framework\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -160,12 +160,6 @@
     </ClInclude>
     <ClInclude Include="Source\Core\Utils.h">
       <Filter>Source Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Physics\PhysicsSystem.h">
-      <Filter>Source Files\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Physics\PhysicsCommon.h">
-      <Filter>Source Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\String.h">
       <Filter>Source Files\Core</Filter>
@@ -280,6 +274,12 @@
     </ClInclude>
     <ClInclude Include="Source\Framework\GameWorldComponent.h">
       <Filter>Source Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Game\GameplayEntities.h">
+      <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Framework\Systems\PhysicsSystem.h">
+      <Filter>Source Files\Framework\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

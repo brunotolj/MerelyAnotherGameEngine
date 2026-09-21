@@ -149,7 +149,7 @@ void WindowManager::AddCursorPositionCallback(CursorPositionCallbackType&& inCal
 
 void WindowManager::FramebufferResizedCallback(GLFWwindow* inGlfwWindow, i32 inNewWidth, i32 inNewHeight)
 {
-	WindowManager* manager = reinterpret_cast<WindowManager*>(glfwGetWindowUserPointer(inGlfwWindow));
+	WindowManager* manager = (WindowManager*)(glfwGetWindowUserPointer(inGlfwWindow));
 
 	for (ResizedCallbackType const& callback : manager->mResizedCallbacks)
 		callback(inGlfwWindow, glm::i32vec2(inNewWidth, inNewHeight));
@@ -157,7 +157,7 @@ void WindowManager::FramebufferResizedCallback(GLFWwindow* inGlfwWindow, i32 inN
 
 void WindowManager::KeyCallback(GLFWwindow* inGlfwWindow, i32 inKey, i32 inScancode, i32 inAction, i32 inMods)
 {
-	WindowManager* manager = reinterpret_cast<WindowManager*>(glfwGetWindowUserPointer(inGlfwWindow));
+	WindowManager* manager = (WindowManager*)(glfwGetWindowUserPointer(inGlfwWindow));
 
 	for (KeyCallbackType const& callback : manager->mKeyCallbacks)
 		callback(inGlfwWindow, inKey, inScancode, inAction, inMods);
@@ -165,7 +165,7 @@ void WindowManager::KeyCallback(GLFWwindow* inGlfwWindow, i32 inKey, i32 inScanc
 
 void WindowManager::CursorPositionCallback(GLFWwindow* inGlfwWindow, f64 inPosX, f64 inPosY)
 {
-	WindowManager* manager = reinterpret_cast<WindowManager*>(glfwGetWindowUserPointer(inGlfwWindow));
+	WindowManager* manager = (WindowManager*)(glfwGetWindowUserPointer(inGlfwWindow));
 
 	for (CursorPositionCallbackType const& callback : manager->mCursorPositionCallbacks)
 		callback(inGlfwWindow, glm::dvec2(inPosX, inPosY));
@@ -173,7 +173,7 @@ void WindowManager::CursorPositionCallback(GLFWwindow* inGlfwWindow, f64 inPosX,
 
 void WindowManager::FocusCallback(GLFWwindow* inGlfwWindow, i32 inFocused)
 {
-	WindowManager* manager = reinterpret_cast<WindowManager*>(glfwGetWindowUserPointer(inGlfwWindow));
+	WindowManager* manager = (WindowManager*)(glfwGetWindowUserPointer(inGlfwWindow));
 
 	if (inFocused)
 	{

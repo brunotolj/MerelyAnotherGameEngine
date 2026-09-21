@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Assets/Font.h"
+#include "Assets/PhysicsMaterial.h"
+#include "Assets/PhysicsShape.h"
 #include "Assets/StaticMesh.h"
 #include "Assets/Texture.h"
 #include "Framework/TransformTree.h"
-#include "Physics/PhysicsCommon.h"
 
 class GameEntity : public NonCopyable
 {
@@ -32,7 +33,7 @@ template <typename ParentEntityClass = GameEntity>
 class ChildGameEntity : public GameEntity
 {
 public:
-	ParentEntityClass& GetParentEntity() { return reinterpret_cast<ParentEntityClass&>(*mParentEntity); }
+	ParentEntityClass& GetParentEntity() const { return (ParentEntityClass&)(*mParentEntity); }
 
 protected:
 	ChildGameEntity(GameWorld& inWorld, std::type_index inTypeIndex, ParentEntityClass& inParentEntity)
@@ -68,21 +69,42 @@ public:
 	AssetHandle<Texture> mTexture;
 };
 
-class RigidBodyEntity : public ChildGameEntity<TransformEntity>
+class StaticRigidBodyEntity : public ChildGameEntity<TransformEntity>
 {
 public:
-	RigidBodyEntity(
+	StaticRigidBodyEntity(
 		GameWorld& inWorld,
 		std::type_index inTypeIndex,
 		TransformEntity& inParentEntity,
-		PhysicsRigidBodyParams inRigidBodyParams,
-		physx::PxVec3 inLinearVelocity = physx::PxVec3(0.0f),
-		physx::PxVec3 inAngularVelocity = physx::PxVec3(0.0f));
+		AssetHandle<PhysicsShape> inShape,
+		AssetHandle<PhysicsMaterial> inMaterial);
 
-	virtual ~RigidBodyEntity();
+	virtual ~StaticRigidBodyEntity();
 
-	PhysicsRigidBodyParams mRigidBodyParams;
-	physx::PxRigidActor* mPhysicsActor;
+	AssetHandle<PhysicsShape> mShape;
+	AssetHandle<PhysicsMaterial> mMaterial;
+	physx::PxRigidStatic* mPhysicsActor;
+};
+
+class DynamicRigidBodyEntity : public ChildGameEntity<TransformEntity>
+{
+public:
+	DynamicRigidBodyEntity(
+		GameWorld& inWorld,
+		std::type_index inTypeIndex,
+		TransformEntity& inParentEntity,
+		AssetHandle<PhysicsShape> inShape,
+		AssetHandle<PhysicsMaterial> inMaterial,
+		bool inIsKinematic,
+		glm::vec3 inLinearVelocity = glm::vec3(0.0f),
+		glm::vec3 inAngularVelocity = glm::vec3(0.0f));
+
+	virtual ~DynamicRigidBodyEntity();
+
+	AssetHandle<PhysicsShape> mShape;
+	AssetHandle<PhysicsMaterial> mMaterial;
+	physx::PxRigidDynamic* mPhysicsActor;
+	bool mIsKinematic;
 };
 
 class SpriteEntity : public GameEntity

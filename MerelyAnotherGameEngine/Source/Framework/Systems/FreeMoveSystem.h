@@ -6,14 +6,14 @@
 class FreeMoveSystem : public GameSystemWithPrerequisites<TransformTree>
 {
 public:
-	FreeMoveSystem(GameWorld& inWorld);
+	FreeMoveSystem(GameWorld& inWorld, f32 inSpeed);
 
 	virtual void Update(f32 inDeltaTime) override;
 
-	void Setup(TransformTreeEntryId inTransformId, f32 inSpeed);
+	void SetTargetTransformId(TransformTreeEntryId inTransformId);
 
 private:
-	TransformTreeEntryId mTransformId;
+	TransformTreeEntryId mTargetTransformId;
 	f32 mSpeed;
 
 	glm::dvec2 mCursorMovement = glm::dvec2(0.0f);

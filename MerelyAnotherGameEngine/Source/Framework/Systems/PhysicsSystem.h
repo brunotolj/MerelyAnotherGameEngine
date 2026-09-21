@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Assets/PhysicsMaterial.h"
+#include "Assets/PhysicsShape.h"
 #include "Framework/GameWorld.h"
 #include "Framework/TransformTree.h"
-#include "Physics/PhysicsCommon.h"
 
 class RigidBodyObjectComponent;
 
@@ -14,31 +15,24 @@ public:
 
 	virtual void Update(f32 inDeltaTime) override;
 
-	physx::PxRigidActor* AddRigidBody(
-		PhysicsRigidBodyParams const& inParams,
+	physx::PxRigidStatic* CreateStaticRigidBody(
 		TransformTreeEntryId inTransformId,
-		physx::PxVec3 inLinearVelocity,
-		physx::PxVec3 inAngularVelocity);
+		AssetHandle<PhysicsShape> inShape,
+		AssetHandle<PhysicsMaterial> inMaterial);
+
+	physx::PxRigidDynamic* CreateDynamicRigidBody(
+		TransformTreeEntryId inTransformId,
+		AssetHandle<PhysicsShape> inShape,
+		AssetHandle<PhysicsMaterial> inMaterial,
+		bool inIsKinematic,
+		glm::vec3 inLinearVelocity,
+		glm::vec3 inAngularVelocity);
 
 	void RemoveActor(physx::PxRigidActor* inActor);
 
 private:
-	struct DynamicActor
-	{
-		physx::PxRigidDynamic* PhysxActor = nullptr;
-		TransformTreeEntryId TransformId = mage::InvalidIndex;
-
-		physx::PxVec3 mLinearVelocity = physx::PxVec3(physx::PxZero);
-		physx::PxVec3 mAngularVelocity = physx::PxVec3(physx::PxZero);
-	};
-
 	physx::PxTransform ReadTransformFromTransformTree(TransformTreeEntryId inTransformId);
 	void WriteTransformToTransformTree(TransformTreeEntryId inTransformId, physx::PxTransform const& inTransform);
 
 	physx::PxScene* mScene = nullptr;
-
-	mage::Array<physx::PxRigidStatic*> mStaticActors;
-
-	mage::Array<DynamicActor> mDynamicActors;
-	u32 mKinematicActorCount = 0;
 };

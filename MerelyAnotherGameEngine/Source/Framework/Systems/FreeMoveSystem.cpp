@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-FreeMoveSystem::FreeMoveSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
+FreeMoveSystem::FreeMoveSystem(GameWorld& inWorld, f32 inSpeed) : GameSystemWithPrerequisites(inWorld), mSpeed(inSpeed)
 {
 	gEngine->mInputHandler.BindCursorMovementHandler([&](glm::dvec2 movement, CursorInputMode cursorMode)
 	{
@@ -21,10 +21,10 @@ void FreeMoveSystem::Update(f32 inDeltaTime)
 	mRotation.y = glm::clamp(mRotation.y, -glm::radians(80.0f), glm::radians(80.0f));
 	mCursorMovement = glm::dvec2(0.0f);
 
-	if (mTransformId == mage::InvalidIndex)
+	if (mTargetTransformId == mage::InvalidIndex)
 		return;
 
-	mage::Transform transform = Get<TransformTree>().GetGlobalTransform(mTransformId);
+	mage::Transform transform = Get<TransformTree>().GetGlobalTransform(mTargetTransformId);
 
 	transform.Rotation = mage::Rotor::Combine(
 		mage::Rotor({ 0.0f, 0.0f, 1.0f }, mRotation.x),
@@ -43,11 +43,10 @@ void FreeMoveSystem::Update(f32 inDeltaTime)
 
 	transform.Position += mSpeed * inDeltaTime * movement;
 
-	Get<TransformTree>().SetGlobalTransform(mTransformId, transform);
+	Get<TransformTree>().SetGlobalTransform(mTargetTransformId, transform);
 }
 
-void FreeMoveSystem::Setup(TransformTreeEntryId inTransformId, f32 inSpeed)
+void FreeMoveSystem::SetTargetTransformId(TransformTreeEntryId inTransformId)
 {
-	mTransformId = inTransformId;
-	mSpeed = inSpeed;
+	mTargetTransformId = inTransformId;
 }

@@ -7,11 +7,12 @@
 #include "Framework/GameWorld.h"
 #include "Framework/Systems/MeshRenderSystem.h"
 #include "Framework/Systems/FreeMoveSystem.h"
+#include "Framework/Systems/PhysicsSystem.h"
 #include "Framework/Systems/SpriteRenderSystem.h"
 #include "Framework/Systems/TextRenderSystem.h"
 #include "Framework/Systems/WorldBoundsSystem.h"
+#include "Game/GameplayEntities.h"
 #include "Game/GameplaySystem.h"
-#include "Physics/PhysicsSystem.h"
 #include "Vulkan/Device.h"
 #include "Vulkan/Renderer.h"
 
@@ -22,38 +23,39 @@
 static constexpr i32 gWindowWidth = 1920;
 static constexpr i32 gWindowHeight = 1080;
 
-void CreateControllableCamera(GameWorld& inWorld, mage::Transform const& inTransform, f32 inSpeed)
+void CreateControllableCamera(GameWorld& inWorld, mage::Transform const& inTransform)
 {
 	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
-	inWorld.GetComponent<FreeMoveSystem>()->Setup(transformEntity->mTransformId, inSpeed);
+	inWorld.GetComponent<FreeMoveSystem>()->SetTargetTransformId(transformEntity->mTransformId);
 	inWorld.GetComponent<MeshRenderSystem>()->SetCameraTransformId(transformEntity->mTransformId);
 }
 
 void CreateLevelObject(
 	GameWorld& inWorld,
 	mage::Transform const& inTransform,
-	PhysicsRigidBodyParams inRigidBodyParams,
 	AssetHandle<StaticMesh> inMesh,
-	AssetHandle<Texture> inTexture)
+	AssetHandle<Texture> inTexture,
+	AssetHandle<PhysicsShape> inShape,
+	AssetHandle<PhysicsMaterial> inMaterial)
 {
 	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
-	RigidBodyEntity* rigidBodyEntity = inWorld.CreateEntity<RigidBodyEntity>(*transformEntity, inRigidBodyParams);
-	StaticMeshEntity* staticMeshEntity = inWorld.CreateEntity<StaticMeshEntity>(*transformEntity, inMesh, inTexture);
+	inWorld.CreateEntity<StaticRigidBodyEntity>(*transformEntity, inShape, inMaterial);
+	inWorld.CreateEntity<StaticMeshEntity>(*transformEntity, inMesh, inTexture);
 }
 
-void CreateBallSpawnPoint(GameWorld& inWorld, mage::Transform const& inTransform, glm::vec3 inVelocity, f32 inVelocityVariance)
+void CreateBallSpawnPoint(GameWorld& inWorld, mage::Transform const& inTransform, glm::vec3 inVelocity, glm::vec3 inVelocityVariance)
 {
 	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
-	inWorld.GetComponent<GameplaySystem>()->AddBallSpawner(transformEntity->mTransformId, inVelocity, inVelocityVariance);
+	inWorld.CreateEntity<BallSpawnerEntity>(*transformEntity, inVelocity, inVelocityVariance);
 }
 
-void CreateCapsule(GameWorld& inWorld, u32 inPlayerIndex, const mage::Transform& inTransform, PhysicsRigidBodyParams inRigidBodyParams,
-	AssetHandle<StaticMesh> inMesh, AssetHandle<Texture> inTexture, i32 inInputNeg, i32 inInputPos)
+void CreateCapsule(GameWorld& inWorld, u32 inPlayerIndex, const mage::Transform& inTransform, AssetHandle<PhysicsShape> inPhysicsShape,
+	AssetHandle<PhysicsMaterial> inPhysicsMaterial, AssetHandle<StaticMesh> inMesh, AssetHandle<Texture> inTexture, PlayerEntity* inPlayer)
 {
 	TransformEntity* transformEntity = inWorld.CreateEntity<TransformEntity>(nullptr, inTransform);
-	RigidBodyEntity* rigidBodyEntity = inWorld.CreateEntity<RigidBodyEntity>(*transformEntity, inRigidBodyParams);
-	StaticMeshEntity* staticMeshEntity = inWorld.CreateEntity<StaticMeshEntity>(*transformEntity, inMesh, inTexture);
-	inWorld.GetComponent<GameplaySystem>()->SetupPlayer(inPlayerIndex, transformEntity->mTransformId, inInputNeg, inInputPos);
+	inWorld.CreateEntity<DynamicRigidBodyEntity>(*transformEntity, inPhysicsShape, inPhysicsMaterial, true);
+	inWorld.CreateEntity<StaticMeshEntity>(*transformEntity, inMesh, inTexture);
+	inPlayer->SetTransformId(transformEntity->mTransformId);
 }
 
 void CreateUserInterface(GameWorld& inWorld, AssetHandle<Texture> inTexture, AssetHandle<Font> inFontA, AssetHandle<Font> inFontB)
@@ -117,18 +119,13 @@ i32 main()
 
 	AssetHandle<PhysicsMaterial> defaultMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.1f, 1.0f);
 	AssetHandle<PhysicsMaterial> floorMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.05f, 0.0f);
-
-	PhysicsRigidBodyParams boxRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, boardCollision, floorMaterial };
-	PhysicsRigidBodyParams cylinderRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, cornerCollision, defaultMaterial };
-	PhysicsRigidBodyParams capsuleRigidBodyParams = { PhysicsSystemObjectType::RigidKinematic, capsuleCollision, defaultMaterial };
-	PhysicsRigidBodyParams coneRigidBodyParams = { PhysicsSystemObjectType::RigidStatic, coneCollision, defaultMaterial };
-	PhysicsRigidBodyParams ballRigidBodyParams = { PhysicsSystemObjectType::RigidDynamic, ballCollision, defaultMaterial };
+	AssetHandle<PhysicsMaterial> ballMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.1f, 0.8f);
 
 	GameWorld world;
 	world.CreateComponent<TransformTree>();
 	world.CreateComponent<Vulkan::Renderer>(window);
-	world.CreateComponent<FreeMoveSystem>();
-	world.CreateComponent<GameplaySystem>(GameplaySystemSetup{ 10.0f, 80.0f, 80.0f, 150.0f, 2.0f, ballRigidBodyParams, ballMesh, ballTexture });
+	world.CreateComponent<FreeMoveSystem>(10.0f);
+	world.CreateComponent<GameplaySystem>(GameplaySystemSetup{ 10.0f, 80.0f, 80.0f, 150.0f, 2.0f, ballCollision, ballMaterial, ballMesh, ballTexture });
 	world.CreateComponent<PhysicsSystem>();
 	world.CreateComponent<WorldBoundsSystem>(glm::vec3(-10000.0f, -10000.0f, -10.0f), glm::vec3(10000.0f, 10000.0f, 10000.0f));
 	world.CreateComponent<MeshRenderSystem>();
@@ -136,58 +133,61 @@ i32 main()
 	world.CreateComponent<TextRenderSystem>();
 
 	{
+		mage::Array<PlayerEntity*> players;
+		players.Add(world.CreateEntity<PlayerEntity>(GLFW_KEY_H, GLFW_KEY_J));
+		players.Add(world.CreateEntity<PlayerEntity>(GLFW_KEY_U, GLFW_KEY_I));
+		players.Add(world.CreateEntity<PlayerEntity>(GLFW_KEY_O, GLFW_KEY_P));
+		players.Add(world.CreateEntity<PlayerEntity>(GLFW_KEY_K, GLFW_KEY_L));
+
 		CreateUserInterface(world, spriteTexture, fontArianaVioleta, fontOrbitron);
 
 		mage::Transform transform;
-		CreateLevelObject(world, transform, boxRigidBodyParams, boxMesh, cubeTexture);
+		CreateLevelObject(world, transform, boxMesh, cubeTexture, boardCollision, floorMaterial);
 
 		transform.Position = glm::vec3(0.0f, -30.0f, 10.0f);
-		CreateControllableCamera(world, transform, 10.0f);
+		CreateControllableCamera(world, transform);
 		
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(90.0f));
 		
-		transform.Position = {};
-		//CreateLevelObject(world, transform, coneRigidBodyParams, coneMesh, coneTexture);
-		
 		transform.Position = glm::vec3(cornerPosition, cornerPosition, cornerHalfHeight);
-		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
+		CreateLevelObject(world, transform, cylinderMesh, cylinderTexture, cornerCollision, defaultMaterial);
 
 		transform.Position.z += cornerHalfHeight + 2.0f * ballRadius;
-		CreateBallSpawnPoint(world, transform, { 0.0f, -10.0f, 10.0f }, 5.0f);
-		
+		CreateBallSpawnPoint(world, transform, { 0.0f, -10.0f, 10.0f }, { 5.0f, 5.0f, 0.0f });
+
 		transform.Position = glm::vec3(-cornerPosition, cornerPosition, cornerHalfHeight);
-		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
+		CreateLevelObject(world, transform, cylinderMesh, cylinderTexture, cornerCollision, defaultMaterial);
 
 		transform.Position.z += cornerHalfHeight + 2.0f * ballRadius;
-		CreateBallSpawnPoint(world, transform, { 0.0f, -10.0f, -10.0f }, 5.0f);
+		CreateBallSpawnPoint(world, transform, { 0.0f, -10.0f, -10.0f }, { 5.0f, 5.0f, 0.0f });
 
 		transform.Position = glm::vec3(-cornerPosition, -cornerPosition, cornerHalfHeight);
-		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
+		CreateLevelObject(world, transform, cylinderMesh, cylinderTexture, cornerCollision, defaultMaterial);
 
 		transform.Position.z += cornerHalfHeight + 2.0f * ballRadius;
-		CreateBallSpawnPoint(world, transform, { 0.0f, 10.0f, -10.0f }, 5.0f);
+		CreateBallSpawnPoint(world, transform, { 0.0f, 10.0f, -10.0f }, { 5.0f, 5.0f, 0.0f });
 
 		transform.Position = glm::vec3(cornerPosition, -cornerPosition, cornerHalfHeight);
-		CreateLevelObject(world, transform, cylinderRigidBodyParams, cylinderMesh, cylinderTexture);
+		CreateLevelObject(world, transform, cylinderMesh, cylinderTexture, cornerCollision, defaultMaterial);
 
 		transform.Position.z += cornerHalfHeight + 2.0f * ballRadius;
-		CreateBallSpawnPoint(world, transform, { 0.0f, 10.0f, 10.0f }, 5.0f);
+		CreateBallSpawnPoint(world, transform, { 0.0f, 10.0f, 10.0f }, { 5.0f, 5.0f, 0.0f });
 
 		transform.Rotation = {};
 		transform.Position = glm::vec3(-capsuleDistance, 0.0f, capsuleElevation);
-		CreateCapsule(world, 0, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_H, GLFW_KEY_J);
-		
+		CreateCapsule(world, 0, transform, capsuleCollision, defaultMaterial, capsuleMesh, capsuleTexture, players[0]);
+
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(90.0f));
 		transform.Position = glm::vec3(0.0f, capsuleDistance, capsuleElevation);
-		CreateCapsule(world, 1, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_U, GLFW_KEY_I);
-		
+		CreateCapsule(world, 1, transform, capsuleCollision, defaultMaterial, capsuleMesh, capsuleTexture, players[1]);
+
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.0f));
 		transform.Position = glm::vec3(capsuleDistance, 0.0f, capsuleElevation);
-		CreateCapsule(world, 2, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_O, GLFW_KEY_P);
-		
+		CreateCapsule(world, 2, transform, capsuleCollision, defaultMaterial, capsuleMesh, capsuleTexture, players[2]);
+
 		transform.Rotation = mage::Rotor(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(-90.0f));
 		transform.Position = glm::vec3(0.0f, -capsuleDistance, capsuleElevation);
-		CreateCapsule(world, 3, transform, capsuleRigidBodyParams, capsuleMesh, capsuleTexture, GLFW_KEY_K, GLFW_KEY_L);
+		CreateCapsule(world, 3, transform, capsuleCollision, defaultMaterial, capsuleMesh, capsuleTexture, players[3]);
 	}
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();

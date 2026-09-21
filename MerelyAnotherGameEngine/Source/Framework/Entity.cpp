@@ -1,5 +1,5 @@
 #include "Framework/Entity.h"
-#include "Physics/PhysicsSystem.h"
+#include "Framework/Systems/PhysicsSystem.h"
 
 GameEntity::~GameEntity()
 {
@@ -73,16 +73,30 @@ StaticMeshEntity::StaticMeshEntity(GameWorld& inWorld, std::type_index inTypeInd
 {
 }
 
-RigidBodyEntity::RigidBodyEntity(
-	GameWorld& inWorld, std::type_index inTypeIndex, TransformEntity& inParentEntity, PhysicsRigidBodyParams inRigidBodyParams,
-	physx::PxVec3 inLinearVelocity, physx::PxVec3 inAngularVelocity)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mRigidBodyParams(inRigidBodyParams)
+StaticRigidBodyEntity::StaticRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, TransformEntity& inParentEntity,
+	AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial)
+	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inShape), mMaterial(inMaterial)
 {
-	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->AddRigidBody(
-		mRigidBodyParams, GetParentEntity().mTransformId, inLinearVelocity, inAngularVelocity);
+	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateStaticRigidBody(
+		GetParentEntity().mTransformId, mShape, mMaterial);
 }
 
-RigidBodyEntity::~RigidBodyEntity()
+StaticRigidBodyEntity::~StaticRigidBodyEntity()
+{
+	mWorld.GetComponent<PhysicsSystem>()->RemoveActor(mPhysicsActor);
+	mPhysicsActor = nullptr;
+}
+
+DynamicRigidBodyEntity::DynamicRigidBodyEntity(
+	GameWorld& inWorld, std::type_index inTypeIndex, TransformEntity& inParentEntity, AssetHandle<PhysicsShape> inShape,
+	AssetHandle<PhysicsMaterial> inMaterial, bool inIsKinematic, glm::vec3 inLinearVelocity, glm::vec3 inAngularVelocity)
+	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inShape), mMaterial(inMaterial), mIsKinematic(inIsKinematic)
+{
+	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateDynamicRigidBody(
+		GetParentEntity().mTransformId, mShape, mMaterial, mIsKinematic, inLinearVelocity, inAngularVelocity);
+}
+
+DynamicRigidBodyEntity::~DynamicRigidBodyEntity()
 {
 	mWorld.GetComponent<PhysicsSystem>()->RemoveActor(mPhysicsActor);
 	mPhysicsActor = nullptr;

@@ -1,4 +1,5 @@
 #include "Engine/Engine.h"
+#include "Game/GameplayEntities.h"
 #include "Game/GameplaySystem.h"
 
 GameplaySystem::GameplaySystem(GameWorld& inWorld, GameplaySystemSetup const& inSetup)
@@ -18,107 +19,89 @@ void GameplaySystem::Update(f32 inDeltaTime)
 		}
 	}
 
-	for (u32 i = 0; i < 4; ++i)
+	for (PlayerEntity* playerEntity : mWorld.GetEntities<PlayerEntity>())
 	{
-		PlayerData& playerData = mPlayerData[i];
-
 		f32 input = 0.0f;
-		if (gEngine->mInputHandler.IsKeyPressed(playerData.InputCodeNegative)) input -= 1.0f;
-		if (gEngine->mInputHandler.IsKeyPressed(playerData.InputCodePositive)) input += 1.0f;
+		if (gEngine->mInputHandler.IsKeyPressed(playerEntity->mInputCodeNegative)) input -= 1.0f;
+		if (gEngine->mInputHandler.IsKeyPressed(playerEntity->mInputCodePositive)) input += 1.0f;
 
 		f32 remainingTime = inDeltaTime;
 		f32 movement = 0.0f;
 
-		if (remainingTime > 0.0f && playerData.Speed != 0.0f && input * playerData.Speed <= 0.0f)
+		if (remainingTime > 0.0f && playerEntity->mSpeed != 0.0f && input * playerEntity->mSpeed <= 0.0f)
 		{
-			f32 decelTime = std::fabsf(playerData.Speed) / mSetup.Deceleration;
+			f32 decelTime = std::fabsf(playerEntity->mSpeed) / mSetup.Deceleration;
 			if (decelTime > remainingTime)
 			{
-				f32 deltaSpeed = playerData.Speed / std::fabsf(playerData.Speed) * mSetup.Deceleration * remainingTime;
-				movement += (playerData.Speed - 0.5f * deltaSpeed) * remainingTime;
-				playerData.Speed -= deltaSpeed;
+				f32 deltaSpeed = playerEntity->mSpeed / std::fabsf(playerEntity->mSpeed) * mSetup.Deceleration * remainingTime;
+				movement += (playerEntity->mSpeed - 0.5f * deltaSpeed) * remainingTime;
+				playerEntity->mSpeed -= deltaSpeed;
 				remainingTime = 0.0f;
 			}
 			else
 			{
-				movement += 0.5f * playerData.Speed * decelTime;
-				playerData.Speed = 0.0f;
+				movement += 0.5f * playerEntity->mSpeed * decelTime;
+				playerEntity->mSpeed = 0.0f;
 				remainingTime -= decelTime;
 			}
 		}
 
-		if (remainingTime > 0.0f && ((playerData.Speed == 0.0f && input != 0.0f) || input * playerData.Speed > 0.0f))
+		if (remainingTime > 0.0f && ((playerEntity->mSpeed == 0.0f && input != 0.0f) || input * playerEntity->mSpeed > 0.0f))
 		{
-			f32 accelTime = (mSetup.MaxSpeed - input * playerData.Speed) / mSetup.Acceleration;
+			f32 accelTime = (mSetup.MaxSpeed - input * playerEntity->mSpeed) / mSetup.Acceleration;
 			if (accelTime > remainingTime)
 			{
 				f32 deltaSpeed = input * mSetup.Acceleration * remainingTime;
-				movement += (playerData.Speed + 0.5f * deltaSpeed) * remainingTime;
-				playerData.Speed += deltaSpeed;
+				movement += (playerEntity->mSpeed + 0.5f * deltaSpeed) * remainingTime;
+				playerEntity->mSpeed += deltaSpeed;
 				remainingTime = 0.0f;
 			}
 			else
 			{
-				movement += 0.5f * (playerData.Speed + input * mSetup.MaxSpeed) * accelTime;
-				playerData.Speed = input * mSetup.MaxSpeed;
+				movement += 0.5f * (playerEntity->mSpeed + input * mSetup.MaxSpeed) * accelTime;
+				playerEntity->mSpeed = input * mSetup.MaxSpeed;
 				remainingTime -= accelTime;
 			}
 		}
 
-		movement += playerData.Speed * remainingTime;
+		movement += playerEntity->mSpeed * remainingTime;
 
-		playerData.Position += movement;
-		if (playerData.Position > mSetup.HalfSpan)
+		playerEntity->mPosition += movement;
+		if (playerEntity->mPosition > mSetup.HalfSpan)
 		{
-			playerData.Position = mSetup.HalfSpan;
-			playerData.Speed = 0.0f;
+			playerEntity->mPosition = mSetup.HalfSpan;
+			playerEntity->mSpeed = 0.0f;
 		}
-		else if (playerData.Position < -mSetup.HalfSpan)
+		else if (playerEntity->mPosition < -mSetup.HalfSpan)
 		{
-			playerData.Position = -mSetup.HalfSpan;
-			playerData.Speed = 0.0f;
+			playerEntity->mPosition = -mSetup.HalfSpan;
+			playerEntity->mSpeed = 0.0f;
 		}
 
-		mage::Transform transform = playerData.OriginalTransform;
-		transform.Position += playerData.Position * playerData.OriginalTransform.Rotation.Rotate({ 0.0f, -1.0f, 0.0f });
-		Get<TransformTree>().SetGlobalTransform(playerData.TransformId, transform);
+		mage::Transform transform = playerEntity->mOriginalTransform;
+		transform.Position += playerEntity->mPosition * playerEntity->mOriginalTransform.Rotation.Rotate({ 0.0f, -1.0f, 0.0f });
+		Get<TransformTree>().SetGlobalTransform(playerEntity->mTransformId, transform);
 	}
-}
-
-void GameplaySystem::SetupPlayer(u32 inPlayerIndex, TransformTreeEntryId inTransformId, i32 inInputCodeNegative, i32 inInputCodePositive)
-{
-	mage_check(inPlayerIndex < 4);
-
-	PlayerData& playerData = mPlayerData[inPlayerIndex];
-	playerData.OriginalTransform = Get<TransformTree>().GetGlobalTransform(inTransformId);
-	playerData.TransformId = inTransformId;
-	playerData.InputCodeNegative = inInputCodeNegative;
-	playerData.InputCodePositive = inInputCodePositive;
-}
-
-void GameplaySystem::AddBallSpawner(TransformTreeEntryId inTransformId, glm::vec3 inVelocity, f32 inVelocityVariance)
-{
-	mBallSpawners.AddConstruct(inTransformId, inVelocity, inVelocityVariance);
 }
 
 void GameplaySystem::SpawnBall()
 {
-	if (mBallSpawners.GetSize() == 0)
+	mage::Array<BallSpawnerEntity*> const& ballSpawners = mWorld.GetEntities<BallSpawnerEntity>();
+	if (ballSpawners.GetSize() == 0)
 		return;
 
-	u32 index = rand() % mBallSpawners.GetSize();
+	u32 index = rand() % ballSpawners.GetSize();
 
-	BallSpawnerData const& spawner = mBallSpawners[index];
+	BallSpawnerEntity* spawner = ballSpawners[index];
 
-	glm::vec3 velocity = Get<TransformTree>().GetGlobalTransform(spawner.TransformId).Rotation.Rotate(spawner.Velocity);
-	velocity.x += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
-	velocity.y += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
-	velocity.z += (0.01f * (rand() % 100) - 0.5f) * spawner.VelocityVariance;
+	glm::vec3 velocity = Get<TransformTree>().GetGlobalTransform(spawner->GetParentEntity().mTransformId).Rotation.Rotate(spawner->mSpawnVelocity);
+	velocity.x += (0.01f * (rand() % 100) - 0.5f) * spawner->mSpawnVelocityVariance.x;
+	velocity.y += (0.01f * (rand() % 100) - 0.5f) * spawner->mSpawnVelocityVariance.y;
+	velocity.z += (0.01f * (rand() % 100) - 0.5f) * spawner->mSpawnVelocityVariance.z;
 
-	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner.TransformId);
-	physx::PxVec3 pxVelocity = reinterpret_cast<physx::PxVec3 const&>(velocity);
+	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner->GetParentEntity().mTransformId);
 
 	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transform);
-	RigidBodyEntity* rigidBodyEntity = mWorld.CreateEntity<RigidBodyEntity>(*transformEntity, mSetup.BallRigidBodyParams, pxVelocity);
-	StaticMeshEntity* staticMeshEntity = mWorld.CreateEntity<StaticMeshEntity>(*transformEntity, mSetup.BallMesh, mSetup.BallTexture);
+	mWorld.CreateEntity<DynamicRigidBodyEntity>(*transformEntity, mSetup.BallPhysicsShape, mSetup.BallPhysicsMaterial, false, velocity);
+	mWorld.CreateEntity<StaticMeshEntity>(*transformEntity, mSetup.BallMesh, mSetup.BallTexture);
 }

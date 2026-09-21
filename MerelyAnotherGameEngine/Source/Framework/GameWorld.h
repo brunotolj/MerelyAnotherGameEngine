@@ -18,7 +18,7 @@ public:
 	template <typename EntityClass>
 	mage::Array<EntityClass*> const& GetEntities() const
 	{
-		return reinterpret_cast<mage::Array<EntityClass*> const&>(mEntitiesByClass.at(typeid(EntityClass)));
+		return (mage::Array<EntityClass*> const&)(mEntitiesByClass.at(typeid(EntityClass)));
 	}
 
 	template <typename ComponentClass, typename... Args>
@@ -47,7 +47,7 @@ public:
 		if (component == mComponentByClass.end())
 			return nullptr;
 
-		return reinterpret_cast<ComponentClass*>(component->second);
+		return (ComponentClass*)(component->second);
 	}
 
 	template <typename EntityClass, typename... Args>
