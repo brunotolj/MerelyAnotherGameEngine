@@ -8,25 +8,11 @@
 class PhysicsEngine_PhysX : public NonMovable
 {
 public:
-	struct MaterialProperties
-	{
-		f32 StaticFriction;
-		f32 DynamicFriction;
-		f32 Restitution;
-	};
-
-	enum class ActorType : u8
-	{
-		RigidStatic,
-		RigidKinematic,
-		RigidDynamic
-	};
-
 	PhysicsEngine_PhysX();
 	~PhysicsEngine_PhysX();
 
 	physx::PxScene* CreateScene() const;
-	physx::PxMaterial* CreateMaterial(MaterialProperties inProperties) const;
+	physx::PxMaterial* CreateMaterial(f32 inStaticFriction, f32 inDynamicFriction, f32 inRestitution) const;
 	physx::PxShape* CreateShape(AssetHandle<PhysicsShape> inGeometry, AssetHandle<PhysicsMaterial> inMaterial) const;
 	physx::PxRigidStatic* CreateStaticActor(physx::PxTransform const& inPose) const;
 	physx::PxRigidDynamic* CreateDynamicActor(physx::PxTransform const& inPose) const;

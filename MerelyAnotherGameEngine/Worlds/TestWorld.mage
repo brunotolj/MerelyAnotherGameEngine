@@ -1,0 +1,34 @@
+
+Assets
+{
+	BoxMesh:StaticMesh { type=Box halfX=20 halfY=20 halfZ=1 }
+	CylinderMesh:StaticMesh { type=Cylinder radius=4 halfHeight=3 }
+	CapsuleMesh:StaticMesh { type=Capsule radius=2 halfHeight=1.5 }
+	BallMesh:StaticMesh { type=Sphere radius=1 }
+	
+	BoardCollision:PhysicsShape { type=Box halfX=20 halfY=20 halfZ=1 }
+	CornerCollision:PhysicsShape { type=Cylinder radius=4 halfHeight=3 }
+	CapsuleCollision:PhysicsShape { type=Capsule radius=2 halfHeight=1.5 }
+	BallCollision:PhysicsShape { type=Sphere radius=1 }
+	
+	DefaultMaterial:PhysicsMaterial { staticFriction=0.2 dynamicFriction=0.1 restitution=1.0 }
+	FloorMaterial:PhysicsMaterial { staticFriction=0.2 dynamicFriction=0.05 restitution=0.0 }
+	BallMaterial:PhysicsMaterial { staticFriction=0.2 dynamicFriction=0.1 restitution=0.8 }
+}
+
+Components
+{
+	TransformTree
+	Renderer
+	FreeMoveSystem { speed=10 }
+	GameplaySystem { halfSpan=10 maxSpeed=80 acceleration=80 deceleration=150 spawnInterval=2 ballPhysicsShape=BallCollision ballPhysicsMaterial=BallMaterial ballMesh=BallMesh ballTexture=BallTexture }
+	PhysicsSystem
+	WorldBoundsSystem { minX=-10000 maxX=10000 minY=-10000 maxY=10000 minZ=-10 maxZ=10000 }
+	MeshRenderSystem
+	SpriteRenderSystem
+	TextRenderSystem
+}
+
+Entities
+{
+}

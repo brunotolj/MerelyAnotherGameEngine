@@ -10,7 +10,16 @@ class AssetManager : public NonMovable
 	friend class Factory;
 
 public:
-	Asset const* Get(std::type_index inType, u32 inAssetId) const;
+	Asset const* Get(std::type_index inType, mage::StringView inName) const;
+
+	template <AssetType Type>
+	AssetHandle<Type> GetHandle(mage::StringView inName)
+	{
+		if (mAssetLists[typeid(Type)].Get(inName))
+			return AssetHandle<Type>(inName);
+
+		return nullptr;
+	}
 
 private:
 	class AssetList
@@ -18,22 +27,24 @@ private:
 	public:
 		~AssetList();
 
-		u32 Register(Asset* inAsset);
+		bool Register(Asset* inAsset, mage::StringView inName);
 
-		Asset* Get(u32 inAssetId) const;
+		Asset* Get(mage::StringView inName) const;
 
 	private:
-		std::map<u32, Asset*> mAssets;
-		u32 mIdCounter = 0;
+		std::unordered_map<mage::String, Asset*> mAssets;
 	};
 
 	template <AssetType Type>
-	AssetHandle<Type> Register(Type* inAsset)
+	AssetHandle<Type> Register(Type* inAsset, mage::StringView inName)
 	{
 		if (!mage_ensure(inAsset))
-			return AssetHandle<Type>(0);
+			return nullptr;
 
-		return AssetHandle<Type>(mAssetLists[typeid(Type)].Register(inAsset));
+		if (mAssetLists[typeid(Type)].Register(inAsset, inName))
+			return AssetHandle<Type>(inName);
+
+		return nullptr;
 	}
 
 	std::map<std::type_index, AssetList> mAssetLists;

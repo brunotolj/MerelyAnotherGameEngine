@@ -23,5 +23,5 @@ AssetHandle<Texture> Factory<Texture>::FromFile(mage::StringView inPath)
 
 	result->CreateImage();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inPath);
 }

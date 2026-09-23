@@ -144,6 +144,12 @@
     <ClCompile Include="Source\Framework\Systems\PhysicsSystem.cpp">
       <Filter>Source Files\Framework\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Assets\WorldSetup.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Assets\WorldSetupFactory.cpp">
+      <Filter>Source Files\Assets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Core\Asserts.h">
@@ -280,6 +286,15 @@
     </ClInclude>
     <ClInclude Include="Source\Framework\Systems\PhysicsSystem.h">
       <Filter>Source Files\Framework\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\WorldSetup.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Assets\WorldSetupFactory.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\StringView.h">
+      <Filter>Source Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

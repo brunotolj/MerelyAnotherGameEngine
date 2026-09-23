@@ -355,7 +355,7 @@ namespace mage
 		Type* begin() const { return mElements; }
 		Type* end() const { return mElements + mSize; }
 
-	private:
+	protected:
 		void Realloc(u32 inDesiredCapacity)
 		{
 			if (inDesiredCapacity < mSize)

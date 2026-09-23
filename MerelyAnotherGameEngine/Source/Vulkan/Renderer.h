@@ -19,6 +19,7 @@ namespace Vulkan
 	class Renderer : public GameUtility
 	{
 	public:
+		Renderer(GameWorld& inWorld);
 		Renderer(GameWorld& inWorld, WindowHandle inWindow);
 
 		virtual void PreSystemsUpdate() override;

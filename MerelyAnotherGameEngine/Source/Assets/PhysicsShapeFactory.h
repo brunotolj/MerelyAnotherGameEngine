@@ -6,11 +6,13 @@ template<>
 class Factory<PhysicsShape>
 {
 public:
-	static AssetHandle<PhysicsShape> MakeBox(glm::vec3 inHalfExtent);
-	static AssetHandle<PhysicsShape> MakeSphere(f32 inRadius);
-	static AssetHandle<PhysicsShape> MakeCapsule(f32 inRadius, f32 inLength);
-	static AssetHandle<PhysicsShape> MakeCylinder(f32 inRadius, f32 inLength);
-	static AssetHandle<PhysicsShape> MakeCone(f32 inRadius, f32 inHeight);
+	static AssetHandle<PhysicsShape> Create(mage::StringView inName, PropertyContainer const& inProperties);
+
+	static AssetHandle<PhysicsShape> MakeBox(mage::StringView inName, glm::vec3 inHalfExtent);
+	static AssetHandle<PhysicsShape> MakeSphere(mage::StringView inName, f32 inRadius);
+	static AssetHandle<PhysicsShape> MakeCapsule(mage::StringView inName, f32 inRadius, f32 inHalfHeight);
+	static AssetHandle<PhysicsShape> MakeCylinder(mage::StringView inName, f32 inRadius, f32 inHalfHeight);
+	static AssetHandle<PhysicsShape> MakeCone(mage::StringView inName, f32 inRadius, f32 inHeight);
 
 private:
 	Factory() {}

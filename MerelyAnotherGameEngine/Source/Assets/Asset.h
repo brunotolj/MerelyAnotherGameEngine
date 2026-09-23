@@ -19,10 +19,12 @@ class AssetHandleBase
 public:
 	Asset const* GetAsset(std::type_index inType) const;
 
-protected:
-	AssetHandleBase(u32 inAssetId) : mAssetId(inAssetId) {}
+	bool IsSet() { return mName.GetLength() > 0; }
 
-	u32 mAssetId;
+protected:
+	AssetHandleBase(mage::String const& inName) : mName(inName) {}
+
+	mage::String mName;
 };
 
 template <AssetType Type>
@@ -31,7 +33,7 @@ class AssetHandle : public AssetHandleBase
 	friend class AssetManager;
 
 public:
-	AssetHandle() : AssetHandleBase(0) {}
+	AssetHandle(nullptr_t) : AssetHandleBase("") {}
 
 	Type const* GetAsset() const
 	{
@@ -39,5 +41,19 @@ public:
 	}
 
 private:
-	AssetHandle(u32 inAssetId) : AssetHandleBase(inAssetId) {}
+	AssetHandle(mage::String const& inName) : AssetHandleBase(inName) {}
+};
+
+using PropertyContainer = std::unordered_map<mage::String, mage::String>;
+using AssetFactoryCallback = std::function<AssetHandleBase(mage::StringView, PropertyContainer const&)>;
+
+extern std::unordered_map<mage::String, AssetFactoryCallback> gAssetFactoryFunctions;
+
+class AssetFactoryFunction
+{
+public:
+	AssetFactoryFunction(mage::StringView inName, AssetFactoryCallback&& inFunction)
+	{
+		gAssetFactoryFunctions[inName] = inFunction;
+	}
 };

@@ -23,12 +23,9 @@ physx::PxScene* PhysicsEngine_PhysX::CreateScene() const
 	return mPhysics->createScene(sceneDesc);
 }
 
-physx::PxMaterial* PhysicsEngine_PhysX::CreateMaterial(MaterialProperties inProperties) const
+physx::PxMaterial* PhysicsEngine_PhysX::CreateMaterial(f32 inStaticFriction, f32 inDynamicFriction, f32 inRestitution) const
 {
-	return mPhysics->createMaterial(
-		inProperties.StaticFriction,
-		inProperties.DynamicFriction,
-		inProperties.Restitution);
+	return mPhysics->createMaterial(inStaticFriction, inDynamicFriction, inRestitution);
 }
 
 physx::PxShape* PhysicsEngine_PhysX::CreateShape(AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial) const

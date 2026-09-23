@@ -470,5 +470,5 @@ AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath)
 
 	result->CreateGlyphBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inPath);
 }

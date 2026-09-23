@@ -6,21 +6,23 @@ AssetManager::AssetList::~AssetList()
 		delete asset.second;
 }
 
-u32 AssetManager::AssetList::Register(Asset* inAsset)
+bool AssetManager::AssetList::Register(Asset* inAsset, mage::StringView inName)
 {
-	mAssets[++mIdCounter] = inAsset;
-	return mIdCounter;
+	if (mAssets.contains(inName)) return false;
+
+	mAssets[inName] = inAsset;
+	return true;
 }
 
-Asset* AssetManager::AssetList::Get(u32 inAssetId) const
+Asset* AssetManager::AssetList::Get(mage::StringView inName) const
 {
-	return mAssets.contains(inAssetId) ? mAssets.at(inAssetId) : nullptr;
+	return mAssets.contains(inName) ? mAssets.at(inName) : nullptr;
 }
 
-Asset const* AssetManager::Get(std::type_index inType, u32 inAssetId) const
+Asset const* AssetManager::Get(std::type_index inType, mage::StringView inName) const
 {
 	if (mAssetLists.contains(inType))
-		return mAssetLists.at(inType).Get(inAssetId);
+		return mAssetLists.at(inType).Get(inName);
 
 	return nullptr;
 }

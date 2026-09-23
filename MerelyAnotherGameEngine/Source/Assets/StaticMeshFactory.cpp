@@ -6,6 +6,8 @@
 #include <glm/gtx/hash.hpp>
 #include <tiny_obj_loader.h>
 
+AssetFactoryFunction StaticMeshFactoryFunction("StaticMesh", [](mage::StringView inName, PropertyContainer const& inProperties) { return Factory<StaticMesh>::Create(inName, inProperties); });
+
 namespace std
 {
 	template<>
@@ -27,9 +29,8 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath)
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-	std::string warn, err;
 
-	bool loadResult = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, inPath.GetCString());
+	bool loadResult = tinyobj::LoadObj(&attrib, &shapes, &materials, nullptr, nullptr, inPath.GetCString());
 	mage_check(loadResult);
 
 	std::unordered_map<StaticMesh::Vertex, u32> uniqueVertices;
@@ -95,10 +96,55 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath)
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inPath);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent)
+AssetHandle<StaticMesh> Factory<StaticMesh>::Create(mage::StringView inName, PropertyContainer const& inProperties)
+{
+	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
+
+	mage::StringView type = getProperty("type");
+
+	if (type == "Box")
+	{
+		f32 halfX = mage::ParseNumber<f32>(getProperty("halfX"));
+		f32 halfY = mage::ParseNumber<f32>(getProperty("halfY"));
+		f32 halfZ = mage::ParseNumber<f32>(getProperty("halfZ"));
+
+		return MakeBox(inName, { halfX, halfY, halfZ });
+	}
+	else if (type == "Sphere")
+	{
+		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
+
+		return MakeSphere(inName, radius);
+	}
+	else if (type == "Cylinder")
+	{
+		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
+		f32 halfHeight = mage::ParseNumber<f32>(getProperty("halfHeight"));
+
+		return MakeCylinder(inName, radius, halfHeight);
+	}
+	else if (type == "Capsule")
+	{
+		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
+		f32 halfHeight = mage::ParseNumber<f32>(getProperty("halfHeight"));
+
+		return MakeCapsule(inName, radius, halfHeight);
+	}
+	else if (type == "Cone")
+	{
+		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
+		f32 height = mage::ParseNumber<f32>(getProperty("height"));
+
+		return MakeCone(inName, radius, height);
+	}
+
+	return nullptr;
+}
+
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(mage::StringView inName, glm::vec3 inHalfExtent)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -116,10 +162,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(glm::vec3 inHalfExtent)
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeSphere(mage::StringView inName, f32 inRadius)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -129,10 +175,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBall(f32 inRadius)
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHalfHeight)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(mage::StringView inName, f32 inRadius, f32 inHalfHeight)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -143,10 +189,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(f32 inRadius, f32 inHa
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHalfHeight)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(mage::StringView inName, f32 inRadius, f32 inHalfHeight)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -157,10 +203,10 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(f32 inRadius, f32 inHal
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight)
+AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(mage::StringView inName, f32 inRadius, f32 inHeight)
 {
 	StaticMesh* result = new StaticMesh();
 
@@ -170,7 +216,7 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(f32 inRadius, f32 inHeight
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
 
-	return gEngine->mAssetManager.Register(result);
+	return gEngine->mAssetManager.Register(result, inName);
 }
 
 void Factory<StaticMesh>::AddHemisphere(StaticMesh& inOutResult, mage::Transform inTransform, f32 inRadius, glm::vec2 inUvCenter, f32 inUvRadius, u32 inSubdivisions)

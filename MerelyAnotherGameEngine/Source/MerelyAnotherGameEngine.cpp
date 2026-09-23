@@ -1,8 +1,6 @@
 #include "Assets/FontFactory.h"
-#include "Assets/PhysicsMaterialFactory.h"
-#include "Assets/PhysicsShapeFactory.h"
-#include "Assets/StaticMeshFactory.h"
 #include "Assets/TextureFactory.h"
+#include "Assets/WorldSetupFactory.h"
 #include "Engine/Engine.h"
 #include "Framework/GameWorld.h"
 #include "Framework/Systems/MeshRenderSystem.h"
@@ -95,12 +93,6 @@ i32 main()
 
 	constexpr f32 ballRadius = 1.0f;
 
-	AssetHandle<StaticMesh> boxMesh = Factory<StaticMesh>::MakeBox({ boardSize, boardSize, 1.0f });
-	AssetHandle<StaticMesh> cylinderMesh = Factory<StaticMesh>::MakeCylinder(cornerRadius, cornerHalfHeight);
-	AssetHandle<StaticMesh> capsuleMesh = Factory<StaticMesh>::MakeCapsule(capsuleRadius, capsuleLength);
-	AssetHandle<StaticMesh> coneMesh = Factory<StaticMesh>::MakeCone(coneRadius, coneHeight);
-	AssetHandle<StaticMesh> ballMesh = Factory<StaticMesh>::MakeBall(ballRadius);
-
 	AssetHandle<Texture> spriteTexture = Factory<Texture>::FromFile("Textures/default.png");
 	AssetHandle<Texture> cubeTexture = Factory<Texture>::FromFile("Textures/cube.png");
 	AssetHandle<Texture> ballTexture = Factory<Texture>::FromFile("Textures/ball.png");
@@ -111,19 +103,25 @@ i32 main()
 	AssetHandle<Font> fontArianaVioleta = Factory<Font>::FromFile("Fonts/ArianaVioleta-dz2K.ttf");
 	AssetHandle<Font> fontOrbitron = Factory<Font>::FromFile("Fonts/Orbitron-Regular.ttf");
 
-	AssetHandle<PhysicsShape> boardCollision = Factory<PhysicsShape>::MakeBox({ boardSize, boardSize, 1.0f });
-	AssetHandle<PhysicsShape> cornerCollision = Factory<PhysicsShape>::MakeCylinder(cornerRadius, 2.0f * cornerHalfHeight);
-	AssetHandle<PhysicsShape> capsuleCollision = Factory<PhysicsShape>::MakeCapsule(capsuleRadius, capsuleLength);
-	AssetHandle<PhysicsShape> coneCollision = Factory<PhysicsShape>::MakeCone(coneRadius, coneHeight);
-	AssetHandle<PhysicsShape> ballCollision = Factory<PhysicsShape>::MakeSphere(ballRadius);
+	AssetHandle<WorldSetup> worldSetup = Factory<WorldSetup>::FromFile("Worlds/TestWorld.mage");
 
-	AssetHandle<PhysicsMaterial> defaultMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.1f, 1.0f);
-	AssetHandle<PhysicsMaterial> floorMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.05f, 0.0f);
-	AssetHandle<PhysicsMaterial> ballMaterial = Factory<PhysicsMaterial>::Create(0.2f, 0.1f, 0.8f);
+	AssetHandle<StaticMesh> boxMesh = engine.mAssetManager.GetHandle<StaticMesh>("Worlds/TestWorld.mage:BoxMesh");
+	AssetHandle<StaticMesh> cylinderMesh = engine.mAssetManager.GetHandle<StaticMesh>("Worlds/TestWorld.mage:CylinderMesh");
+	AssetHandle<StaticMesh> capsuleMesh = engine.mAssetManager.GetHandle<StaticMesh>("Worlds/TestWorld.mage:CapsuleMesh");
+	AssetHandle<StaticMesh> ballMesh = engine.mAssetManager.GetHandle<StaticMesh>("Worlds/TestWorld.mage:BallMesh");
+
+	AssetHandle<PhysicsShape> boardCollision = engine.mAssetManager.GetHandle<PhysicsShape>("Worlds/TestWorld.mage:BoardCollision");
+	AssetHandle<PhysicsShape> cornerCollision = engine.mAssetManager.GetHandle<PhysicsShape>("Worlds/TestWorld.mage:CornerCollision");
+	AssetHandle<PhysicsShape> capsuleCollision = engine.mAssetManager.GetHandle<PhysicsShape>("Worlds/TestWorld.mage:CapsuleCollision");
+	AssetHandle<PhysicsShape> ballCollision = engine.mAssetManager.GetHandle<PhysicsShape>("Worlds/TestWorld.mage:BallCollision");
+
+	AssetHandle<PhysicsMaterial> defaultMaterial = engine.mAssetManager.GetHandle<PhysicsMaterial>("Worlds/TestWorld.mage:DefaultMaterial");
+	AssetHandle<PhysicsMaterial> floorMaterial = engine.mAssetManager.GetHandle<PhysicsMaterial>("Worlds/TestWorld.mage:FloorMaterial");
+	AssetHandle<PhysicsMaterial> ballMaterial = engine.mAssetManager.GetHandle<PhysicsMaterial>("Worlds/TestWorld.mage:BallMaterial");
 
 	GameWorld world;
 	world.CreateComponent<TransformTree>();
-	world.CreateComponent<Vulkan::Renderer>(window);
+	world.CreateComponent<Vulkan::Renderer>();
 	world.CreateComponent<FreeMoveSystem>(10.0f);
 	world.CreateComponent<GameplaySystem>(GameplaySystemSetup{ 10.0f, 80.0f, 80.0f, 150.0f, 2.0f, ballCollision, ballMaterial, ballMesh, ballTexture });
 	world.CreateComponent<PhysicsSystem>();

@@ -1,7 +1,9 @@
 #include "Assets/Asset.h"
 #include "Engine/Engine.h"
 
+std::unordered_map<mage::String, AssetFactoryCallback> gAssetFactoryFunctions;
+
 Asset const* AssetHandleBase::GetAsset(std::type_index inType) const
 {
-    return gEngine->mAssetManager.Get(inType, mAssetId);
+    return gEngine->mAssetManager.Get(inType, mName);
 }

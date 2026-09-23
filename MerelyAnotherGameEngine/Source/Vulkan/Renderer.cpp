@@ -5,7 +5,11 @@
 
 namespace Vulkan
 {
-	Renderer::Renderer(GameWorld& inWorld, WindowHandle inWindow) : GameUtility(inWorld)
+    Renderer::Renderer(GameWorld& inWorld) : Renderer(inWorld, gEngine->mWindowManager.GetFocusedWindow())
+    {
+    }
+
+    Renderer::Renderer(GameWorld& inWorld, WindowHandle inWindow) : GameUtility(inWorld)
 	{
 		vk::raii::Instance const& instance = gEngine->mVulkanDevice.GetVkInstance();
 		vk::raii::Device const& device = gEngine->mVulkanDevice.GetVkDevice();
