@@ -20,10 +20,11 @@ namespace mage
 		mage_ensure(file.is_open());
 
 		u32 fileSize = u32(file.tellg());
-		data.ResizeUninitialized(fileSize);
+		data.ResizeUninitialized(fileSize + 1);
 
 		file.seekg(0);
 		file.read((char*)data.GetData(), fileSize);
+		data.GetLast() = 0;
 
 		return data;
 	}

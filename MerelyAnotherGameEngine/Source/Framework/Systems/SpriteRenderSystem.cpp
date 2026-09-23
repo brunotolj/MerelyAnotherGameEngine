@@ -1,6 +1,11 @@
 #include "Framework/Systems/SpriteRenderSystem.h"
 #include "Engine/Engine.h"
 
+WorldComponentFactoryFunction SpriteRenderSystemFactoryFunction("SpriteRenderSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	inWorld.CreateComponent<SpriteRenderSystem>();
+});
+
 SpriteRenderSystem::SpriteRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	CreatePipeline();

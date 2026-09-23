@@ -1,6 +1,11 @@
 #include "Framework/Systems/TextRenderSystem.h"
 #include "Engine/Engine.h"
 
+WorldComponentFactoryFunction TextRenderSystemFactoryFunction("TextRenderSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	inWorld.CreateComponent<TextRenderSystem>();
+});
+
 TextRenderSystem::TextRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	CreatePipeline();

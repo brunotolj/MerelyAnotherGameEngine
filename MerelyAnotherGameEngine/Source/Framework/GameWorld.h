@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Assets/WorldSetup.h"
 #include "Framework/Entity.h"
 #include "Framework/GameWorldComponent.h"
 
@@ -8,7 +9,7 @@
 class GameWorld : public NonCopyable
 {
 public:
-	GameWorld() {};
+	GameWorld(WorldSetup const& inWorldSetup);
 	~GameWorld();
 
 	void Update(f32 inDeltaTime);

@@ -1,5 +1,18 @@
 #include "Framework/GameWorld.h"
 
+std::unordered_map<mage::String, WorldComponentFactoryCallback> gWorldComponentFactoryFunctions;
+
+GameWorld::GameWorld(WorldSetup const& inWorldSetup)
+{
+	for (WorldComponentSetup const& componentSetup : inWorldSetup.mComponentSetups)
+	{
+		if (gWorldComponentFactoryFunctions.contains(componentSetup.Name) == false)
+			continue;
+
+		gWorldComponentFactoryFunctions[componentSetup.Name](*this, componentSetup.Properties);
+	}
+}
+
 GameWorld::~GameWorld()
 {
 	while (mEntities.GetSize() > 0)

@@ -13,7 +13,7 @@ public:
 	void SetTargetTransformId(TransformTreeEntryId inTransformId);
 
 private:
-	TransformTreeEntryId mTargetTransformId;
+	TransformTreeEntryId mTargetTransformId = mage::InvalidIndex;
 	f32 mSpeed;
 
 	glm::dvec2 mCursorMovement = glm::dvec2(0.0f);

@@ -2,6 +2,11 @@
 #include "Framework/Systems/PhysicsSystem.h"
 #include "Engine/Engine.h"
 
+WorldComponentFactoryFunction PhysicsSystemFactoryFunction("PhysicsSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	inWorld.CreateComponent<PhysicsSystem>();
+});
+
 PhysicsSystem::PhysicsSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	mScene = gEngine->mPhysicsEngine.CreateScene();

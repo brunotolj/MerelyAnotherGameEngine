@@ -15,10 +15,10 @@ struct GameplaySystemSetup
 	f32 Deceleration = 0.0f;
 
 	f32 BallSpawnInterval = 0.0f;
-	AssetHandle<PhysicsShape> BallPhysicsShape;
-	AssetHandle<PhysicsMaterial> BallPhysicsMaterial;
-	AssetHandle<StaticMesh> BallMesh;
-	AssetHandle<Texture> BallTexture;
+	AssetHandle<PhysicsShape> BallPhysicsShape = nullptr;
+	AssetHandle<PhysicsMaterial> BallPhysicsMaterial = nullptr;
+	AssetHandle<StaticMesh> BallMesh = nullptr;
+	AssetHandle<Texture> BallTexture = nullptr;
 };
 
 class GameplaySystem : public GameSystemWithPrerequisites<TransformTree>

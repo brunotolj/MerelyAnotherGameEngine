@@ -2,6 +2,24 @@
 #include "Game/GameplayEntities.h"
 #include "Game/GameplaySystem.h"
 
+WorldComponentFactoryFunction GameplaySystemFactoryFunction("GameplaySystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
+
+	GameplaySystemSetup setup;
+	setup.HalfSpan = mage::ParseNumber<f32>(getProperty("halfSpan"));
+	setup.MaxSpeed = mage::ParseNumber<f32>(getProperty("maxSpeed"));
+	setup.Acceleration = mage::ParseNumber<f32>(getProperty("acceleration"));
+	setup.Deceleration = mage::ParseNumber<f32>(getProperty("deceleration"));
+	setup.BallSpawnInterval = mage::ParseNumber<f32>(getProperty("ballSpawnInterval"));
+	setup.BallPhysicsShape = gEngine->mAssetManager.GetHandle<PhysicsShape>(getProperty("ballPhysicsShape"));
+	setup.BallPhysicsMaterial = gEngine->mAssetManager.GetHandle<PhysicsMaterial>(getProperty("ballPhysicsMaterial"));
+	setup.BallMesh = gEngine->mAssetManager.GetHandle<StaticMesh>(getProperty("ballMesh"));
+	setup.BallTexture = gEngine->mAssetManager.GetHandle<Texture>(getProperty("ballTexture"));
+
+	inWorld.CreateComponent<GameplaySystem>(setup);
+});
+
 GameplaySystem::GameplaySystem(GameWorld& inWorld, GameplaySystemSetup const& inSetup)
 	: GameSystemWithPrerequisites(inWorld), mSetup(inSetup)
 {

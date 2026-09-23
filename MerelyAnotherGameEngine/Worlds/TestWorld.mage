@@ -21,7 +21,7 @@ Components
 	TransformTree
 	Renderer
 	FreeMoveSystem { speed=10 }
-	GameplaySystem { halfSpan=10 maxSpeed=80 acceleration=80 deceleration=150 spawnInterval=2 ballPhysicsShape=BallCollision ballPhysicsMaterial=BallMaterial ballMesh=BallMesh ballTexture=BallTexture }
+	GameplaySystem { halfSpan=10 maxSpeed=80 acceleration=80 deceleration=150 ballSpawnInterval=2 ballPhysicsShape=Worlds/TestWorld.mage:BallCollision ballPhysicsMaterial=Worlds/TestWorld.mage:BallMaterial ballMesh=Worlds/TestWorld.mage:BallMesh ballTexture=Textures/ball.png }
 	PhysicsSystem
 	WorldBoundsSystem { minX=-10000 maxX=10000 minY=-10000 maxY=10000 minZ=-10 maxZ=10000 }
 	MeshRenderSystem

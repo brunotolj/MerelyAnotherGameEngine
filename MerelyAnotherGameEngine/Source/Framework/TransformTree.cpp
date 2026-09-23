@@ -1,4 +1,10 @@
+#include "Framework/GameWorld.h"
 #include "Framework/TransformTree.h"
+
+WorldComponentFactoryFunction TransformTreeFactoryFunction("TransformTree", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	inWorld.CreateComponent<TransformTree>();
+});
 
 TransformTreeEntryId TransformTree::AddEntry(mage::Transform inInitialTransform, TransformTreeEntryId inParentId)
 {

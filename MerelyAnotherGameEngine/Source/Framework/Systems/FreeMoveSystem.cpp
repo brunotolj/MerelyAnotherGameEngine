@@ -4,6 +4,15 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+WorldComponentFactoryFunction FreeMoveSystemFactoryFunction("FreeMoveSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
+
+	f32 speed = mage::ParseNumber<f32>(getProperty("speed"));
+
+	inWorld.CreateComponent<FreeMoveSystem>(speed);
+});
+
 FreeMoveSystem::FreeMoveSystem(GameWorld& inWorld, f32 inSpeed) : GameSystemWithPrerequisites(inWorld), mSpeed(inSpeed)
 {
 	gEngine->mInputHandler.BindCursorMovementHandler([&](glm::dvec2 movement, CursorInputMode cursorMode)

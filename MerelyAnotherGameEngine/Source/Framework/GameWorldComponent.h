@@ -30,3 +30,17 @@ public:
 
 	virtual void Update(f32 inDeltaTime) {};
 };
+
+using PropertyContainer = std::unordered_map<mage::String, mage::String>;
+using WorldComponentFactoryCallback = std::function<void(GameWorld&, PropertyContainer const&)>;
+
+extern std::unordered_map<mage::String, WorldComponentFactoryCallback> gWorldComponentFactoryFunctions;
+
+class WorldComponentFactoryFunction
+{
+public:
+	WorldComponentFactoryFunction(mage::StringView inName, WorldComponentFactoryCallback&& inFunction)
+	{
+		gWorldComponentFactoryFunctions[inName] = inFunction;
+	}
+};

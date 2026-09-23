@@ -2,6 +2,11 @@
 #include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
+WorldComponentFactoryFunction MeshRenderSystemFactoryFunction("MeshRenderSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+{
+	inWorld.CreateComponent<MeshRenderSystem>();
+});
+
 MeshRenderSystem::MeshRenderSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	CreatePipeline();

@@ -5,21 +5,12 @@
 #include "Framework/GameWorld.h"
 #include "Framework/Systems/MeshRenderSystem.h"
 #include "Framework/Systems/FreeMoveSystem.h"
-#include "Framework/Systems/PhysicsSystem.h"
-#include "Framework/Systems/SpriteRenderSystem.h"
-#include "Framework/Systems/TextRenderSystem.h"
-#include "Framework/Systems/WorldBoundsSystem.h"
 #include "Game/GameplayEntities.h"
-#include "Game/GameplaySystem.h"
 #include "Vulkan/Device.h"
-#include "Vulkan/Renderer.h"
 
 #include <GLFW/glfw3.h>
 
 #include <chrono>
-
-static constexpr i32 gWindowWidth = 1920;
-static constexpr i32 gWindowHeight = 1080;
 
 void CreateControllableCamera(GameWorld& inWorld, mage::Transform const& inTransform)
 {
@@ -70,12 +61,16 @@ i32 main()
 	WindowInfo windowInfo
 	{
 		.Name = "Merely Another Game Engine",
-		.Width = gWindowWidth,
-		.Height = gWindowHeight,
+		.Width = 1920,
+		.Height = 1080,
 		.CursorMode = CursorInputMode::Disabled
 	};
 
 	WindowHandle window = engine.mWindowManager.CreateWindow(windowInfo);
+
+	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
+	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
+	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
 
 	constexpr f32 boardSize = 20.0f;
 
@@ -87,9 +82,6 @@ i32 main()
 	constexpr f32 capsuleElevation = 2.0f;
 	constexpr f32 capsuleRadius = 2.0f;
 	constexpr f32 capsuleLength = 1.5f;
-
-	constexpr f32 coneHeight = 8.0f;
-	constexpr f32 coneRadius = 5.0f;
 
 	constexpr f32 ballRadius = 1.0f;
 
@@ -119,16 +111,7 @@ i32 main()
 	AssetHandle<PhysicsMaterial> floorMaterial = engine.mAssetManager.GetHandle<PhysicsMaterial>("Worlds/TestWorld.mage:FloorMaterial");
 	AssetHandle<PhysicsMaterial> ballMaterial = engine.mAssetManager.GetHandle<PhysicsMaterial>("Worlds/TestWorld.mage:BallMaterial");
 
-	GameWorld world;
-	world.CreateComponent<TransformTree>();
-	world.CreateComponent<Vulkan::Renderer>();
-	world.CreateComponent<FreeMoveSystem>(10.0f);
-	world.CreateComponent<GameplaySystem>(GameplaySystemSetup{ 10.0f, 80.0f, 80.0f, 150.0f, 2.0f, ballCollision, ballMaterial, ballMesh, ballTexture });
-	world.CreateComponent<PhysicsSystem>();
-	world.CreateComponent<WorldBoundsSystem>(glm::vec3(-10000.0f, -10000.0f, -10.0f), glm::vec3(10000.0f, 10000.0f, 10000.0f));
-	world.CreateComponent<MeshRenderSystem>();
-	world.CreateComponent<SpriteRenderSystem>();
-	world.CreateComponent<TextRenderSystem>();
+	GameWorld world(*worldSetup.GetAsset());
 
 	{
 		mage::Array<PlayerEntity*> players;
@@ -189,10 +172,6 @@ i32 main()
 	}
 
 	std::chrono::steady_clock::time_point currentTime = std::chrono::high_resolution_clock::now();
-
-	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_PRESS, [&window]() { window.SetCursorInputMode(CursorInputMode::Normal); });
-	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_LEFT_CONTROL, GLFW_RELEASE, [&window]() { window.SetCursorInputMode(CursorInputMode::Disabled); });
-	engine.mInputHandler.BindKeyInputHandler(GLFW_KEY_ESCAPE, GLFW_PRESS, [&engine]() { engine.RequestExit(); });
 
 	while (!engine.ShouldExit())
 	{

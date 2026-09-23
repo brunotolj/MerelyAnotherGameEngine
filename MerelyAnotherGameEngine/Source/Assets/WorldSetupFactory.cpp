@@ -105,12 +105,12 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 				if (token == "Assets") { state = ContainerEntry; currentContainer = &assets; break; }
 				if (token == "Components") { state = ContainerEntry; currentContainer = &components; break; }
 				if (token == "Entities") { state = ContainerEntry; currentContainer = &entities; break; }
-				if (token.GetLength()) hasError = true;
+				if (token.GetLength()) { hasError = true; mage_ensure(false); }
 				break;
 
 			case ContainerEntry:
 				if (token == "{") { state = Container; break; }
-				hasError = true;
+				hasError = true; mage_ensure(false);
 				break;
 
 			case Container:
@@ -123,7 +123,7 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 
 			case Properties:
 				if (token == "}") { state = Container; break; }
-				if (lastObject == nullptr) { hasError = true; break; }
+				if (lastObject == nullptr) { hasError = true; mage_ensure(false); break; }
 				parseProperty(token, *lastObject);
 				break;
 		}
@@ -147,6 +147,11 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		{
 			result->mAssetHandles.Add(assetHandle);
 		}
+	}
+
+	for (ObjectData const& componentData : components)
+	{
+		result->mComponentSetups.AddConstruct(componentData.Name, componentData.Properties);
 	}
 
 	return gEngine->mAssetManager.Register(result, inPath);
