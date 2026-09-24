@@ -1,7 +1,5 @@
-#include "Assets/WorldSetupFactory.h"
+#include "Assets/WorldSetup.h"
 #include "Engine/Engine.h"
-
-#include <iostream>
 
 AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 {
@@ -56,7 +54,7 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		while (reader - inToken.GetCString() < (i32)inToken.GetLength())
 		{
 			outObject.Name += *(reader++);
-			if (*reader == ':') { reader++; break; }
+			if (*reader == '=') { reader++; break; }
 		}
 		while (reader - inToken.GetCString() < (i32)inToken.GetLength())
 		{
@@ -64,7 +62,7 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		}
 	};
 
-	auto parseProperty = [](mage::StringView inToken, ObjectData& outObject)
+	auto parseProperty = [inPath](mage::StringView inToken, ObjectData& outObject)
 	{
 		mage::String name, value;
 
@@ -74,6 +72,9 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 			name += *(reader++);
 			if (*reader == '=') { reader++; break; }
 		}
+
+		if (*reader == ':') value = inPath;
+
 		while (reader - inToken.GetCString() < (i32)inToken.GetLength())
 		{
 			value += *(reader++);

@@ -12,10 +12,10 @@ WorldComponentFactoryFunction GameplaySystemFactoryFunction("GameplaySystem", []
 	setup.Acceleration = mage::ParseNumber<f32>(getProperty("acceleration"));
 	setup.Deceleration = mage::ParseNumber<f32>(getProperty("deceleration"));
 	setup.BallSpawnInterval = mage::ParseNumber<f32>(getProperty("ballSpawnInterval"));
-	setup.BallPhysicsShape = gEngine->mAssetManager.GetHandle<PhysicsShape>(getProperty("ballPhysicsShape"));
-	setup.BallPhysicsMaterial = gEngine->mAssetManager.GetHandle<PhysicsMaterial>(getProperty("ballPhysicsMaterial"));
-	setup.BallMesh = gEngine->mAssetManager.GetHandle<StaticMesh>(getProperty("ballMesh"));
-	setup.BallTexture = gEngine->mAssetManager.GetHandle<Texture>(getProperty("ballTexture"));
+	setup.BallPhysicsShape = gEngine->mAssetManager.FindAsset<PhysicsShape>(getProperty("ballPhysicsShape"));
+	setup.BallPhysicsMaterial = gEngine->mAssetManager.FindAsset<PhysicsMaterial>(getProperty("ballPhysicsMaterial"));
+	setup.BallMesh = gEngine->mAssetManager.FindAsset<StaticMesh>(getProperty("ballMesh"));
+	setup.BallTexture = gEngine->mAssetManager.FindAsset<Texture>(getProperty("ballTexture"));
 
 	inWorld.CreateComponent<GameplaySystem>(setup);
 });

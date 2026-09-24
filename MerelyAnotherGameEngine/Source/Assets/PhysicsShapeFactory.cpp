@@ -1,4 +1,4 @@
-#include "Assets/PhysicsShapeFactory.h"
+#include "Assets/PhysicsShape.h"
 #include "Engine/Engine.h"
 
 AssetFactoryFunction PhysicsShapeFactoryFunction("PhysicsShape", [](mage::StringView inName, PropertyContainer const& inProperties) { return Factory<PhysicsShape>::Create(inName, inProperties); });

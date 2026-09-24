@@ -29,3 +29,13 @@ private:
 
 	mage::Array<AssetHandleBase> mAssetHandles;
 };
+
+template<>
+class Factory<WorldSetup>
+{
+public:
+	static AssetHandle<WorldSetup> FromFile(mage::StringView inPath);
+
+private:
+	Factory() {}
+};

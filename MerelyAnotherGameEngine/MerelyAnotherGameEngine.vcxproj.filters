@@ -200,19 +200,10 @@
     <ClInclude Include="Source\Assets\Asset.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Assets\FontFactory.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Assets\Texture.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Assets\TextureFactory.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Assets\StaticMesh.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Assets\StaticMeshFactory.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Engine.h">
@@ -254,12 +245,6 @@
     <ClInclude Include="Source\Engine\PhysicsEngine_PhysX.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Assets\PhysicsShapeFactory.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Assets\PhysicsMaterialFactory.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Framework\Systems\MeshRenderSystem.h">
       <Filter>Source Files\Framework\Systems</Filter>
     </ClInclude>
@@ -291,9 +276,6 @@
       <Filter>Source Files\Framework\Systems</Filter>
     </ClInclude>
     <ClInclude Include="Source\Assets\WorldSetup.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Assets\WorldSetupFactory.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\StringView.h">

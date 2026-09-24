@@ -1,4 +1,4 @@
-#include "Assets/FontFactory.h"
+#include "Assets/Font.h"
 #include "Engine/Engine.h"
 
 AssetHandle<Font> Factory<Font>::FromFile(mage::StringView inPath)

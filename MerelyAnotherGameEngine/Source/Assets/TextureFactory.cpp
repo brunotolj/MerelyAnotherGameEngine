@@ -1,4 +1,4 @@
-#include "Assets/TextureFactory.h"
+#include "Assets/Texture.h"
 #include "Engine/Engine.h"
 
 #define STB_IMAGE_IMPLEMENTATION

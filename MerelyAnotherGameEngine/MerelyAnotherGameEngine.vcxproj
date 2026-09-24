@@ -192,17 +192,11 @@
   <ItemGroup>
     <ClInclude Include="Source\Assets\Asset.h" />
     <ClInclude Include="Source\Assets\Font.h" />
-    <ClInclude Include="Source\Assets\FontFactory.h" />
-    <ClInclude Include="Source\Assets\PhysicsMaterialFactory.h" />
     <ClInclude Include="Source\Assets\PhysicsShape.h" />
     <ClInclude Include="Source\Assets\PhysicsMaterial.h" />
-    <ClInclude Include="Source\Assets\PhysicsShapeFactory.h" />
     <ClInclude Include="Source\Assets\WorldSetup.h" />
-    <ClInclude Include="Source\Assets\WorldSetupFactory.h" />
     <ClInclude Include="Source\Assets\StaticMesh.h" />
-    <ClInclude Include="Source\Assets\StaticMeshFactory.h" />
     <ClInclude Include="Source\Assets\Texture.h" />
-    <ClInclude Include="Source\Assets\TextureFactory.h" />
     <ClInclude Include="Source\Core\Array.h" />
     <ClInclude Include="Source\Core\Asserts.h" />
     <ClInclude Include="Source\Core\Constants.h" />

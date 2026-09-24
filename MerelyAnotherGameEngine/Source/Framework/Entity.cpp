@@ -91,8 +91,6 @@ EntityFactoryFunction TransformEntityFactoryFunction("TransformEntity", [](GameW
 
 	f32 rotationAngle = glm::radians(mage::ParseNumber<f32>(getProperty("rotationAngle")));
 
-	AssetHandle<Texture> texture = gEngine->mAssetManager.GetHandle<Texture>(getProperty("texture"));
-
 	return inWorld.CreateEntity<TransformEntity>(inParentEntity, mage::Transform{ position, mage::Rotor(rotationAxis, rotationAngle) });
 });
 
@@ -106,8 +104,8 @@ EntityFactoryFunction StaticMeshEntityFactoryFunction("StaticMeshEntity", [](Gam
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
-	AssetHandle<StaticMesh> mesh = gEngine->mAssetManager.GetHandle<StaticMesh>(getProperty("mesh"));
-	AssetHandle<Texture> texture = gEngine->mAssetManager.GetHandle<Texture>(getProperty("texture"));
+	AssetHandle<StaticMesh> mesh = gEngine->mAssetManager.FindAsset<StaticMesh>(getProperty("mesh"));
+	AssetHandle<Texture> texture = gEngine->mAssetManager.FindAsset<Texture>(getProperty("texture"));
 
 	return inWorld.CreateEntity<StaticMeshEntity>(inParentEntity, mesh, texture);
 });
@@ -130,8 +128,8 @@ EntityFactoryFunction StaticRigidBodyFactoryFunction("StaticRigidBodyEntity", []
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
-	AssetHandle<PhysicsShape> shape = gEngine->mAssetManager.GetHandle<PhysicsShape>(getProperty("shape"));
-	AssetHandle<PhysicsMaterial> material = gEngine->mAssetManager.GetHandle<PhysicsMaterial>(getProperty("material"));
+	AssetHandle<PhysicsShape> shape = gEngine->mAssetManager.FindAsset<PhysicsShape>(getProperty("shape"));
+	AssetHandle<PhysicsMaterial> material = gEngine->mAssetManager.FindAsset<PhysicsMaterial>(getProperty("material"));
 
 	return inWorld.CreateEntity<StaticRigidBodyEntity>(inParentEntity, shape, material);
 });
@@ -155,8 +153,8 @@ EntityFactoryFunction DynamicRigidBodyFactoryFunction("DynamicRigidBodyEntity", 
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
-	AssetHandle<PhysicsShape> shape = gEngine->mAssetManager.GetHandle<PhysicsShape>(getProperty("shape"));
-	AssetHandle<PhysicsMaterial> material = gEngine->mAssetManager.GetHandle<PhysicsMaterial>(getProperty("material"));
+	AssetHandle<PhysicsShape> shape = gEngine->mAssetManager.FindAsset<PhysicsShape>(getProperty("shape"));
+	AssetHandle<PhysicsMaterial> material = gEngine->mAssetManager.FindAsset<PhysicsMaterial>(getProperty("material"));
 	bool isKinematic = mage::ParseNumber<bool>(getProperty("isKinematic"));
 
 	glm::vec3 linearVelocity
@@ -191,7 +189,7 @@ EntityFactoryFunction SpriteEntityFactoryFunction("SpriteEntity", [](GameWorld& 
 	glm::vec2 screenCoordsMax = { mage::ParseNumber<f32>(getProperty("screenCoords.Max.X")), mage::ParseNumber<f32>(getProperty("screenCoords.Max.Y")) };
 	glm::vec2 textureCoordsMin = { mage::ParseNumber<f32>(getProperty("textureCoords.Min.X")), mage::ParseNumber<f32>(getProperty("textureCoords.Min.Y")) };
 	glm::vec2 textureCoordsMax = { mage::ParseNumber<f32>(getProperty("textureCoords.Max.X"), 1.0f), mage::ParseNumber<f32>(getProperty("textureCoords.Max.Y"), 1.0f) };
-	AssetHandle<Texture> texture = gEngine->mAssetManager.GetHandle<Texture>(getProperty("texture"));
+	AssetHandle<Texture> texture = gEngine->mAssetManager.FindAsset<Texture>(getProperty("texture"));
 
 	return inWorld.CreateEntity<SpriteEntity>(inParentEntity, screenCoordsMin, screenCoordsMax, textureCoordsMin, textureCoordsMax, texture);
 });
@@ -217,7 +215,7 @@ EntityFactoryFunction TextEntityFactoryFunction("TextEntity", [](GameWorld& inWo
 	};
 	glm::vec2 screenPosition = { mage::ParseNumber<f32>(getProperty("position.X")), mage::ParseNumber<f32>(getProperty("position.Y")) };
 	f32 scale = mage::ParseNumber<f32>(getProperty("scale"));
-	AssetHandle<Font> font = gEngine->mAssetManager.GetHandle<Font>(getProperty("font"));
+	AssetHandle<Font> font = gEngine->mAssetManager.FindAsset<Font>(getProperty("font"));
 
 	return inWorld.CreateEntity<TextEntity>(inParentEntity, text, color, screenPosition, scale, font);
 });

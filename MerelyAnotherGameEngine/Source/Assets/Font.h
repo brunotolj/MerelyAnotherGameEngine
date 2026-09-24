@@ -35,3 +35,13 @@ private:
 	Vulkan::Buffer mGlyphBuffer = nullptr;
 	u16 mUnitsPerEm;
 };
+
+template<>
+class Factory<Font>
+{
+public:
+	static AssetHandle<Font> FromFile(mage::StringView inPath);
+
+private:
+	Factory() {}
+};

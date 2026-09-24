@@ -20,3 +20,14 @@ private:
 
 	physx::PxMaterial* mMaterial = nullptr;
 };
+
+template<>
+class Factory<PhysicsMaterial>
+{
+public:
+	static AssetHandle<PhysicsMaterial> FromFile(mage::StringView inPath) { return nullptr; }
+	static AssetHandle<PhysicsMaterial> Create(mage::StringView inName, PropertyContainer const& inProperties);
+
+private:
+	Factory() {}
+};

@@ -13,12 +13,12 @@ public:
 	Asset const* Get(std::type_index inType, mage::StringView inName) const;
 
 	template <AssetType Type>
-	AssetHandle<Type> GetHandle(mage::StringView inName)
+	AssetHandle<Type> FindAsset(mage::StringView inName)
 	{
 		if (mAssetLists[typeid(Type)].Get(inName))
 			return AssetHandle<Type>(inName);
 
-		return nullptr;
+		return Factory<Type>::FromFile(inName);
 	}
 
 private:

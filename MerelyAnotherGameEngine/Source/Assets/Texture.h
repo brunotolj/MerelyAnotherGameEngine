@@ -23,3 +23,13 @@ private:
 	mage::Array<u8> mData;
 	vk::Extent3D mSize;
 };
+
+template<>
+class Factory<Texture>
+{
+public:
+	static AssetHandle<Texture> FromFile(mage::StringView inPath);
+
+private:
+	Factory() {}
+};

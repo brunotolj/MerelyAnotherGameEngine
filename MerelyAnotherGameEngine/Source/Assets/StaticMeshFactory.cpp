@@ -1,4 +1,4 @@
-#include "Assets/StaticMeshFactory.h"
+#include "Assets/StaticMesh.h"
 #include "Engine/Engine.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
