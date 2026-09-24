@@ -30,10 +30,17 @@ void FreeMoveSystem::Update(f32 inDeltaTime)
 	mRotation.y = glm::clamp(mRotation.y, -glm::radians(80.0f), glm::radians(80.0f));
 	mCursorMovement = glm::dvec2(0.0f);
 
-	if (mTargetTransformId == mage::InvalidIndex)
+	TransformTreeEntryId targetTransformId = mage::InvalidIndex;
+	for (FreeMoveTargetEntity* targetEntity : mWorld.GetEntities<FreeMoveTargetEntity>())
+	{
+		targetTransformId = targetEntity->GetParentEntity().mTransformId;
+		break;
+	}
+
+	if (targetTransformId == mage::InvalidIndex)
 		return;
 
-	mage::Transform transform = Get<TransformTree>().GetGlobalTransform(mTargetTransformId);
+	mage::Transform transform = Get<TransformTree>().GetGlobalTransform(targetTransformId);
 
 	transform.Rotation = mage::Rotor::Combine(
 		mage::Rotor({ 0.0f, 0.0f, 1.0f }, mRotation.x),
@@ -52,10 +59,5 @@ void FreeMoveSystem::Update(f32 inDeltaTime)
 
 	transform.Position += mSpeed * inDeltaTime * movement;
 
-	Get<TransformTree>().SetGlobalTransform(mTargetTransformId, transform);
-}
-
-void FreeMoveSystem::SetTargetTransformId(TransformTreeEntryId inTransformId)
-{
-	mTargetTransformId = inTransformId;
+	Get<TransformTree>().SetGlobalTransform(targetTransformId, transform);
 }

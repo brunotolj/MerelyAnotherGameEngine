@@ -37,6 +37,9 @@
     <Filter Include="Source Files\Framework\Systems">
       <UniqueIdentifier>{03607a11-348d-4f0c-aef1-29b14b1a004d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Worlds">
+      <UniqueIdentifier>{ab68fa9e-e95a-41a8-b7a8-68f8f8e04966}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp">
@@ -298,7 +301,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Shaders\MeshShader_Vert.slang" />
     <None Include="Source\Shaders\MeshShader.slang">
       <Filter>Source Files\Shaders</Filter>
     </None>
@@ -307,6 +309,9 @@
     </None>
     <None Include="Source\Shaders\TextShader.slang">
       <Filter>Source Files\Shaders</Filter>
+    </None>
+    <None Include="Worlds\TestWorld.mage">
+      <Filter>Resource Files\Worlds</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -4,12 +4,12 @@ WorldComponentFactoryFunction WorldBoundsSystemFactoryFunction("WorldBoundsSyste
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
-	f32 minX = mage::ParseNumber<f32>(getProperty("minX"));
-	f32 maxX = mage::ParseNumber<f32>(getProperty("maxX"));
-	f32 minY = mage::ParseNumber<f32>(getProperty("minY"));
-	f32 maxY = mage::ParseNumber<f32>(getProperty("maxY"));
-	f32 minZ = mage::ParseNumber<f32>(getProperty("minZ"));
-	f32 maxZ = mage::ParseNumber<f32>(getProperty("maxZ"));
+	f32 minX = mage::ParseNumber<f32>(getProperty("bounds.Min.X"));
+	f32 maxX = mage::ParseNumber<f32>(getProperty("bounds.Max.X"));
+	f32 minY = mage::ParseNumber<f32>(getProperty("bounds.Min.Y"));
+	f32 maxY = mage::ParseNumber<f32>(getProperty("bounds.Max.Y"));
+	f32 minZ = mage::ParseNumber<f32>(getProperty("bounds.Min.Z"));
+	f32 maxZ = mage::ParseNumber<f32>(getProperty("bounds.Max.Z"));
 
 	inWorld.CreateComponent<WorldBoundsSystem>(glm::vec3(minX, minY, minZ), glm::vec3(maxX, maxY, maxZ));
 });

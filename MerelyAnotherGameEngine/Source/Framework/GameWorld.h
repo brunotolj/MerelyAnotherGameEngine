@@ -19,6 +19,8 @@ public:
 	template <typename EntityClass>
 	mage::Array<EntityClass*> const& GetEntities() const
 	{
+		static mage::Array<EntityClass*> dummy;
+		if (mEntitiesByClass.contains(typeid(EntityClass)) == false) return dummy;
 		return (mage::Array<EntityClass*> const&)(mEntitiesByClass.at(typeid(EntityClass)));
 	}
 
@@ -28,7 +30,7 @@ public:
 		if (GetComponent<ComponentClass>()) return nullptr;
 		if (ComponentClass::CheckPrerequisites(*this) == false) return nullptr;
 
-		ComponentClass* component = new ComponentClass(*this, inArgs...);
+		ComponentClass* component = new ComponentClass(*this, std::forward<Args>(inArgs)...);
 		mComponentByClass[typeid(ComponentClass)] = component;
 
 		if constexpr (std::is_base_of<GameUtility, ComponentClass>::value)
@@ -52,9 +54,12 @@ public:
 	}
 
 	template <typename EntityClass, typename... Args>
-	EntityClass* CreateEntity(Args&&... inArgs)
+	EntityClass* CreateEntity(GameEntity* inParentEntity, Args&&... inArgs)
 	{
-		EntityClass* entity = new EntityClass(*this, typeid(EntityClass), inArgs...);
+		if (EntityClass::IsParentEntityValid(inParentEntity) == false)
+			return nullptr;
+
+		EntityClass* entity = new EntityClass(*this, typeid(EntityClass), inParentEntity, std::forward<Args>(inArgs)...);
 		mEntities.Add(entity);
 		mEntitiesByClass[entity->mTypeIndex].Add(entity);
 		return entity;

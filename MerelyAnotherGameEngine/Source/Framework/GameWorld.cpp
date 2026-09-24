@@ -1,3 +1,4 @@
+#include "Engine/Engine.h"
 #include "Framework/GameWorld.h"
 
 std::unordered_map<mage::String, WorldComponentFactoryCallback> gWorldComponentFactoryFunctions;
@@ -6,15 +7,34 @@ GameWorld::GameWorld(WorldSetup const& inWorldSetup)
 {
 	for (WorldComponentSetup const& componentSetup : inWorldSetup.mComponentSetups)
 	{
-		if (gWorldComponentFactoryFunctions.contains(componentSetup.Name) == false)
+		if (gWorldComponentFactoryFunctions.contains(componentSetup.Type) == false)
 			continue;
 
-		gWorldComponentFactoryFunctions[componentSetup.Name](*this, componentSetup.Properties);
+		gWorldComponentFactoryFunctions[componentSetup.Type](*this, componentSetup.Properties);
+	}
+
+	mage::Array<GameEntity*> parentChain;
+	parentChain.Add(nullptr);
+
+	for (EntitySetup const& entitySetup : inWorldSetup.mEntitySetups)
+	{
+		if (gEntityFactoryFunctions.contains(entitySetup.Type) == false)
+			continue;
+
+		if (mage_ensure(entitySetup.ParentChainDepth < parentChain.GetSize()) == false)
+			continue;
+
+		parentChain.ResizeUninitialized(entitySetup.ParentChainDepth + 1);
+
+		GameEntity* entity = gEntityFactoryFunctions[entitySetup.Type](*this, parentChain[entitySetup.ParentChainDepth], entitySetup.Properties);
+		parentChain.Add(entity);
 	}
 }
 
 GameWorld::~GameWorld()
 {
+	gEngine->mVulkanDevice.GetVkDevice().waitIdle();
+
 	while (mEntities.GetSize() > 0)
 		DestroyEntity(mEntities.GetLast());
 

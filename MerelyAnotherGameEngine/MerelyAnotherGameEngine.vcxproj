@@ -242,8 +242,8 @@
   <ItemGroup>
     <None Include="Source\Shaders\TextShader.slang" />
     <None Include="Source\Shaders\MeshShader.slang" />
-    <None Include="Source\Shaders\MeshShader_Vert.slang" />
     <None Include="Source\Shaders\SpriteShader.slang" />
+    <None Include="Worlds\TestWorld.mage" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

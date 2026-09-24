@@ -10,6 +10,12 @@ namespace mage
 
 		Rotor(glm::vec3 inAxis, f32 inAngleRad)
 		{
+			if (inAngleRad == 0.0f)
+			{
+				*this = Rotor();
+				return;
+			}
+
 			f32 invSqrt = 1.0f / glm::sqrt(inAxis.x * inAxis.x + inAxis.y * inAxis.y + inAxis.z * inAxis.z);
 			f32 halfAngle = 0.5f * inAngleRad;
 			f32 sine = glm::sin(halfAngle);

@@ -23,7 +23,7 @@ Components
 	FreeMoveSystem { speed=10 }
 	GameplaySystem { halfSpan=10 maxSpeed=80 acceleration=80 deceleration=150 ballSpawnInterval=2 ballPhysicsShape=Worlds/TestWorld.mage:BallCollision ballPhysicsMaterial=Worlds/TestWorld.mage:BallMaterial ballMesh=Worlds/TestWorld.mage:BallMesh ballTexture=Textures/ball.png }
 	PhysicsSystem
-	WorldBoundsSystem { minX=-10000 maxX=10000 minY=-10000 maxY=10000 minZ=-10 maxZ=10000 }
+	WorldBoundsSystem { bounds.Min.X=-10000 bounds.Max.X=10000 bounds.Min.Y=-10000 bounds.Max.Y=10000 bounds.Min.Z=-10 bounds.Max.Z=10000 }
 	MeshRenderSystem
 	SpriteRenderSystem
 	TextRenderSystem
@@ -31,4 +31,59 @@ Components
 
 Entities
 {
+	SpriteEntity { screenCoords.Min.X=50 screenCoords.Min.Y=50 screenCoords.Max.X=150 screenCoords.Max.Y=150 texture=Textures/default.png }
+	TextEntity { text="Merely Another Game Engine" color.R=1.0 color.G=0.5 color.B=0.0 position.X=180 position.Y=90 scale=40 font=Fonts/ArianaVioleta-dz2K.ttf }
+	TextEntity { text=M.A.G.E color.R=0.5 color.G=1.0 color.B=1.0 position.X=180 position.Y=140 scale=40 font=Fonts/Orbitron-Regular.ttf }
+
+	TransformEntity { position.Y=-30 position.Z=10 }
+	> FreeMoveTargetEntity
+	> CameraEntity
+
+	TransformEntity { }
+	> StaticRigidBodyEntity { shape=Worlds/TestWorld.mage:BoardCollision material=Worlds/TestWorld.mage:FloorMaterial }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:BoxMesh texture=Textures/cube.png }
+
+	TransformEntity { position.X=16 position.Y=16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
+	> StaticRigidBodyEntity { shape=Worlds/TestWorld.mage:CornerCollision material=Worlds/TestWorld.mage:DefaultMaterial }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CylinderMesh texture=Textures/cylinder.png }
+	> TransformEntity { position.X=16 position.Y=16 position.Z=8 rotationAxis.Z=1 rotationAngle=135 }
+	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+
+	TransformEntity { position.X=-16 position.Y=16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
+	> StaticRigidBodyEntity { shape=Worlds/TestWorld.mage:CornerCollision material=Worlds/TestWorld.mage:DefaultMaterial }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CylinderMesh texture=Textures/cylinder.png }
+	> TransformEntity { position.X=-16 position.Y=16 position.Z=8 rotationAxis.Z=1 rotationAngle=45 }
+	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+
+	TransformEntity { position.X=-16 position.Y=-16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
+	> StaticRigidBodyEntity { shape=Worlds/TestWorld.mage:CornerCollision material=Worlds/TestWorld.mage:DefaultMaterial }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CylinderMesh texture=Textures/cylinder.png }
+	> TransformEntity { position.X=-16 position.Y=-16 position.Z=8 rotationAxis.Z=1 rotationAngle=-45 }
+	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+
+	TransformEntity { position.X=16 position.Y=-16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
+	> StaticRigidBodyEntity { shape=Worlds/TestWorld.mage:CornerCollision material=Worlds/TestWorld.mage:DefaultMaterial }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CylinderMesh texture=Textures/cylinder.png }
+	> TransformEntity { position.X=16 position.Y=-16 position.Z=8 rotationAxis.Z=1 rotationAngle=-135 }
+	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+
+	TransformEntity { position.X=-20 position.Z=2 }
+	> DynamicRigidBodyEntity { shape=Worlds/TestWorld.mage:CapsuleCollision material=Worlds/TestWorld.mage:DefaultMaterial isKinematic=1 }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CapsuleMesh texture=Textures/capsule.png }
+	> CapsuleMoverEntity { inputKeyNegative=72 inputKeyPositive=74 }
+
+	TransformEntity { position.Y=20 position.Z=2 rotationAxis.Z=1 rotationAngle=90 }
+	> DynamicRigidBodyEntity { shape=Worlds/TestWorld.mage:CapsuleCollision material=Worlds/TestWorld.mage:DefaultMaterial isKinematic=1 }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CapsuleMesh texture=Textures/capsule.png }
+	> CapsuleMoverEntity { inputKeyNegative=85 inputKeyPositive=73 }
+
+	TransformEntity { position.X=20 position.Z=2 rotationAxis.Z=1 rotationAngle=180 }
+	> DynamicRigidBodyEntity { shape=Worlds/TestWorld.mage:CapsuleCollision material=Worlds/TestWorld.mage:DefaultMaterial isKinematic=1 }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CapsuleMesh texture=Textures/capsule.png }
+	> CapsuleMoverEntity { inputKeyNegative=79 inputKeyPositive=80 }
+
+	TransformEntity { position.Y=-20 position.Z=2 rotationAxis.Z=1 rotationAngle=-90 }
+	> DynamicRigidBodyEntity { shape=Worlds/TestWorld.mage:CapsuleCollision material=Worlds/TestWorld.mage:DefaultMaterial isKinematic=1 }
+	> StaticMeshEntity { mesh=Worlds/TestWorld.mage:CapsuleMesh texture=Textures/capsule.png }
+	> CapsuleMoverEntity { inputKeyNegative=75 inputKeyPositive=76 }
 }

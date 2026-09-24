@@ -37,68 +37,68 @@ void GameplaySystem::Update(f32 inDeltaTime)
 		}
 	}
 
-	for (PlayerEntity* playerEntity : mWorld.GetEntities<PlayerEntity>())
+	for (CapsuleMoverEntity* capsuleMoverEntity : mWorld.GetEntities<CapsuleMoverEntity>())
 	{
 		f32 input = 0.0f;
-		if (gEngine->mInputHandler.IsKeyPressed(playerEntity->mInputCodeNegative)) input -= 1.0f;
-		if (gEngine->mInputHandler.IsKeyPressed(playerEntity->mInputCodePositive)) input += 1.0f;
+		if (gEngine->mInputHandler.IsKeyPressed(capsuleMoverEntity->mInputCodeNegative)) input -= 1.0f;
+		if (gEngine->mInputHandler.IsKeyPressed(capsuleMoverEntity->mInputCodePositive)) input += 1.0f;
 
 		f32 remainingTime = inDeltaTime;
 		f32 movement = 0.0f;
 
-		if (remainingTime > 0.0f && playerEntity->mSpeed != 0.0f && input * playerEntity->mSpeed <= 0.0f)
+		if (remainingTime > 0.0f && capsuleMoverEntity->mSpeed != 0.0f && input * capsuleMoverEntity->mSpeed <= 0.0f)
 		{
-			f32 decelTime = std::fabsf(playerEntity->mSpeed) / mSetup.Deceleration;
+			f32 decelTime = std::fabsf(capsuleMoverEntity->mSpeed) / mSetup.Deceleration;
 			if (decelTime > remainingTime)
 			{
-				f32 deltaSpeed = playerEntity->mSpeed / std::fabsf(playerEntity->mSpeed) * mSetup.Deceleration * remainingTime;
-				movement += (playerEntity->mSpeed - 0.5f * deltaSpeed) * remainingTime;
-				playerEntity->mSpeed -= deltaSpeed;
+				f32 deltaSpeed = capsuleMoverEntity->mSpeed / std::fabsf(capsuleMoverEntity->mSpeed) * mSetup.Deceleration * remainingTime;
+				movement += (capsuleMoverEntity->mSpeed - 0.5f * deltaSpeed) * remainingTime;
+				capsuleMoverEntity->mSpeed -= deltaSpeed;
 				remainingTime = 0.0f;
 			}
 			else
 			{
-				movement += 0.5f * playerEntity->mSpeed * decelTime;
-				playerEntity->mSpeed = 0.0f;
+				movement += 0.5f * capsuleMoverEntity->mSpeed * decelTime;
+				capsuleMoverEntity->mSpeed = 0.0f;
 				remainingTime -= decelTime;
 			}
 		}
 
-		if (remainingTime > 0.0f && ((playerEntity->mSpeed == 0.0f && input != 0.0f) || input * playerEntity->mSpeed > 0.0f))
+		if (remainingTime > 0.0f && ((capsuleMoverEntity->mSpeed == 0.0f && input != 0.0f) || input * capsuleMoverEntity->mSpeed > 0.0f))
 		{
-			f32 accelTime = (mSetup.MaxSpeed - input * playerEntity->mSpeed) / mSetup.Acceleration;
+			f32 accelTime = (mSetup.MaxSpeed - input * capsuleMoverEntity->mSpeed) / mSetup.Acceleration;
 			if (accelTime > remainingTime)
 			{
 				f32 deltaSpeed = input * mSetup.Acceleration * remainingTime;
-				movement += (playerEntity->mSpeed + 0.5f * deltaSpeed) * remainingTime;
-				playerEntity->mSpeed += deltaSpeed;
+				movement += (capsuleMoverEntity->mSpeed + 0.5f * deltaSpeed) * remainingTime;
+				capsuleMoverEntity->mSpeed += deltaSpeed;
 				remainingTime = 0.0f;
 			}
 			else
 			{
-				movement += 0.5f * (playerEntity->mSpeed + input * mSetup.MaxSpeed) * accelTime;
-				playerEntity->mSpeed = input * mSetup.MaxSpeed;
+				movement += 0.5f * (capsuleMoverEntity->mSpeed + input * mSetup.MaxSpeed) * accelTime;
+				capsuleMoverEntity->mSpeed = input * mSetup.MaxSpeed;
 				remainingTime -= accelTime;
 			}
 		}
 
-		movement += playerEntity->mSpeed * remainingTime;
+		movement += capsuleMoverEntity->mSpeed * remainingTime;
 
-		playerEntity->mPosition += movement;
-		if (playerEntity->mPosition > mSetup.HalfSpan)
+		capsuleMoverEntity->mPosition += movement;
+		if (capsuleMoverEntity->mPosition > mSetup.HalfSpan)
 		{
-			playerEntity->mPosition = mSetup.HalfSpan;
-			playerEntity->mSpeed = 0.0f;
+			capsuleMoverEntity->mPosition = mSetup.HalfSpan;
+			capsuleMoverEntity->mSpeed = 0.0f;
 		}
-		else if (playerEntity->mPosition < -mSetup.HalfSpan)
+		else if (capsuleMoverEntity->mPosition < -mSetup.HalfSpan)
 		{
-			playerEntity->mPosition = -mSetup.HalfSpan;
-			playerEntity->mSpeed = 0.0f;
+			capsuleMoverEntity->mPosition = -mSetup.HalfSpan;
+			capsuleMoverEntity->mSpeed = 0.0f;
 		}
 
-		mage::Transform transform = playerEntity->mOriginalTransform;
-		transform.Position += playerEntity->mPosition * playerEntity->mOriginalTransform.Rotation.Rotate({ 0.0f, -1.0f, 0.0f });
-		Get<TransformTree>().SetGlobalTransform(playerEntity->mTransformId, transform);
+		mage::Transform transform = capsuleMoverEntity->mOriginalTransform;
+		transform.Position += capsuleMoverEntity->mPosition * capsuleMoverEntity->mOriginalTransform.Rotation.Rotate({ 0.0f, -1.0f, 0.0f });
+		Get<TransformTree>().SetGlobalTransform(capsuleMoverEntity->GetParentEntity().mTransformId, transform);
 	}
 }
 
@@ -109,17 +109,17 @@ void GameplaySystem::SpawnBall()
 		return;
 
 	u32 index = rand() % ballSpawners.GetSize();
-
 	BallSpawnerEntity* spawner = ballSpawners[index];
 
-	glm::vec3 velocity = Get<TransformTree>().GetGlobalTransform(spawner->GetParentEntity().mTransformId).Rotation.Rotate(spawner->mSpawnVelocity);
+	glm::vec3 velocity = spawner->mSpawnVelocity;
 	velocity.x += (0.01f * (rand() % 100) - 0.5f) * spawner->mSpawnVelocityVariance.x;
 	velocity.y += (0.01f * (rand() % 100) - 0.5f) * spawner->mSpawnVelocityVariance.y;
 	velocity.z += (0.01f * (rand() % 100) - 0.5f) * spawner->mSpawnVelocityVariance.z;
 
 	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner->GetParentEntity().mTransformId);
+	glm::vec3 velocityTransformed = transform.Rotation.Rotate(velocity);
 
 	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transform);
-	mWorld.CreateEntity<DynamicRigidBodyEntity>(*transformEntity, mSetup.BallPhysicsShape, mSetup.BallPhysicsMaterial, false, velocity);
-	mWorld.CreateEntity<StaticMeshEntity>(*transformEntity, mSetup.BallMesh, mSetup.BallTexture);
+	mWorld.CreateEntity<DynamicRigidBodyEntity>(transformEntity, mSetup.BallPhysicsShape, mSetup.BallPhysicsMaterial, false, velocityTransformed);
+	mWorld.CreateEntity<StaticMeshEntity>(transformEntity, mSetup.BallMesh, mSetup.BallTexture);
 }

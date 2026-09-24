@@ -51,8 +51,6 @@ public:
 	virtual void Update(f32 inDeltaTime) override;
 	void RenderMeshes(Vulkan::RenderFrameData const& inFrameData, SceneRenderData const& inData) const;
 
-	void SetCameraTransformId(TransformTreeEntryId inTransformId) { mCameraTransformId = inTransformId; }
-
 private:
 	void SetupDynamicState(vk::CommandBuffer inCommandBuffer) const;
 	void CreatePipeline();
@@ -60,6 +58,4 @@ private:
 	Vulkan::Pipeline mPipeline = nullptr;
 
 	mage::Array<Vulkan::Buffer> mUniformBuffers;
-
-	TransformTreeEntryId mCameraTransformId = mage::InvalidIndex;
 };

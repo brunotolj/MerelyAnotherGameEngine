@@ -56,8 +56,15 @@ void MeshRenderSystem::Update(f32 inDeltaTime)
 	f32 aspectRatio = f32(frameData.Extent.width) / f32(frameData.Extent.height);
 	sceneData.ProjectionTransform = CalcProjectionTransform(0.1f, 1000.0f, glm::radians(90.0f), aspectRatio);
 
-	if (mCameraTransformId != mage::InvalidIndex)
-		sceneData.ViewTransform = Get<TransformTree>().GetGlobalTransform(mCameraTransformId).Inverse().Matrix();
+	TransformTreeEntryId cameraTransformId = mage::InvalidIndex;
+	for (CameraEntity* cameraEntity : mWorld.GetEntities<CameraEntity>())
+	{
+		cameraTransformId = cameraEntity->GetParentEntity().mTransformId;
+		break;
+	}
+
+	if (cameraTransformId != mage::InvalidIndex)
+		sceneData.ViewTransform = Get<TransformTree>().GetGlobalTransform(cameraTransformId).Inverse().Matrix();
 	else
 		sceneData.ViewTransform = mage::Transform().Matrix();
 

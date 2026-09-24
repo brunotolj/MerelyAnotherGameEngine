@@ -38,6 +38,7 @@ namespace mage
 	template <typename T>
 	T ParseNumber(StringView inString, T inDefaultValue = T(0))
 	{
+		if (inString.GetLength() == 0) return inDefaultValue;
 		char* end;
 		f64 value = strtod(inString.GetCString(), &end);
 		return *end ? inDefaultValue : T(value);

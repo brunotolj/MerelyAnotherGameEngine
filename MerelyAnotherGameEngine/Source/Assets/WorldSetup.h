@@ -4,8 +4,15 @@
 
 struct WorldComponentSetup
 {
-	mage::String Name;
+	mage::String Type;
 	PropertyContainer Properties;
+};
+
+struct EntitySetup
+{
+	mage::String Type;
+	PropertyContainer Properties;
+	u32 ParentChainDepth = 0;
 };
 
 class WorldSetup : public Asset
@@ -14,6 +21,8 @@ class WorldSetup : public Asset
 
 public:
 	mage::Array<WorldComponentSetup> mComponentSetups;
+
+	mage::Array<EntitySetup> mEntitySetups;
 
 private:
 	WorldSetup() {}

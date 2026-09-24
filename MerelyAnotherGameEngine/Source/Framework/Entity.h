@@ -12,6 +12,8 @@ class GameEntity : public NonCopyable
 public:
 	virtual ~GameEntity();
 
+	static bool IsParentEntityValid(GameEntity* inParentEntity) { return true; }
+
 	void MarkDestroyed();
 	bool IsDestroyed() const { return mIsDestoryed; }
 
@@ -35,9 +37,14 @@ class ChildGameEntity : public GameEntity
 public:
 	ParentEntityClass& GetParentEntity() const { return (ParentEntityClass&)(*mParentEntity); }
 
+	static bool IsParentEntityValid(GameEntity* inParentEntity)
+	{
+		return inParentEntity && (inParentEntity->mTypeIndex == typeid(ParentEntityClass));
+	}
+
 protected:
-	ChildGameEntity(GameWorld& inWorld, std::type_index inTypeIndex, ParentEntityClass& inParentEntity)
-		: GameEntity(inWorld, inTypeIndex, &inParentEntity) {}
+	ChildGameEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity)
+		: GameEntity(inWorld, inTypeIndex, inParentEntity) {}
 };
 
 class TransformEntity : public GameEntity
@@ -61,7 +68,7 @@ public:
 	StaticMeshEntity(
 		GameWorld& inWorld,
 		std::type_index inTypeIndex,
-		TransformEntity& inParentEntity,
+		GameEntity* inParentEntity,
 		AssetHandle<StaticMesh> inMesh,
 		AssetHandle<Texture> inTexture);
 
@@ -75,7 +82,7 @@ public:
 	StaticRigidBodyEntity(
 		GameWorld& inWorld,
 		std::type_index inTypeIndex,
-		TransformEntity& inParentEntity,
+		GameEntity* inParentEntity,
 		AssetHandle<PhysicsShape> inShape,
 		AssetHandle<PhysicsMaterial> inMaterial);
 
@@ -92,7 +99,7 @@ public:
 	DynamicRigidBodyEntity(
 		GameWorld& inWorld,
 		std::type_index inTypeIndex,
-		TransformEntity& inParentEntity,
+		GameEntity* inParentEntity,
 		AssetHandle<PhysicsShape> inShape,
 		AssetHandle<PhysicsMaterial> inMaterial,
 		bool inIsKinematic,
@@ -140,9 +147,38 @@ public:
 		f32 inScale,
 		AssetHandle<Font> inFont);
 
-	mage::StringView mText;
+	mage::String mText;
 	glm::vec4 mColor;
 	glm::vec2 mScreenPosition;
 	f32 mScale;
 	AssetHandle<Font> mFont;
+};
+
+class FreeMoveTargetEntity : public ChildGameEntity<TransformEntity>
+{
+public:
+	FreeMoveTargetEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity)
+		: ChildGameEntity(inWorld, inTypeIndex, inParentEntity) {}
+};
+
+class CameraEntity : public ChildGameEntity<TransformEntity>
+{
+public:
+	CameraEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity)
+		: ChildGameEntity(inWorld, inTypeIndex, inParentEntity) {
+	}
+};
+
+using PropertyContainer = std::unordered_map<mage::String, mage::String>;
+using EntityFactoryCallback = std::function<GameEntity*(GameWorld&, GameEntity*, PropertyContainer const&)>;
+
+extern std::unordered_map<mage::String, EntityFactoryCallback> gEntityFactoryFunctions;
+
+class EntityFactoryFunction
+{
+public:
+	EntityFactoryFunction(mage::StringView inName, EntityFactoryCallback&& inFunction)
+	{
+		gEntityFactoryFunctions[inName] = inFunction;
+	}
 };

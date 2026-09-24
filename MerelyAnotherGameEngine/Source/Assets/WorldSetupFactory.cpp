@@ -12,9 +12,12 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 	{
 		outToken.Empty();
 
+		bool includeSpaces = false;
+
 		while (true)
 		{
-			if (*reader == ' ') break;
+			if (*reader == '\"') { includeSpaces = !includeSpaces; ++reader; continue; }
+			if (*reader == ' ' && !includeSpaces) break;
 			if (*reader == '\t') break;
 			if (*reader == '\n') break;
 			if (*reader == '\r') break;
@@ -40,6 +43,7 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		mage::String Name;
 		mage::String Type;
 		PropertyContainer Properties;
+		u32 ParentChainDepth = 0;
 	};
 
 	auto parseObject = [](mage::StringView inToken, ObjectData& outObject)
@@ -75,7 +79,22 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 			value += *(reader++);
 		}
 
-		outObject.Properties[name] = value;
+		if (value.GetLength() > 0)
+			outObject.Properties[name] = value;
+	};
+
+	auto parseDepth = [](mage::StringView inToken, u32& outDepth)
+	{
+		char const* reader = inToken.GetCString();
+
+		while (reader - inToken.GetCString() < (i32)inToken.GetLength())
+		{
+			if (*reader == '\0') break;
+			if (*(reader++) != '>') return false;
+		}
+
+		outDepth = inToken.GetLength();
+		return true;
 	};
 
 	enum State
@@ -89,6 +108,7 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 	mage::Array<ObjectData> assets, components, entities;
 	mage::Array<ObjectData>* currentContainer = nullptr;
 	ObjectData* lastObject = nullptr;
+	u32 currentDepth;
 
 	mage::String token;
 
@@ -99,13 +119,16 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		skipWhiteSpace();
 		readToken(token);
 
+		if (token.GetLength() == 0)
+			break;
+
 		switch (state)
 		{
 			case Root:
 				if (token == "Assets") { state = ContainerEntry; currentContainer = &assets; break; }
 				if (token == "Components") { state = ContainerEntry; currentContainer = &components; break; }
 				if (token == "Entities") { state = ContainerEntry; currentContainer = &entities; break; }
-				if (token.GetLength()) { hasError = true; mage_ensure(false); }
+				hasError = true; mage_ensure(false);
 				break;
 
 			case ContainerEntry:
@@ -116,9 +139,13 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 			case Container:
 				if (token == "{") { state = Properties; break; }
 				if (token == "}") { state = Root; break; }
+				if (parseDepth(token, currentDepth)) break;
+
 				currentContainer->AddDefault();
 				lastObject = &currentContainer->GetLast();
 				parseObject(token, *lastObject);
+				lastObject->ParentChainDepth = currentDepth;
+				currentDepth = 0;
 				break;
 
 			case Properties:
@@ -152,6 +179,11 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 	for (ObjectData const& componentData : components)
 	{
 		result->mComponentSetups.AddConstruct(componentData.Name, componentData.Properties);
+	}
+
+	for (ObjectData const& entityData : entities)
+	{
+		result->mEntitySetups.AddConstruct(entityData.Name, entityData.Properties, entityData.ParentChainDepth);
 	}
 
 	return gEngine->mAssetManager.Register(result, inPath);
