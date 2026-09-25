@@ -27,6 +27,14 @@ namespace mage
 		{
 		}
 
+		template <NumericType T>
+		void FromNumber(T inValue)
+		{
+			i32 size = snprintf(nullptr, 0, "%f", inValue);
+			Reserve(size + 1);
+			snprintf(GetData(), size + 1, "%f", inValue);
+		}
+
 		String& Append(char inChar)
 		{
 			GetLast() = inChar;

@@ -44,8 +44,8 @@ private:
 	AssetHandle(mage::String const& inName) : AssetHandleBase(inName) {}
 };
 
-using PropertyContainer = std::unordered_map<mage::String, mage::String>;
-using AssetFactoryCallback = std::function<AssetHandleBase(mage::StringView, PropertyContainer const&)>;
+using PropertyValueMap = std::unordered_map<mage::String, mage::String>;
+using AssetFactoryCallback = std::function<AssetHandleBase(mage::StringView, PropertyValueMap const&)>;
 
 extern std::unordered_map<mage::String, AssetFactoryCallback> gAssetFactoryFunctions;
 
@@ -57,3 +57,19 @@ public:
 		gAssetFactoryFunctions[inName] = inFunction;
 	}
 };
+
+#define REGISTER_ASSET_FACTORY_FUNCTION(Type) \
+AssetFactoryFunction Type##FactoryFunction(#Type, [](mage::StringView inName, PropertyValueMap const& inProperties) \
+{ \
+	Factory<Type>::Impl factory; \
+	PropertyTree(factory).ApplyPropertyValues(inProperties); \
+	return factory.Create(inName); \
+});
+
+#define REGISTER_ASSET_FACTORY_FUNCTION_WITH_SUBTYPE(Type, Subtype) \
+AssetFactoryFunction Type##Subtype##FactoryFunction(#Type ":" #Subtype, [](mage::StringView inName, PropertyValueMap const& inProperties) \
+{ \
+	Factory<Type>::Subtype factory; \
+	PropertyTree(factory).ApplyPropertyValues(inProperties); \
+	return factory.Create(inName); \
+});

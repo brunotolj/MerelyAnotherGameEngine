@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Assets/Asset.h"
+#include "Property.h"
 
 #include <PxPhysicsAPI.h>
 
@@ -60,14 +61,93 @@ class Factory<PhysicsShape>
 {
 public:
 	static AssetHandle<PhysicsShape> FromFile(mage::StringView inPath) { return nullptr; }
-	static AssetHandle<PhysicsShape> Create(mage::StringView inName, PropertyContainer const& inProperties);
 
-	static AssetHandle<PhysicsShape> MakeBox(mage::StringView inName, glm::vec3 inHalfExtent);
-	static AssetHandle<PhysicsShape> MakeSphere(mage::StringView inName, f32 inRadius);
-	static AssetHandle<PhysicsShape> MakeCapsule(mage::StringView inName, f32 inRadius, f32 inHalfHeight);
-	static AssetHandle<PhysicsShape> MakeCylinder(mage::StringView inName, f32 inRadius, f32 inHalfHeight);
-	static AssetHandle<PhysicsShape> MakeCone(mage::StringView inName, f32 inRadius, f32 inHeight);
+	struct Box
+	{
+		AssetHandle<PhysicsShape> Create(mage::StringView inName);
+
+		glm::vec3 HalfExtent{ 1.0f, 1.0f, 1.0f };
+	};
+
+	struct Sphere
+	{
+		AssetHandle<PhysicsShape> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+	};
+
+	struct Cylinder
+	{
+		AssetHandle<PhysicsShape> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+		f32 HalfHeight = 1.0f;
+	};
+
+	struct Capsule
+	{
+		AssetHandle<PhysicsShape> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+		f32 HalfHeight = 1.0f;
+	};
+
+	struct Cone
+	{
+		AssetHandle<PhysicsShape> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+		f32 Height = 1.0f;
+	};
 
 private:
 	Factory() {}
+};
+
+template <>
+struct Property<Factory<PhysicsShape>::Box> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Box, HalfExtent);
+	}
+};
+
+template <>
+struct Property<Factory<PhysicsShape>::Sphere> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Sphere, Radius);
+	}
+};
+
+template <>
+struct Property<Factory<PhysicsShape>::Cylinder> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Cylinder, Radius);
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Cylinder, HalfHeight);
+	}
+};
+
+template <>
+struct Property<Factory<PhysicsShape>::Capsule> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Capsule, Radius);
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Capsule, HalfHeight);
+	}
+};
+
+template <>
+struct Property<Factory<PhysicsShape>::Cone> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Cone, Radius);
+		inOutContainer.AddProperty(Factory<PhysicsShape>::Cone, Height);
+	}
 };

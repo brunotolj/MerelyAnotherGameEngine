@@ -10,7 +10,7 @@ CapsuleMoverEntity::CapsuleMoverEntity(GameWorld& inWorld, std::type_index inTyp
 	}
 }
 
-EntityFactoryFunction CapsuleMoverEntityFactoryFunction("CapsuleMoverEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction CapsuleMoverEntityFactoryFunction("CapsuleMoverEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 	
@@ -25,7 +25,7 @@ BallSpawnerEntity::BallSpawnerEntity(GameWorld& inWorld, std::type_index inTypeI
 {
 }
 
-EntityFactoryFunction BallSpawnerEntityFactoryFunction("BallSpawnerEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction BallSpawnerEntityFactoryFunction("BallSpawnerEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 

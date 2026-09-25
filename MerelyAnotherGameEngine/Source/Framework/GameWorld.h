@@ -14,17 +14,7 @@ public:
 
 	void Update(f32 inDeltaTime);
 
-	mage::Array<GameEntity*> const& GetEntities() const { return mEntities; }
-
-	template <typename EntityClass>
-	mage::Array<EntityClass*> const& GetEntities() const
-	{
-		static mage::Array<EntityClass*> dummy;
-		if (mEntitiesByClass.contains(typeid(EntityClass)) == false) return dummy;
-		return (mage::Array<EntityClass*> const&)(mEntitiesByClass.at(typeid(EntityClass)));
-	}
-
-	template <typename ComponentClass, typename... Args>
+	template <WorldComponentType ComponentClass, typename... Args>
 	ComponentClass* CreateComponent(Args&&... inArgs)
 	{
 		if (GetComponent<ComponentClass>()) return nullptr;
@@ -43,7 +33,7 @@ public:
 		return component;
 	}
 
-	template <typename ComponentClass>
+	template <WorldComponentType ComponentClass>
 	ComponentClass* GetComponent()
 	{
 		auto component = mComponentByClass.find(typeid(ComponentClass));
@@ -53,7 +43,7 @@ public:
 		return (ComponentClass*)(component->second);
 	}
 
-	template <typename EntityClass, typename... Args>
+	template <EntityType EntityClass, typename... Args>
 	EntityClass* CreateEntity(GameEntity* inParentEntity, Args&&... inArgs)
 	{
 		if (EntityClass::IsParentEntityValid(inParentEntity) == false)
@@ -63,6 +53,16 @@ public:
 		mEntities.Add(entity);
 		mEntitiesByClass[entity->mTypeIndex].Add(entity);
 		return entity;
+	}
+
+	mage::Array<GameEntity*> const& GetEntities() const { return mEntities; }
+
+	template <EntityType EntityClass>
+	mage::Array<EntityClass*> const& GetEntities() const
+	{
+		static mage::Array<EntityClass*> dummy;
+		if (mEntitiesByClass.contains(typeid(EntityClass)) == false) return dummy;
+		return (mage::Array<EntityClass*> const&)(mEntitiesByClass.at(typeid(EntityClass)));
 	}
 
 private:
@@ -76,7 +76,7 @@ private:
 	std::unordered_map<std::type_index, mage::Array<GameEntity*>> mEntitiesByClass;
 };
 
-template <typename Prerequisite>
+template <WorldComponentType Prerequisite>
 class GameSystemPrerequisite
 {
 public:
@@ -91,7 +91,7 @@ private:
 	Prerequisite& mPrerequisite;
 };
 
-template <typename Prerequisite, typename... OtherPrerequisites>
+template <WorldComponentType Prerequisite, typename... OtherPrerequisites>
 bool CheckGameSystemPrerequisites(GameWorld& inWorld)
 {
 	if constexpr (sizeof...(OtherPrerequisites) > 0)

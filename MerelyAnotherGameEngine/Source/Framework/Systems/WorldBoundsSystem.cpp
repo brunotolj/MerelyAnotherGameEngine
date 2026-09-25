@@ -1,6 +1,6 @@
 #include "Framework/Systems/WorldBoundsSystem.h"
 
-WorldComponentFactoryFunction WorldBoundsSystemFactoryFunction("WorldBoundsSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction WorldBoundsSystemFactoryFunction("WorldBoundsSystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 

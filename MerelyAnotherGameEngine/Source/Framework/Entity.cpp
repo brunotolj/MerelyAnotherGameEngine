@@ -71,7 +71,7 @@ TransformEntity::~TransformEntity()
 	}
 }
 
-EntityFactoryFunction TransformEntityFactoryFunction("TransformEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction TransformEntityFactoryFunction("TransformEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
@@ -100,7 +100,7 @@ StaticMeshEntity::StaticMeshEntity(GameWorld& inWorld, std::type_index inTypeInd
 {
 }
 
-EntityFactoryFunction StaticMeshEntityFactoryFunction("StaticMeshEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction StaticMeshEntityFactoryFunction("StaticMeshEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
@@ -124,7 +124,7 @@ StaticRigidBodyEntity::~StaticRigidBodyEntity()
 	mPhysicsActor = nullptr;
 }
 
-EntityFactoryFunction StaticRigidBodyFactoryFunction("StaticRigidBodyEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction StaticRigidBodyFactoryFunction("StaticRigidBodyEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
@@ -149,7 +149,7 @@ DynamicRigidBodyEntity::~DynamicRigidBodyEntity()
 	mPhysicsActor = nullptr;
 }
 
-EntityFactoryFunction DynamicRigidBodyFactoryFunction("DynamicRigidBodyEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction DynamicRigidBodyFactoryFunction("DynamicRigidBodyEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
@@ -181,7 +181,7 @@ SpriteEntity::SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, Game
 {
 }
 
-EntityFactoryFunction SpriteEntityFactoryFunction("SpriteEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction SpriteEntityFactoryFunction("SpriteEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
@@ -201,7 +201,7 @@ TextEntity::TextEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEnti
 {
 }
 
-EntityFactoryFunction TextEntityFactoryFunction("TextEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction TextEntityFactoryFunction("TextEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) -> mage::StringView { if (inProperties.contains(inPropertyName)) return inProperties.at(inPropertyName); return ""; };
 
@@ -220,12 +220,12 @@ EntityFactoryFunction TextEntityFactoryFunction("TextEntity", [](GameWorld& inWo
 	return inWorld.CreateEntity<TextEntity>(inParentEntity, text, color, screenPosition, scale, font);
 });
 
-EntityFactoryFunction FreeMoveTargetEntityFactoryFunction("FreeMoveTargetEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction FreeMoveTargetEntityFactoryFunction("FreeMoveTargetEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	return inWorld.CreateEntity<FreeMoveTargetEntity>(inParentEntity);
 });
 
-EntityFactoryFunction CameraEntityFactoryFunction("CameraEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainer const& inProperties)
+EntityFactoryFunction CameraEntityFactoryFunction("CameraEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
 {
 	return inWorld.CreateEntity<CameraEntity>(inParentEntity);
 });

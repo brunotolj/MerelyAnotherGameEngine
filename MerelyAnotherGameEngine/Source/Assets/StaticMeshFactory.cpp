@@ -6,7 +6,11 @@
 #include <glm/gtx/hash.hpp>
 #include <tiny_obj_loader.h>
 
-AssetFactoryFunction StaticMeshFactoryFunction("StaticMesh", [](mage::StringView inName, PropertyContainer const& inProperties) { return Factory<StaticMesh>::Create(inName, inProperties); });
+REGISTER_ASSET_FACTORY_FUNCTION_WITH_SUBTYPE(StaticMesh, Box);
+REGISTER_ASSET_FACTORY_FUNCTION_WITH_SUBTYPE(StaticMesh, Sphere);
+REGISTER_ASSET_FACTORY_FUNCTION_WITH_SUBTYPE(StaticMesh, Cylinder);
+REGISTER_ASSET_FACTORY_FUNCTION_WITH_SUBTYPE(StaticMesh, Capsule);
+REGISTER_ASSET_FACTORY_FUNCTION_WITH_SUBTYPE(StaticMesh, Cone);
 
 namespace std
 {
@@ -99,65 +103,20 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::FromFile(mage::StringView inPath)
 	return gEngine->mAssetManager.Register(result, inPath);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::Create(mage::StringView inName, PropertyContainer const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
-
-	mage::StringView type = getProperty("type");
-
-	if (type == "Box")
-	{
-		f32 halfX = mage::ParseNumber<f32>(getProperty("halfX"));
-		f32 halfY = mage::ParseNumber<f32>(getProperty("halfY"));
-		f32 halfZ = mage::ParseNumber<f32>(getProperty("halfZ"));
-
-		return MakeBox(inName, { halfX, halfY, halfZ });
-	}
-	else if (type == "Sphere")
-	{
-		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
-
-		return MakeSphere(inName, radius);
-	}
-	else if (type == "Cylinder")
-	{
-		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
-		f32 halfHeight = mage::ParseNumber<f32>(getProperty("halfHeight"));
-
-		return MakeCylinder(inName, radius, halfHeight);
-	}
-	else if (type == "Capsule")
-	{
-		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
-		f32 halfHeight = mage::ParseNumber<f32>(getProperty("halfHeight"));
-
-		return MakeCapsule(inName, radius, halfHeight);
-	}
-	else if (type == "Cone")
-	{
-		f32 radius = mage::ParseNumber<f32>(getProperty("radius"));
-		f32 height = mage::ParseNumber<f32>(getProperty("height"));
-
-		return MakeCone(inName, radius, height);
-	}
-
-	return nullptr;
-}
-
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(mage::StringView inName, glm::vec3 inHalfExtent)
+AssetHandle<StaticMesh> Factory<StaticMesh>::Box::Create(mage::StringView inName)
 {
 	StaticMesh* result = new StaticMesh();
 
-	glm::vec3 x = { inHalfExtent.x, 0.0f, 0.0f };
-	glm::vec3 y = { 0.0f, inHalfExtent.y, 0.0f };
-	glm::vec3 z = { 0.0f, 0.0f, inHalfExtent.z };
+	glm::vec3 x = { HalfExtent.x, 0.0f, 0.0f };
+	glm::vec3 y = { 0.0f, HalfExtent.y, 0.0f };
+	glm::vec3 z = { 0.0f, 0.0f, HalfExtent.z };
 
-	AddFlatSurface(*result, { x, {} }, { inHalfExtent.y, inHalfExtent.z }, { 66.0f / 256.0f, 66.0f / 256.0f }, { 128.0f / 256.0f, 128.0f / 256.0f });
-	AddFlatSurface(*result, { -x, mage::Rotor(z, glm::radians(180.0f)) }, { inHalfExtent.y, inHalfExtent.z }, { 190.0f / 256.0f, 66.0f / 256.0f }, { 252.0f / 256.0f, 128.0f / 256.0f });
-	AddFlatSurface(*result, { -y, mage::Rotor(z, glm::radians(90.0f)) }, { inHalfExtent.x, inHalfExtent.z }, { 4.0f / 256.0f, 66.0f / 256.0f }, { 66.0f / 256.0f, 128.0f / 256.0f });
-	AddFlatSurface(*result, { y, mage::Rotor(z, glm::radians(-90.0f)) }, { inHalfExtent.x, inHalfExtent.z }, { 128.0f / 256.0f, 66.0f / 256.0f }, { 190.0f / 256.0f, 128.0f / 256.0f });
-	AddFlatSurface(*result, { z, mage::Rotor(y, glm::radians(90.0f)) }, { inHalfExtent.y, inHalfExtent.x }, { 66.0f / 256.0f, 4.0f / 256.0f }, { 128.0f / 256.0f, 66.0f / 256.0f });
-	AddFlatSurface(*result, { -z, mage::Rotor(y, glm::radians(-90.0f)) }, { inHalfExtent.y, inHalfExtent.x }, { 66.0f / 256.0f, 128.0f / 256.0f }, { 128.0f / 256.0f, 190.0f / 256.0f });
+	AddFlatSurface(*result, { x, {} }, { HalfExtent.y, HalfExtent.z }, { 66.0f / 256.0f, 66.0f / 256.0f }, { 128.0f / 256.0f, 128.0f / 256.0f });
+	AddFlatSurface(*result, { -x, mage::Rotor(z, glm::radians(180.0f)) }, { HalfExtent.y, HalfExtent.z }, { 190.0f / 256.0f, 66.0f / 256.0f }, { 252.0f / 256.0f, 128.0f / 256.0f });
+	AddFlatSurface(*result, { -y, mage::Rotor(z, glm::radians(90.0f)) }, { HalfExtent.x, HalfExtent.z }, { 4.0f / 256.0f, 66.0f / 256.0f }, { 66.0f / 256.0f, 128.0f / 256.0f });
+	AddFlatSurface(*result, { y, mage::Rotor(z, glm::radians(-90.0f)) }, { HalfExtent.x, HalfExtent.z }, { 128.0f / 256.0f, 66.0f / 256.0f }, { 190.0f / 256.0f, 128.0f / 256.0f });
+	AddFlatSurface(*result, { z, mage::Rotor(y, glm::radians(90.0f)) }, { HalfExtent.y, HalfExtent.x }, { 66.0f / 256.0f, 4.0f / 256.0f }, { 128.0f / 256.0f, 66.0f / 256.0f });
+	AddFlatSurface(*result, { -z, mage::Rotor(y, glm::radians(-90.0f)) }, { HalfExtent.y, HalfExtent.x }, { 66.0f / 256.0f, 128.0f / 256.0f }, { 128.0f / 256.0f, 190.0f / 256.0f });
 
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
@@ -165,11 +124,11 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeBox(mage::StringView inName, gl
 	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeSphere(mage::StringView inName, f32 inRadius)
+AssetHandle<StaticMesh> Factory<StaticMesh>::Sphere::Create(mage::StringView inName)
 {
 	StaticMesh* result = new StaticMesh();
 
-	AddHemisphere(*result, {}, inRadius, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 3);
+	AddHemisphere(*result, {}, Radius, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 3);
 	AddInvertedCopy(*result, { 53.0f / 128.0f, 1.0f });
 
 	result->CreateVertexBuffer();
@@ -178,13 +137,13 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeSphere(mage::StringView inName,
 	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(mage::StringView inName, f32 inRadius, f32 inHalfHeight)
+AssetHandle<StaticMesh> Factory<StaticMesh>::Cylinder::Create(mage::StringView inName)
 {
 	StaticMesh* result = new StaticMesh();
 
-	AddCircle(*result, { glm::vec3(inHalfHeight, 0.0f, 0.0f), {} }, inRadius, glm::vec2(65.0f / 256.0f), 61.0f / 256.0f, 4);
+	AddCircle(*result, { glm::vec3(HalfHeight, 0.0f, 0.0f), {} }, Radius, glm::vec2(65.0f / 256.0f), 61.0f / 256.0f, 4);
 	AddInvertedCopy(*result, { 126.0f / 256.0f, 130.0f / 256.0f });
-	AddCylindricSurface(*result, {}, inRadius, inHalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 48);
+	AddCylindricSurface(*result, {}, Radius, HalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 48);
 
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
@@ -192,13 +151,13 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCylinder(mage::StringView inNam
 	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(mage::StringView inName, f32 inRadius, f32 inHalfHeight)
+AssetHandle<StaticMesh> Factory<StaticMesh>::Capsule::Create(mage::StringView inName)
 {
 	StaticMesh* result = new StaticMesh();
 
-	AddHemisphere(*result, { glm::vec3(inHalfHeight, 0.0f, 0.0f), {} }, inRadius, glm::vec2(65.0f / 256.0f), 61.0f / 256.0f, 3);
+	AddHemisphere(*result, { glm::vec3(HalfHeight, 0.0f, 0.0f), {} }, Radius, glm::vec2(65.0f / 256.0f), 61.0f / 256.0f, 3);
 	AddInvertedCopy(*result, { 126.0f / 256.0f, 130.0f / 256.0f });
-	AddCylindricSurface(*result, {}, inRadius, inHalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 40);
+	AddCylindricSurface(*result, {}, Radius, HalfHeight, glm::vec2(1.0f / 64.0f, 33.0f / 64.0f), glm::vec2(63.0f / 64.0f), 40);
 
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();
@@ -206,12 +165,12 @@ AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCapsule(mage::StringView inName
 	return gEngine->mAssetManager.Register(result, inName);
 }
 
-AssetHandle<StaticMesh> Factory<StaticMesh>::MakeCone(mage::StringView inName, f32 inRadius, f32 inHeight)
+AssetHandle<StaticMesh> Factory<StaticMesh>::Cone::Create(mage::StringView inName)
 {
 	StaticMesh* result = new StaticMesh();
 
-	AddConicSurface(*result, { { -0.5f * inHeight, 0.0f, 0.0f }, {} }, inRadius, inHeight, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 48, 10);
-	AddCircle(*result, { { -0.5f * inHeight, 0.0f, 0.0f }, mage::Rotor({ 0.0f, 0.0f, 1.0f }, glm::radians(180.0f)) }, inRadius, glm::vec2(181.0f / 256.0f), 71.0f / 256.0f, 4);
+	AddConicSurface(*result, { { -0.5f * Height, 0.0f, 0.0f }, {} }, Radius, Height, glm::vec2(75.0f / 256.0f), 71.0f / 256.0f, 48, 10);
+	AddCircle(*result, { { -0.5f * Height, 0.0f, 0.0f }, mage::Rotor({ 0.0f, 0.0f, 1.0f }, glm::radians(180.0f)) }, Radius, glm::vec2(181.0f / 256.0f), 71.0f / 256.0f, 4);
 
 	result->CreateVertexBuffer();
 	result->CreateIndexBuffer();

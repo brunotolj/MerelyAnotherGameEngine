@@ -5,13 +5,13 @@
 struct WorldComponentSetup
 {
 	mage::String Type;
-	PropertyContainer Properties;
+	PropertyValueMap Properties;
 };
 
 struct EntitySetup
 {
 	mage::String Type;
-	PropertyContainer Properties;
+	PropertyValueMap Properties;
 	u32 ParentChainDepth = 0;
 };
 

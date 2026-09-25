@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-WorldComponentFactoryFunction RendererFactoryFunction("Renderer", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction RendererFactoryFunction("Renderer", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	inWorld.CreateComponent<Vulkan::Renderer>();
 });

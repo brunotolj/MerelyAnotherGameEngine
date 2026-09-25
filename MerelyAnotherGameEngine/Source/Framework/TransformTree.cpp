@@ -1,7 +1,7 @@
 #include "Framework/GameWorld.h"
 #include "Framework/TransformTree.h"
 
-WorldComponentFactoryFunction TransformTreeFactoryFunction("TransformTree", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction TransformTreeFactoryFunction("TransformTree", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	inWorld.CreateComponent<TransformTree>();
 });

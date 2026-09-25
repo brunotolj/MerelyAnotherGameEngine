@@ -14,6 +14,9 @@ protected:
 	GameWorld& mWorld;
 };
 
+template <typename Type>
+concept WorldComponentType = std::derived_from<Type, GameWorldComponent> && !std::same_as<Type, GameWorldComponent>;
+
 class GameUtility : public GameWorldComponent
 {
 public:
@@ -31,8 +34,8 @@ public:
 	virtual void Update(f32 inDeltaTime) {};
 };
 
-using PropertyContainer = std::unordered_map<mage::String, mage::String>;
-using WorldComponentFactoryCallback = std::function<void(GameWorld&, PropertyContainer const&)>;
+using PropertyContainerOld = std::unordered_map<mage::String, mage::String>;
+using WorldComponentFactoryCallback = std::function<void(GameWorld&, PropertyContainerOld const&)>;
 
 extern std::unordered_map<mage::String, WorldComponentFactoryCallback> gWorldComponentFactoryFunctions;
 

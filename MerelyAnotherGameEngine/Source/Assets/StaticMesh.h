@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Assets/Asset.h"
+#include "Property.h"
 #include "Vulkan/Buffer.h"
 
 class StaticMesh : public Asset
@@ -49,13 +50,44 @@ class Factory<StaticMesh>
 {
 public:
 	static AssetHandle<StaticMesh> FromFile(mage::StringView inPath);
-	static AssetHandle<StaticMesh> Create(mage::StringView inName, PropertyContainer const& inProperties);
 
-	static AssetHandle<StaticMesh> MakeBox(mage::StringView inName, glm::vec3 inHalfExtent);
-	static AssetHandle<StaticMesh> MakeSphere(mage::StringView inName, f32 inRadius);
-	static AssetHandle<StaticMesh> MakeCylinder(mage::StringView inName, f32 inRadius, f32 inHalfHeight);
-	static AssetHandle<StaticMesh> MakeCapsule(mage::StringView inName, f32 inRadius, f32 inHalfHeight);
-	static AssetHandle<StaticMesh> MakeCone(mage::StringView inName, f32 inRadius, f32 inHeight);
+	struct Box
+	{
+		AssetHandle<StaticMesh> Create(mage::StringView inName);
+
+		glm::vec3 HalfExtent{ 1.0f, 1.0f, 1.0f };
+	};
+
+	struct Sphere
+	{
+		AssetHandle<StaticMesh> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+	};
+
+	struct Cylinder
+	{
+		AssetHandle<StaticMesh> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+		f32 HalfHeight = 1.0f;
+	};
+
+	struct Capsule
+	{
+		AssetHandle<StaticMesh> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+		f32 HalfHeight = 1.0f;
+	};
+
+	struct Cone
+	{
+		AssetHandle<StaticMesh> Create(mage::StringView inName);
+
+		f32 Radius = 1.0f;
+		f32 Height = 1.0f;
+	};
 
 private:
 	Factory() {}
@@ -66,4 +98,52 @@ private:
 	static void AddFlatSurface(StaticMesh& inOutResult, mage::Transform inTransform, glm::vec2 inHalfExtent, glm::vec2 inUvMin, glm::vec2 inUvMax);
 	static void AddConicSurface(StaticMesh& inOutResult, mage::Transform inTransform, f32 inRadius, f32 inHeight, glm::vec2 inUvCenter, f32 inUvRadius, u32 inRadialVertexCount, u32 inLateralVertexCount);
 	static void AddInvertedCopy(StaticMesh& inOutResult, glm::vec2 inUvOffset);
+};
+
+template <>
+struct Property<Factory<StaticMesh>::Box> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<StaticMesh>::Box, HalfExtent);
+	}
+};
+
+template <>
+struct Property<Factory<StaticMesh>::Sphere> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<StaticMesh>::Sphere, Radius);
+	}
+};
+
+template <>
+struct Property<Factory<StaticMesh>::Cylinder> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<StaticMesh>::Cylinder, Radius);
+		inOutContainer.AddProperty(Factory<StaticMesh>::Cylinder, HalfHeight);
+	}
+};
+
+template <>
+struct Property<Factory<StaticMesh>::Capsule> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<StaticMesh>::Capsule, Radius);
+		inOutContainer.AddProperty(Factory<StaticMesh>::Capsule, HalfHeight);
+	}
+};
+
+template <>
+struct Property<Factory<StaticMesh>::Cone> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(Factory<StaticMesh>::Cone, Radius);
+		inOutContainer.AddProperty(Factory<StaticMesh>::Cone, Height);
+	}
 };

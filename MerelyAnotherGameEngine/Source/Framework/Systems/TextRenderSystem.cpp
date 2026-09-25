@@ -1,7 +1,7 @@
 #include "Framework/Systems/TextRenderSystem.h"
 #include "Engine/Engine.h"
 
-WorldComponentFactoryFunction TextRenderSystemFactoryFunction("TextRenderSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction TextRenderSystemFactoryFunction("TextRenderSystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	inWorld.CreateComponent<TextRenderSystem>();
 });

@@ -74,6 +74,8 @@
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -103,6 +105,8 @@
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,6 +136,8 @@
       <PrecompiledHeaderFile>Core/_PCH.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>Core/_PCH.h</ForcedIncludeFiles>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -183,6 +189,7 @@
     <ClCompile Include="Source\Game\GameplayEntities.cpp" />
     <ClCompile Include="Source\Game\GameplaySystem.cpp" />
     <ClCompile Include="Source\MerelyAnotherGameEngine.cpp" />
+    <ClCompile Include="Source\Property.cpp" />
     <ClCompile Include="Source\Vulkan\Buffer.cpp" />
     <ClCompile Include="Source\Vulkan\Device.cpp" />
     <ClCompile Include="Source\Vulkan\Image.cpp" />
@@ -227,6 +234,7 @@
     <ClInclude Include="Source\Framework\TransformTree.h" />
     <ClInclude Include="Source\Game\GameplayEntities.h" />
     <ClInclude Include="Source\Game\GameplaySystem.h" />
+    <ClInclude Include="Source\Property.h" />
     <ClInclude Include="Source\Vulkan\Buffer.h" />
     <ClInclude Include="Source\Vulkan\Device.h" />
     <ClInclude Include="Source\Vulkan\Image.h" />

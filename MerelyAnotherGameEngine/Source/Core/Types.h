@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stdint.h"
+#include <concepts>
+#include <stdint.h>
 
 using i8 = int8_t;
 using i16 = int16_t;
@@ -16,3 +17,6 @@ using f32 = float;
 using f64 = double;
 
 using cstr = char const*;
+
+template <typename Type>
+concept NumericType = std::integral<Type> || std::floating_point<Type>;

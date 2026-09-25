@@ -31,7 +31,10 @@ protected:
 	bool mIsDestoryed = false;
 };
 
-template <typename ParentEntityClass = GameEntity>
+template <typename Type>
+concept EntityType = std::derived_from<Type, GameEntity>;
+
+template <EntityType ParentEntityClass = GameEntity>
 class ChildGameEntity : public GameEntity
 {
 public:
@@ -169,8 +172,8 @@ public:
 	}
 };
 
-using PropertyContainer = std::unordered_map<mage::String, mage::String>;
-using EntityFactoryCallback = std::function<GameEntity*(GameWorld&, GameEntity*, PropertyContainer const&)>;
+using PropertyContainerOld = std::unordered_map<mage::String, mage::String>;
+using EntityFactoryCallback = std::function<GameEntity*(GameWorld&, GameEntity*, PropertyContainerOld const&)>;
 
 extern std::unordered_map<mage::String, EntityFactoryCallback> gEntityFactoryFunctions;
 

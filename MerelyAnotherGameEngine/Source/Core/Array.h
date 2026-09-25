@@ -8,7 +8,7 @@
 
 namespace mage
 {
-	template<typename Type>
+	template <typename Type>
 	class Array
 	{
 	public:

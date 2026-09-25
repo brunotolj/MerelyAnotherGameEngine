@@ -2,7 +2,7 @@
 #include "Engine/Engine.h"
 #include "Vulkan/Renderer.h"
 
-WorldComponentFactoryFunction MeshRenderSystemFactoryFunction("MeshRenderSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction MeshRenderSystemFactoryFunction("MeshRenderSystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	inWorld.CreateComponent<MeshRenderSystem>();
 });

@@ -35,12 +35,12 @@ namespace mage
 		u32 mLength = 0;
 	};
 
-	template <typename T>
-	T ParseNumber(StringView inString, T inDefaultValue = T(0))
+	template <NumericType Type>
+	Type ParseNumber(StringView inString, Type inDefaultValue = Type(0))
 	{
 		if (inString.GetLength() == 0) return inDefaultValue;
 		char* end;
 		f64 value = strtod(inString.GetCString(), &end);
-		return *end ? inDefaultValue : T(value);
+		return *end ? inDefaultValue : Type(value);
 	}
 }

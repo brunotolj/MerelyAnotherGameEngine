@@ -2,7 +2,7 @@
 #include "Game/GameplayEntities.h"
 #include "Game/GameplaySystem.h"
 
-WorldComponentFactoryFunction GameplaySystemFactoryFunction("GameplaySystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction GameplaySystemFactoryFunction("GameplaySystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 

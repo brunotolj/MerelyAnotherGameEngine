@@ -2,7 +2,7 @@
 #include "Framework/Systems/PhysicsSystem.h"
 #include "Engine/Engine.h"
 
-WorldComponentFactoryFunction PhysicsSystemFactoryFunction("PhysicsSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction PhysicsSystemFactoryFunction("PhysicsSystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	inWorld.CreateComponent<PhysicsSystem>();
 });

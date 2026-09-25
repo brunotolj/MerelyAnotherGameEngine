@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-WorldComponentFactoryFunction FreeMoveSystemFactoryFunction("FreeMoveSystem", [](GameWorld& inWorld, PropertyContainer const& inProperties)
+WorldComponentFactoryFunction FreeMoveSystemFactoryFunction("FreeMoveSystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
 {
 	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
 
