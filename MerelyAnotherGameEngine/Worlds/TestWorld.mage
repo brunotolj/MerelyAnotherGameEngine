@@ -20,10 +20,10 @@ Components
 {
 	TransformTree
 	Renderer
-	FreeMoveSystem { speed=10 }
-	GameplaySystem { halfSpan=10 maxSpeed=80 acceleration=80 deceleration=150 ballSpawnInterval=2 ballPhysicsShape=:BallCollision ballPhysicsMaterial=:BallMaterial ballMesh=:BallMesh ballTexture=Textures/ball.png }
+	FreeMoveSystem { Speed=10 }
+	GameplaySystem { HalfSpan=10 MaxSpeed=80 Acceleration=80 Deceleration=150 BallSpawnInterval=2 BallPhysicsShape=:BallCollision BallPhysicsMaterial=:BallMaterial BallMesh=:BallMesh BallTexture=Textures/ball.png }
 	PhysicsSystem
-	WorldBoundsSystem { bounds.Min.X=-10000 bounds.Max.X=10000 bounds.Min.Y=-10000 bounds.Max.Y=10000 bounds.Min.Z=-10 bounds.Max.Z=10000 }
+	WorldBoundsSystem { BoundsMin.X=-10000 BoundsMax.X=10000 BoundsMin.Y=-10000 BoundsMax.Y=10000 BoundsMin.Z=-10 BoundsMax.Z=10000 }
 	MeshRenderSystem
 	SpriteRenderSystem
 	TextRenderSystem

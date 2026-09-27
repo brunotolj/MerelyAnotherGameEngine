@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Assets/Asset.h"
-#include "Property.h"
 #include "Vulkan/Buffer.h"
 
 class StaticMesh : public Asset

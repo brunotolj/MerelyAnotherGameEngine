@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Property.h"
+
 class GameWorld;
 
 class GameWorldComponent : public NonMovable
@@ -34,8 +36,14 @@ public:
 	virtual void Update(f32 inDeltaTime) {};
 };
 
-using PropertyContainerOld = std::unordered_map<mage::String, mage::String>;
-using WorldComponentFactoryCallback = std::function<void(GameWorld&, PropertyContainerOld const&)>;
+template <WorldComponentType Type>
+struct Property<Type> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer) {}
+};
+
+using PropertyValueMap = std::unordered_map<mage::String, mage::String>;
+using WorldComponentFactoryCallback = std::function<void(GameWorld&, PropertyValueMap const&)>;
 
 extern std::unordered_map<mage::String, WorldComponentFactoryCallback> gWorldComponentFactoryFunctions;
 
@@ -47,3 +55,9 @@ public:
 		gWorldComponentFactoryFunctions[inName] = inFunction;
 	}
 };
+
+#define REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(Type) \
+WorldComponentFactoryFunction Type##FactoryFunction(#Type, [](GameWorld& inWorld, PropertyValueMap const& inProperties) \
+{ \
+	inWorld.CreateComponent<Type>(inProperties); \
+});

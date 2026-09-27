@@ -3,13 +3,10 @@
 
 #include <GLFW/glfw3.h>
 
-WorldComponentFactoryFunction RendererFactoryFunction("Renderer", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
-{
-	inWorld.CreateComponent<Vulkan::Renderer>();
-});
-
 namespace Vulkan
 {
+	REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(Renderer);
+
     Renderer::Renderer(GameWorld& inWorld) : Renderer(inWorld, gEngine->mWindowManager.GetFocusedWindow())
     {
     }

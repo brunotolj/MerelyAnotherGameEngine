@@ -54,6 +54,8 @@ private:
 	void ApplyPropertyValuesRecursive(PropertyContainerOld const& inPropertyValues, PropertyNode const* inCurrentNode, u8* inMemory, mage::StringView inParentName) const;
 };
 
+#define AddProperty(Parent, Property) AddProperty<decltype(Parent::Property)>(#Property, offsetof(Parent, Property))
+
 template <NumericType Type>
 struct Property<Type> : public PropertyNode
 {
@@ -69,8 +71,6 @@ struct Property<Type> : public PropertyNode
 
 	static void GetChildProperties(PropertyTree& inOutContainer) {}
 };
-
-#define AddProperty(Parent, Property) AddProperty<decltype(Parent::Property)>(#Property, offsetof(Parent, Property))
 
 template <>
 struct Property<glm::vec3> : public PropertyNode

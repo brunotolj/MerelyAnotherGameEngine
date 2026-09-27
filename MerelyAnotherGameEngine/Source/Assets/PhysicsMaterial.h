@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Assets/Asset.h"
-#include "Property.h"
 
 namespace physx
 {

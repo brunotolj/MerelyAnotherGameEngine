@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Property.h"
+
 #include <typeindex>
 
 class Asset : public NonMovable
@@ -18,6 +20,8 @@ class AssetHandleBase
 {
 public:
 	Asset const* GetAsset(std::type_index inType) const;
+
+	mage::StringView GetName() const { return mName; }
 
 	bool IsSet() { return mName.GetLength() > 0; }
 

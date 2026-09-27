@@ -4,16 +4,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-WorldComponentFactoryFunction FreeMoveSystemFactoryFunction("FreeMoveSystem", [](GameWorld& inWorld, PropertyContainerOld const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
+REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(FreeMoveSystem);
 
-	f32 speed = mage::ParseNumber<f32>(getProperty("speed"));
-
-	inWorld.CreateComponent<FreeMoveSystem>(speed);
-});
-
-FreeMoveSystem::FreeMoveSystem(GameWorld& inWorld, f32 inSpeed) : GameSystemWithPrerequisites(inWorld), mSpeed(inSpeed)
+FreeMoveSystem::FreeMoveSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 	gEngine->mInputHandler.BindCursorMovementHandler([&](glm::dvec2 movement, CursorInputMode cursorMode)
 	{
@@ -57,7 +50,7 @@ void FreeMoveSystem::Update(f32 inDeltaTime)
 	if (gEngine->mInputHandler.IsKeyPressed(GLFW_KEY_E)) movement.z += 1.0f;
 	if (gEngine->mInputHandler.IsKeyPressed(GLFW_KEY_Q)) movement.z -= 1.0f;
 
-	transform.Position += mSpeed * inDeltaTime * movement;
+	transform.Position += Speed * inDeltaTime * movement;
 
 	Get<TransformTree>().SetGlobalTransform(targetTransformId, transform);
 }

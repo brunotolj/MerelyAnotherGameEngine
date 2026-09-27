@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Assets/WorldSetup.h"
+#include "Engine/Engine.h"
 #include "Framework/Entity.h"
 #include "Framework/GameWorldComponent.h"
 
@@ -14,13 +15,15 @@ public:
 
 	void Update(f32 inDeltaTime);
 
-	template <WorldComponentType ComponentClass, typename... Args>
-	ComponentClass* CreateComponent(Args&&... inArgs)
+	template <WorldComponentType ComponentClass>
+	ComponentClass* CreateComponent(PropertyValueMap const& inProperties)
 	{
 		if (GetComponent<ComponentClass>()) return nullptr;
 		if (ComponentClass::CheckPrerequisites(*this) == false) return nullptr;
 
-		ComponentClass* component = new ComponentClass(*this, std::forward<Args>(inArgs)...);
+		ComponentClass* component = new ComponentClass(*this);
+		PropertyTree(*component).ApplyPropertyValues(inProperties);
+
 		mComponentByClass[typeid(ComponentClass)] = component;
 
 		if constexpr (std::is_base_of<GameUtility, ComponentClass>::value)
@@ -121,4 +124,20 @@ public:
 	Prerequisite& Get() const { return GameSystemPrerequisite<Prerequisite>::Get(); }
 
 	virtual ~GameSystemWithPrerequisites() {}
+};
+
+template <AssetType Type>
+struct Property<AssetHandle<Type>> : public PropertyNode
+{
+	virtual void SetValue(void* inMemory, mage::StringView inValue) const override
+	{
+		*(AssetHandle<Type>*)(inMemory) = gEngine->mAssetManager.FindAsset<Type>(inValue);
+	}
+
+	virtual void GetValue(void* inMemory, mage::String& outValue) const override
+	{
+		outValue = ((AssetHandle<Type>*)(inMemory))->GetName();
+	}
+
+	static void GetChildProperties(PropertyTree& inOutContainer) {}
 };
