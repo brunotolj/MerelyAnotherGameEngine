@@ -23,7 +23,7 @@ Components
 	FreeMoveSystem { Speed=10 }
 	GameplaySystem { HalfSpan=10 MaxSpeed=80 Acceleration=80 Deceleration=150 BallSpawnInterval=2 BallPhysicsShape=:BallCollision BallPhysicsMaterial=:BallMaterial BallMesh=:BallMesh BallTexture=Textures/ball.png }
 	PhysicsSystem
-	WorldBoundsSystem { BoundsMin.X=-10000 BoundsMax.X=10000 BoundsMin.Y=-10000 BoundsMax.Y=10000 BoundsMin.Z=-10 BoundsMax.Z=10000 }
+	WorldBoundsSystem { BoundsMin.x=-10000 BoundsMax.x=10000 BoundsMin.y=-10000 BoundsMax.y=10000 BoundsMin.z=-10 BoundsMax.z=10000 }
 	MeshRenderSystem
 	SpriteRenderSystem
 	TextRenderSystem
@@ -31,59 +31,59 @@ Components
 
 Entities
 {
-	SpriteEntity { screenCoords.Min.X=50 screenCoords.Min.Y=50 screenCoords.Max.X=150 screenCoords.Max.Y=150 texture=Textures/default.png }
-	TextEntity { text="Merely Another Game Engine" color.R=1.0 color.G=0.5 color.B=0.0 position.X=180 position.Y=90 scale=40 font=Fonts/ArianaVioleta-dz2K.ttf }
-	TextEntity { text=M.A.G.E color.R=0.5 color.G=1.0 color.B=1.0 position.X=180 position.Y=140 scale=40 font=Fonts/Orbitron-Regular.ttf }
+	SpriteEntity { ScreenCoordsMin.x=50 ScreenCoordsMin.y=50 ScreenCoordsMax.x=150 ScreenCoordsMax.y=150 Texture=Textures/default.png }
+	TextEntity { Text="Merely Another Game Engine" Color.r=1.0 Color.g=0.5 Color.b=0.0 ScreenPosition.x=180 ScreenPosition.y=90 Scale=40 Font=Fonts/ArianaVioleta-dz2K.ttf }
+	TextEntity { Text=M.A.G.E Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=180 ScreenPosition.y=140 Scale=40 Font=Fonts/Orbitron-Regular.ttf }
 
-	TransformEntity { position.Y=-30 position.Z=10 }
+	TransformEntity { Position.y=-30 Position.z=10 }
 	> FreeMoveTargetEntity
 	> CameraEntity
 
 	TransformEntity { }
-	> StaticRigidBodyEntity { shape=:BoardCollision material=:FloorMaterial }
-	> StaticMeshEntity { mesh=:BoxMesh texture=Textures/cube.png }
+	> StaticRigidBodyEntity { Shape=:BoardCollision Material=:FloorMaterial }
+	> StaticMeshEntity { Mesh=:BoxMesh Texture=Textures/cube.png }
 
-	TransformEntity { position.X=16 position.Y=16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
-	> StaticRigidBodyEntity { shape=:CornerCollision material=:DefaultMaterial }
-	> StaticMeshEntity { mesh=:CylinderMesh texture=Textures/cylinder.png }
-	> TransformEntity { position.X=16 position.Y=16 position.Z=8 rotationAxis.Z=1 rotationAngle=135 }
-	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+	TransformEntity { Position.x=16 Position.y=16 Position.z=3 RotationAxis.y=1 RotationAngle=90 }
+	> StaticRigidBodyEntity { Shape=:CornerCollision Material=:DefaultMaterial }
+	> StaticMeshEntity { Mesh=:CylinderMesh Texture=Textures/cylinder.png }
+	> TransformEntity { Position.x=16 Position.y=16 Position.z=8 RotationAxis.z=1 RotationAngle=135 }
+	>> BallSpawnerEntity { Velocity.x=12 Variance.x=2 Variance.y=5 }
 
-	TransformEntity { position.X=-16 position.Y=16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
-	> StaticRigidBodyEntity { shape=:CornerCollision material=:DefaultMaterial }
-	> StaticMeshEntity { mesh=:CylinderMesh texture=Textures/cylinder.png }
-	> TransformEntity { position.X=-16 position.Y=16 position.Z=8 rotationAxis.Z=1 rotationAngle=45 }
-	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+	TransformEntity { Position.x=-16 Position.y=16 Position.z=3 RotationAxis.y=1 RotationAngle=90 }
+	> StaticRigidBodyEntity { Shape=:CornerCollision Material=:DefaultMaterial }
+	> StaticMeshEntity { Mesh=:CylinderMesh Texture=Textures/cylinder.png }
+	> TransformEntity { Position.x=-16 Position.y=16 Position.z=8 RotationAxis.z=1 RotationAngle=45 }
+	>> BallSpawnerEntity { Velocity.x=12 Variance.x=2 Variance.y=5 }
 
-	TransformEntity { position.X=-16 position.Y=-16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
-	> StaticRigidBodyEntity { shape=:CornerCollision material=:DefaultMaterial }
-	> StaticMeshEntity { mesh=:CylinderMesh texture=Textures/cylinder.png }
-	> TransformEntity { position.X=-16 position.Y=-16 position.Z=8 rotationAxis.Z=1 rotationAngle=-45 }
-	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+	TransformEntity { Position.x=-16 Position.y=-16 Position.z=3 RotationAxis.y=1 RotationAngle=90 }
+	> StaticRigidBodyEntity { Shape=:CornerCollision Material=:DefaultMaterial }
+	> StaticMeshEntity { Mesh=:CylinderMesh Texture=Textures/cylinder.png }
+	> TransformEntity { Position.x=-16 Position.y=-16 Position.z=8 RotationAxis.z=1 RotationAngle=-45 }
+	>> BallSpawnerEntity { Velocity.x=12 Variance.x=2 Variance.y=5 }
 
-	TransformEntity { position.X=16 position.Y=-16 position.Z=3 rotationAxis.Y=1 rotationAngle=90 }
-	> StaticRigidBodyEntity { shape=:CornerCollision material=:DefaultMaterial }
-	> StaticMeshEntity { mesh=:CylinderMesh texture=Textures/cylinder.png }
-	> TransformEntity { position.X=16 position.Y=-16 position.Z=8 rotationAxis.Z=1 rotationAngle=-135 }
-	>> BallSpawnerEntity { velocity.X=12 variance.X=2 variance.Y=5 }
+	TransformEntity { Position.x=16 Position.y=-16 Position.z=3 RotationAxis.y=1 RotationAngle=90 }
+	> StaticRigidBodyEntity { Shape=:CornerCollision Material=:DefaultMaterial }
+	> StaticMeshEntity { Mesh=:CylinderMesh Texture=Textures/cylinder.png }
+	> TransformEntity { Position.x=16 Position.y=-16 Position.z=8 RotationAxis.z=1 RotationAngle=-135 }
+	>> BallSpawnerEntity { Velocity.x=12 Variance.x=2 Variance.y=5 }
 
-	TransformEntity { position.X=-20 position.Z=2 }
-	> DynamicRigidBodyEntity { shape=:CapsuleCollision material=:DefaultMaterial isKinematic=1 }
-	> StaticMeshEntity { mesh=:CapsuleMesh texture=Textures/capsule.png }
-	> CapsuleMoverEntity { inputKeyNegative=72 inputKeyPositive=74 }
+	TransformEntity { Position.x=-20 Position.z=2 }
+	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
+	> CapsuleMoverEntity { InputCodeNegative=72 InputCodePositive=74 }
 
-	TransformEntity { position.Y=20 position.Z=2 rotationAxis.Z=1 rotationAngle=90 }
-	> DynamicRigidBodyEntity { shape=:CapsuleCollision material=:DefaultMaterial isKinematic=1 }
-	> StaticMeshEntity { mesh=:CapsuleMesh texture=Textures/capsule.png }
-	> CapsuleMoverEntity { inputKeyNegative=85 inputKeyPositive=73 }
+	TransformEntity { Position.y=20 Position.z=2 RotationAxis.z=1 RotationAngle=90 }
+	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
+	> CapsuleMoverEntity { InputCodeNegative=85 InputCodePositive=73 }
 
-	TransformEntity { position.X=20 position.Z=2 rotationAxis.Z=1 rotationAngle=180 }
-	> DynamicRigidBodyEntity { shape=:CapsuleCollision material=:DefaultMaterial isKinematic=1 }
-	> StaticMeshEntity { mesh=:CapsuleMesh texture=Textures/capsule.png }
-	> CapsuleMoverEntity { inputKeyNegative=79 inputKeyPositive=80 }
+	TransformEntity { Position.x=20 Position.z=2 RotationAxis.z=1 RotationAngle=180 }
+	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
+	> CapsuleMoverEntity { InputCodeNegative=79 InputCodePositive=80 }
 
-	TransformEntity { position.Y=-20 position.Z=2 rotationAxis.Z=1 rotationAngle=-90 }
-	> DynamicRigidBodyEntity { shape=:CapsuleCollision material=:DefaultMaterial isKinematic=1 }
-	> StaticMeshEntity { mesh=:CapsuleMesh texture=Textures/capsule.png }
-	> CapsuleMoverEntity { inputKeyNegative=75 inputKeyPositive=76 }
+	TransformEntity { Position.y=-20 Position.z=2 RotationAxis.z=1 RotationAngle=-90 }
+	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
+	> CapsuleMoverEntity { InputCodeNegative=75 InputCodePositive=76 }
 }

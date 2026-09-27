@@ -32,12 +32,12 @@ void PropertyNode::GetValue(void* inMemory, mage::String& outValue) const
 	mage_ensure(false);
 }
 
-void PropertyTree::ApplyPropertyValues(PropertyContainerOld const& inPropertyValues) const
+void PropertyTree::ApplyPropertyValues(PropertyValueMap const& inPropertyValues) const
 {
 	ApplyPropertyValuesRecursive(inPropertyValues, &mProperties.GetFirst(), (u8*)mMemory, "");
 }
 
-void PropertyTree::ApplyPropertyValuesRecursive(PropertyContainerOld const& inPropertyValues, PropertyNode const* inCurrentNode, u8* inMemory, mage::StringView inParentName) const
+void PropertyTree::ApplyPropertyValuesRecursive(PropertyValueMap const& inPropertyValues, PropertyNode const* inCurrentNode, u8* inMemory, mage::StringView inParentName) const
 {
 	auto getValue = [&inPropertyValues](mage::StringView inPropertyName) { return inPropertyValues.contains(inPropertyName) ? inPropertyValues.at(inPropertyName) : ""; };
 
@@ -45,7 +45,7 @@ void PropertyTree::ApplyPropertyValuesRecursive(PropertyContainerOld const& inPr
 	if (inParentName.GetLength()) name.Append('.');
 	name.Append(inCurrentNode->mName);
 
-	mage::StringView value = getValue(name);
+	mage::String value = getValue(name);
 	if (value.GetLength() > 0)
 		inCurrentNode->SetValue(inMemory + inCurrentNode->mOffset, value);
 

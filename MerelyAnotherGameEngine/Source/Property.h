@@ -21,7 +21,7 @@ protected:
 template <typename>
 struct Property;
 
-using PropertyContainerOld = std::unordered_map<mage::String, mage::String>;
+using PropertyValueMap = std::unordered_map<mage::String, mage::String>;
 
 class PropertyTree : NonMovable
 {
@@ -44,14 +44,14 @@ public:
 		mParentStack.RemoveAt(mParentStack.GetSize() - 1);
 	}
 
-	void ApplyPropertyValues(PropertyContainerOld const& inPropertyValues) const;
+	void ApplyPropertyValues(PropertyValueMap const& inPropertyValues) const;
 
 private:
 	mage::Array<PropertyNode> mProperties;
 	mage::Array<PropertyNode*> mParentStack;
 	void* mMemory;
 
-	void ApplyPropertyValuesRecursive(PropertyContainerOld const& inPropertyValues, PropertyNode const* inCurrentNode, u8* inMemory, mage::StringView inParentName) const;
+	void ApplyPropertyValuesRecursive(PropertyValueMap const& inPropertyValues, PropertyNode const* inCurrentNode, u8* inMemory, mage::StringView inParentName) const;
 };
 
 #define AddProperty(Parent, Property) AddProperty<decltype(Parent::Property)>(#Property, offsetof(Parent, Property))
@@ -73,6 +73,32 @@ struct Property<Type> : public PropertyNode
 };
 
 template <>
+struct Property<mage::String> : public PropertyNode
+{
+	virtual void SetValue(void* inMemory, mage::StringView inValue) const override
+	{
+		*(mage::String*)(inMemory) = inValue;
+	}
+
+	virtual void GetValue(void* inMemory, mage::String& outValue) const override
+	{
+		outValue = *(mage::String*)(inMemory);
+	}
+
+	static void GetChildProperties(PropertyTree& inOutContainer) {}
+};
+
+template <>
+struct Property<glm::vec2> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(glm::vec2, x);
+		inOutContainer.AddProperty(glm::vec2, y);
+	}
+};
+
+template <>
 struct Property<glm::vec3> : public PropertyNode
 {
 	static void GetChildProperties(PropertyTree& inOutContainer)
@@ -80,5 +106,17 @@ struct Property<glm::vec3> : public PropertyNode
 		inOutContainer.AddProperty(glm::vec3, x);
 		inOutContainer.AddProperty(glm::vec3, y);
 		inOutContainer.AddProperty(glm::vec3, z);
+	}
+};
+
+template <>
+struct Property<glm::vec4> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(glm::vec4, r);
+		inOutContainer.AddProperty(glm::vec4, g);
+		inOutContainer.AddProperty(glm::vec4, b);
+		inOutContainer.AddProperty(glm::vec4, a);
 	}
 };

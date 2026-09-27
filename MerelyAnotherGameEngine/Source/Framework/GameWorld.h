@@ -47,12 +47,12 @@ public:
 	}
 
 	template <EntityType EntityClass, typename... Args>
-	EntityClass* CreateEntity(GameEntity* inParentEntity, Args&&... inArgs)
+	EntityClass* CreateEntity(GameEntity* inParentEntity, EntityClass::Setup const& inSetup)
 	{
 		if (EntityClass::IsParentEntityValid(inParentEntity) == false)
 			return nullptr;
 
-		EntityClass* entity = new EntityClass(*this, typeid(EntityClass), inParentEntity, std::forward<Args>(inArgs)...);
+		EntityClass* entity = new EntityClass(*this, typeid(EntityClass), inParentEntity, inSetup);
 		mEntities.Add(entity);
 		mEntitiesByClass[entity->mTypeIndex].Add(entity);
 		return entity;

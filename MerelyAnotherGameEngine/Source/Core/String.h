@@ -30,9 +30,9 @@ namespace mage
 		template <NumericType T>
 		void FromNumber(T inValue)
 		{
-			i32 size = snprintf(nullptr, 0, "%f", inValue);
+			i32 size = snprintf(nullptr, 0, "%f", f64(inValue));
 			Reserve(size + 1);
-			snprintf(GetData(), size + 1, "%f", inValue);
+			snprintf(GetData(), size + 1, "%f", f64(inValue));
 		}
 
 		String& Append(char inChar)

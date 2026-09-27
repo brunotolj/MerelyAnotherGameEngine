@@ -5,22 +5,54 @@
 class CapsuleMoverEntity : public ChildGameEntity<TransformEntity>
 {
 public:
-	CapsuleMoverEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, i32 inInputCodeNegative, i32 inInputCodePositive);
+	struct Setup : public GameEntitySetup
+	{
+		i32 InputCodeNegative;
+		i32 InputCodePositive;
+	};
+
+	CapsuleMoverEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	void SetTransformId(TransformTreeEntryId inTransformId);
 
 	mage::Transform mOriginalTransform;
 	f32 mPosition = 0.0f;
 	f32 mSpeed = 0.0f;
-	i32 mInputCodeNegative;
-	i32 mInputCodePositive;
+	i32 mInputCodeNegative = 0;
+	i32 mInputCodePositive = 0;
+};
+
+template<>
+struct Property<CapsuleMoverEntity::Setup> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(CapsuleMoverEntity::Setup, InputCodeNegative);
+		inOutContainer.AddProperty(CapsuleMoverEntity::Setup, InputCodePositive);
+	}
 };
 
 class BallSpawnerEntity : public ChildGameEntity<TransformEntity>
 {
 public:
-	BallSpawnerEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, glm::vec3 inSpawnVelocity, glm::vec3 inSpawnVelocityVariance);
+	struct Setup : public GameEntitySetup
+	{
+		glm::vec3 Velocity{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 Variance{ 0.0f, 0.0f, 0.0f };
+	};
+
+	BallSpawnerEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	glm::vec3 mSpawnVelocity;
 	glm::vec3 mSpawnVelocityVariance;
+};
+
+template<>
+struct Property<BallSpawnerEntity::Setup> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(BallSpawnerEntity::Setup, Velocity);
+		inOutContainer.AddProperty(BallSpawnerEntity::Setup, Variance);
+	}
 };

@@ -40,7 +40,7 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 	{
 		mage::String Name;
 		mage::String Type;
-		PropertyContainerOld Properties;
+		PropertyValueMap Properties;
 		u32 ParentChainDepth = 0;
 	};
 

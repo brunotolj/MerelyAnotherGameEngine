@@ -48,9 +48,7 @@ private:
 	AssetHandle(mage::String const& inName) : AssetHandleBase(inName) {}
 };
 
-using PropertyValueMap = std::unordered_map<mage::String, mage::String>;
 using AssetFactoryCallback = std::function<AssetHandleBase(mage::StringView, PropertyValueMap const&)>;
-
 extern std::unordered_map<mage::String, AssetFactoryCallback> gAssetFactoryFunctions;
 
 class AssetFactoryFunction

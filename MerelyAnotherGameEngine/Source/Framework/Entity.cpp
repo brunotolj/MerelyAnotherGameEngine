@@ -5,6 +5,15 @@
 
 std::unordered_map<mage::String, EntityFactoryCallback> gEntityFactoryFunctions;
 
+REGISTER_ENTITY_FACTORY_FUNCTION(TransformEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(StaticMeshEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(StaticRigidBodyEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(DynamicRigidBodyEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(SpriteEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(TextEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(FreeMoveTargetEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(CameraEntity);
+
 GameEntity::~GameEntity()
 {
 	mage_check(mChildEntities.GetSize() == 0);
@@ -47,13 +56,12 @@ void GameEntity::RemoveChildEntity(GameEntity* inChildEntity)
 	mChildEntities.Remove(inChildEntity);
 }
 
-TransformEntity::TransformEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity,
-	mage::Transform inInitialTransform, TransformTreeEntryId inTransformParentId)
+TransformEntity::TransformEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, TransformEntity::Setup const& inSetup)
 	: GameEntity(inWorld, inTypeIndex, inParentEntity)
 {
 	if (TransformTree* transformTree = mWorld.GetComponent<TransformTree>())
 	{
-		mTransformId = transformTree->AddEntry(inInitialTransform, inTransformParentId);
+		mTransformId = transformTree->AddEntry({ inSetup.Position, mage::Rotor(inSetup.RotationAxis, glm::radians(inSetup.RotationAngle)) }, inSetup.TransformParentId);
 	}
 	else
 	{
@@ -71,51 +79,15 @@ TransformEntity::~TransformEntity()
 	}
 }
 
-EntityFactoryFunction TransformEntityFactoryFunction("TransformEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
-
-	glm::vec3 position
-	{
-		mage::ParseNumber<f32>(getProperty("position.X")),
-		mage::ParseNumber<f32>(getProperty("position.Y")),
-		mage::ParseNumber<f32>(getProperty("position.Z"))
-	};
-
-	glm::vec3 rotationAxis
-	{
-		mage::ParseNumber<f32>(getProperty("rotationAxis.X")),
-		mage::ParseNumber<f32>(getProperty("rotationAxis.Y")),
-		mage::ParseNumber<f32>(getProperty("rotationAxis.Z"))
-	};
-
-	f32 rotationAngle = glm::radians(mage::ParseNumber<f32>(getProperty("rotationAngle")));
-
-	return inWorld.CreateEntity<TransformEntity>(inParentEntity, mage::Transform{ position, mage::Rotor(rotationAxis, rotationAngle) });
-});
-
-StaticMeshEntity::StaticMeshEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity,
-	AssetHandle<StaticMesh> inMesh, AssetHandle<Texture> inTexture)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mMesh(inMesh), mTexture(inTexture)
+StaticMeshEntity::StaticMeshEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, StaticMeshEntity::Setup const& inSetup)
+	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mMesh(inSetup.Mesh), mTexture(inSetup.Texture)
 {
 }
 
-EntityFactoryFunction StaticMeshEntityFactoryFunction("StaticMeshEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
+StaticRigidBodyEntity::StaticRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, StaticRigidBodyEntity::Setup const& inSetup)
+	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material)
 {
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
-
-	AssetHandle<StaticMesh> mesh = gEngine->mAssetManager.FindAsset<StaticMesh>(getProperty("mesh"));
-	AssetHandle<Texture> texture = gEngine->mAssetManager.FindAsset<Texture>(getProperty("texture"));
-
-	return inWorld.CreateEntity<StaticMeshEntity>(inParentEntity, mesh, texture);
-});
-
-StaticRigidBodyEntity::StaticRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity,
-	AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inShape), mMaterial(inMaterial)
-{
-	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateStaticRigidBody(
-		GetParentEntity().mTransformId, mShape, mMaterial);
+	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateStaticRigidBody(GetParentEntity().mTransformId, mShape, mMaterial);
 }
 
 StaticRigidBodyEntity::~StaticRigidBodyEntity()
@@ -124,23 +96,11 @@ StaticRigidBodyEntity::~StaticRigidBodyEntity()
 	mPhysicsActor = nullptr;
 }
 
-EntityFactoryFunction StaticRigidBodyFactoryFunction("StaticRigidBodyEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
-
-	AssetHandle<PhysicsShape> shape = gEngine->mAssetManager.FindAsset<PhysicsShape>(getProperty("shape"));
-	AssetHandle<PhysicsMaterial> material = gEngine->mAssetManager.FindAsset<PhysicsMaterial>(getProperty("material"));
-
-	return inWorld.CreateEntity<StaticRigidBodyEntity>(inParentEntity, shape, material);
-});
-
-DynamicRigidBodyEntity::DynamicRigidBodyEntity(
-	GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, AssetHandle<PhysicsShape> inShape,
-	AssetHandle<PhysicsMaterial> inMaterial, bool inIsKinematic, glm::vec3 inLinearVelocity, glm::vec3 inAngularVelocity)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inShape), mMaterial(inMaterial), mIsKinematic(inIsKinematic)
+DynamicRigidBodyEntity::DynamicRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, DynamicRigidBodyEntity::Setup const& inSetup)
+	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material), mIsKinematic(inSetup.IsKinematic)
 {
 	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateDynamicRigidBody(
-		GetParentEntity().mTransformId, mShape, mMaterial, mIsKinematic, inLinearVelocity, inAngularVelocity);
+		GetParentEntity().mTransformId, mShape, mMaterial, mIsKinematic, inSetup.LinearVelocity, inSetup.AngularVelocity);
 }
 
 DynamicRigidBodyEntity::~DynamicRigidBodyEntity()
@@ -149,83 +109,14 @@ DynamicRigidBodyEntity::~DynamicRigidBodyEntity()
 	mPhysicsActor = nullptr;
 }
 
-EntityFactoryFunction DynamicRigidBodyFactoryFunction("DynamicRigidBodyEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
-
-	AssetHandle<PhysicsShape> shape = gEngine->mAssetManager.FindAsset<PhysicsShape>(getProperty("shape"));
-	AssetHandle<PhysicsMaterial> material = gEngine->mAssetManager.FindAsset<PhysicsMaterial>(getProperty("material"));
-	bool isKinematic = mage::ParseNumber<bool>(getProperty("isKinematic"));
-
-	glm::vec3 linearVelocity
-	{
-		mage::ParseNumber<f32>(getProperty("linearVelocity.X")),
-		mage::ParseNumber<f32>(getProperty("linearVelocity.Y")),
-		mage::ParseNumber<f32>(getProperty("linearVelocity.Z"))
-	};
-
-	glm::vec3 angularVelocity
-	{
-		mage::ParseNumber<f32>(getProperty("angularVelocity.X")),
-		mage::ParseNumber<f32>(getProperty("angularVelocity.Y")),
-		mage::ParseNumber<f32>(getProperty("angularVelocity.Z"))
-	};
-
-	return inWorld.CreateEntity<DynamicRigidBodyEntity>(inParentEntity, shape, material, isKinematic, linearVelocity, angularVelocity);
-});
-
-SpriteEntity::SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, glm::vec2 inScreenCoordsMin,
-	glm::vec2 inScreenCoordsMax, glm::vec2 inTextureCoordsMin, glm::vec2 inTextureCoordsMax, AssetHandle<Texture> inTexture)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity), mScreenCoordsMin(inScreenCoordsMin), mScreenCoordsMax(inScreenCoordsMax),
-	mTextureCoordsMin(inTextureCoordsMin), mTextureCoordsMax(inTextureCoordsMax), mTexture(inTexture)
+SpriteEntity::SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, SpriteEntity::Setup const& inSetup)
+	: GameEntity(inWorld, inTypeIndex, inParentEntity), mScreenCoordsMin(inSetup.ScreenCoordsMin), mScreenCoordsMax(inSetup.ScreenCoordsMax),
+	mTextureCoordsMin(inSetup.TextureCoordsMin), mTextureCoordsMax(inSetup.TextureCoordsMax), mTexture(inSetup.Texture)
 {
 }
 
-EntityFactoryFunction SpriteEntityFactoryFunction("SpriteEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) { return inProperties.contains(inPropertyName) ? inProperties.at(inPropertyName) : ""; };
-
-	glm::vec2 screenCoordsMin = { mage::ParseNumber<f32>(getProperty("screenCoords.Min.X")), mage::ParseNumber<f32>(getProperty("screenCoords.Min.Y")) };
-	glm::vec2 screenCoordsMax = { mage::ParseNumber<f32>(getProperty("screenCoords.Max.X")), mage::ParseNumber<f32>(getProperty("screenCoords.Max.Y")) };
-	glm::vec2 textureCoordsMin = { mage::ParseNumber<f32>(getProperty("textureCoords.Min.X")), mage::ParseNumber<f32>(getProperty("textureCoords.Min.Y")) };
-	glm::vec2 textureCoordsMax = { mage::ParseNumber<f32>(getProperty("textureCoords.Max.X"), 1.0f), mage::ParseNumber<f32>(getProperty("textureCoords.Max.Y"), 1.0f) };
-	AssetHandle<Texture> texture = gEngine->mAssetManager.FindAsset<Texture>(getProperty("texture"));
-
-	return inWorld.CreateEntity<SpriteEntity>(inParentEntity, screenCoordsMin, screenCoordsMax, textureCoordsMin, textureCoordsMax, texture);
-});
-
-TextEntity::TextEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, mage::StringView inText,
-	glm::vec4 inColor, glm::vec2 inScreenPosition, f32 inScale, AssetHandle<Font> inFont)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity), mText(inText), mColor(inColor), mScreenPosition(inScreenPosition),
-	mScale(inScale), mFont(inFont)
+TextEntity::TextEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, TextEntity::Setup const& inSetup)
+	: GameEntity(inWorld, inTypeIndex, inParentEntity), mText(inSetup.Text), mColor(inSetup.Color),
+	mScreenPosition(inSetup.ScreenPosition), mScale(inSetup.Scale), mFont(inSetup.Font)
 {
 }
-
-EntityFactoryFunction TextEntityFactoryFunction("TextEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	auto getProperty = [&inProperties](mage::StringView inPropertyName) -> mage::StringView { if (inProperties.contains(inPropertyName)) return inProperties.at(inPropertyName); return ""; };
-
-	mage::StringView text = getProperty("text");
-	glm::vec4 color
-	{
-		mage::ParseNumber<f32>(getProperty("color.R")),
-		mage::ParseNumber<f32>(getProperty("color.G")),
-		mage::ParseNumber<f32>(getProperty("color.B")),
-		mage::ParseNumber<f32>(getProperty("color.A"), 1.0f)
-	};
-	glm::vec2 screenPosition = { mage::ParseNumber<f32>(getProperty("position.X")), mage::ParseNumber<f32>(getProperty("position.Y")) };
-	f32 scale = mage::ParseNumber<f32>(getProperty("scale"));
-	AssetHandle<Font> font = gEngine->mAssetManager.FindAsset<Font>(getProperty("font"));
-
-	return inWorld.CreateEntity<TextEntity>(inParentEntity, text, color, screenPosition, scale, font);
-});
-
-EntityFactoryFunction FreeMoveTargetEntityFactoryFunction("FreeMoveTargetEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	return inWorld.CreateEntity<FreeMoveTargetEntity>(inParentEntity);
-});
-
-EntityFactoryFunction CameraEntityFactoryFunction("CameraEntity", [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyContainerOld const& inProperties)
-{
-	return inWorld.CreateEntity<CameraEntity>(inParentEntity);
-});

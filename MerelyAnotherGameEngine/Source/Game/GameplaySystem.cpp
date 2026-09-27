@@ -102,7 +102,12 @@ void GameplaySystem::SpawnBall()
 	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner->GetParentEntity().mTransformId);
 	glm::vec3 velocityTransformed = transform.Rotation.Rotate(velocity);
 
-	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transform);
-	mWorld.CreateEntity<DynamicRigidBodyEntity>(transformEntity, BallPhysicsShape, BallPhysicsMaterial, false, velocityTransformed);
-	mWorld.CreateEntity<StaticMeshEntity>(transformEntity, BallMesh, BallTexture);
+	TransformEntity::Setup transformSetup{ .InitialTransform = transform };
+	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transformSetup);
+
+	DynamicRigidBodyEntity::Setup rigidBodySetup{ .Shape = BallPhysicsShape, .Material = BallPhysicsMaterial, .LinearVelocity = velocityTransformed };
+	mWorld.CreateEntity<DynamicRigidBodyEntity>(transformEntity, rigidBodySetup);
+
+	StaticMeshEntity::Setup staticMeshSetup{ .Mesh = BallMesh, .Texture = BallTexture };
+	mWorld.CreateEntity<StaticMeshEntity>(transformEntity, staticMeshSetup);
 }
