@@ -74,6 +74,9 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		{
 			outObject.Type += *(reader++);
 		}
+
+		if (outObject.Type.GetLength() == 0)
+			outObject.Type = std::move(outObject.Name);
 	};
 
 	auto parseProperty = [inPath](mage::StringView inToken, ObjectData& outObject)
@@ -193,12 +196,12 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 
 	for (ObjectData const& componentData : components)
 	{
-		result->mComponentSetups.AddConstruct(componentData.Name, componentData.Properties);
+		result->mComponentSetups.AddConstruct(componentData.Type, componentData.Properties);
 	}
 
 	for (ObjectData const& entityData : entities)
 	{
-		result->mEntitySetups.AddConstruct(entityData.Name, entityData.Properties, entityData.ParentChainDepth);
+		result->mEntitySetups.AddConstruct(entityData.Name, entityData.Type, entityData.Properties, entityData.ParentChainDepth);
 	}
 
 	return gEngine->mAssetManager.Register(result, inPath);

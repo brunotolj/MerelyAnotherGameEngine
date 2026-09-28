@@ -1,7 +1,5 @@
-#include "Engine/Engine.h"
 #include "Framework/Entity.h"
 #include "Framework/GameWorld.h"
-#include "Framework/Systems/PhysicsSystem.h"
 
 std::unordered_map<mage::String, EntityFactoryCallback> gEntityFactoryFunctions;
 
@@ -34,8 +32,8 @@ void GameEntity::MarkDestroyed()
 	mIsDestoryed = true;
 }
 
-GameEntity::GameEntity(std::type_index inTypeIndex, GameEntity* inParentEntity)
-	: mTypeIndex(inTypeIndex), mParentEntity(inParentEntity)
+GameEntity::GameEntity(GameEntitySetup const& inSetup)
+	: mName(inSetup.Name), mTypeIndex(inSetup.TypeIndex), mParentEntity(inSetup.ParentEntity)
 {
 	if (mParentEntity)
 		mParentEntity->AddChildEntity(this);
@@ -57,25 +55,25 @@ void GameEntity::RemoveChildEntity(GameEntity* inChildEntity)
 	mChildEntities.Remove(inChildEntity);
 }
 
-TransformEntity::TransformEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, TransformEntity::Setup const& inSetup)
-	: GameEntity(inTypeIndex, inParentEntity) {}
+TransformEntity::TransformEntity(TransformEntity::Setup const& inSetup)
+	: GameEntity(inSetup) {}
 
-StaticMeshEntity::StaticMeshEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, StaticMeshEntity::Setup const& inSetup)
-	: ChildGameEntity(inTypeIndex, inParentEntity), mMesh(inSetup.Mesh), mTexture(inSetup.Texture) {}
+StaticMeshEntity::StaticMeshEntity(StaticMeshEntity::Setup const& inSetup)
+	: ChildGameEntity(inSetup), mMesh(inSetup.Mesh), mTexture(inSetup.Texture) {}
 
-StaticRigidBodyEntity::StaticRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, StaticRigidBodyEntity::Setup const& inSetup)
-	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material) {}
+StaticRigidBodyEntity::StaticRigidBodyEntity(StaticRigidBodyEntity::Setup const& inSetup)
+	: ChildGameEntity(inSetup), mShape(inSetup.Shape), mMaterial(inSetup.Material) {}
 
-DynamicRigidBodyEntity::DynamicRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, DynamicRigidBodyEntity::Setup const& inSetup)
-	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material), mIsKinematic(inSetup.IsKinematic) {}
+DynamicRigidBodyEntity::DynamicRigidBodyEntity(DynamicRigidBodyEntity::Setup const& inSetup)
+	: ChildGameEntity(inSetup), mShape(inSetup.Shape), mMaterial(inSetup.Material), mIsKinematic(inSetup.IsKinematic) {}
 
-StaticTriggerVolumeEntity::StaticTriggerVolumeEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
-	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape) {}
+StaticTriggerVolumeEntity::StaticTriggerVolumeEntity(StaticTriggerVolumeEntity::Setup const& inSetup)
+	: ChildGameEntity(inSetup), mShape(inSetup.Shape) {}
 
-SpriteEntity::SpriteEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, SpriteEntity::Setup const& inSetup)
-	: GameEntity(inTypeIndex, inParentEntity), mScreenPosition(inSetup.ScreenPosition), mScreenSize(inSetup.ScreenSize), mAnchor(inSetup.Anchor),
+SpriteEntity::SpriteEntity(SpriteEntity::Setup const& inSetup)
+	: GameEntity(inSetup), mScreenPosition(inSetup.ScreenPosition), mScreenSize(inSetup.ScreenSize), mAnchor(inSetup.Anchor),
 	mTextureCoordsMin(inSetup.TextureCoordsMin), mTextureCoordsMax(inSetup.TextureCoordsMax), mTexture(inSetup.Texture) {}
 
-TextEntity::TextEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, TextEntity::Setup const& inSetup)
-	: GameEntity(inTypeIndex, inParentEntity), mText(inSetup.Text), mColor(inSetup.Color), mScreenPosition(inSetup.ScreenPosition),
+TextEntity::TextEntity(TextEntity::Setup const& inSetup)
+	: GameEntity(inSetup), mText(inSetup.Text), mColor(inSetup.Color), mScreenPosition(inSetup.ScreenPosition),
 	mJustification(inSetup.Justification), mScale(inSetup.Scale), mFont(inSetup.Font) {}

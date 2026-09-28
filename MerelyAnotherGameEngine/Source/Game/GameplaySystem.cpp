@@ -139,11 +139,11 @@ void GameplaySystem::SpawnBall()
 	transform.Rotation.GetAxisAndAngle(axis, angle);
 
 	TransformEntity::Setup transformSetup{ .Position = transform.Position, .RotationAxis = axis, .RotationAngle = angle };
-	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transformSetup);
+	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>("", nullptr, transformSetup);
 
 	DynamicRigidBodyEntity::Setup rigidBodySetup{ .Shape = BallPhysicsShape, .Material = BallPhysicsMaterial, .LinearVelocity = velocityTransformed };
-	mWorld.CreateEntity<DynamicRigidBodyEntity>(transformEntity, rigidBodySetup);
+	mWorld.CreateEntity<DynamicRigidBodyEntity>("", transformEntity, rigidBodySetup);
 
 	StaticMeshEntity::Setup staticMeshSetup{ .Mesh = BallMesh, .Texture = BallTexture };
-	mWorld.CreateEntity<StaticMeshEntity>(transformEntity, staticMeshSetup);
+	mWorld.CreateEntity<StaticMeshEntity>("", transformEntity, staticMeshSetup);
 }

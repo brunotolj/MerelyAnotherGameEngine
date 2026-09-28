@@ -17,11 +17,12 @@ public:
 	void MarkDestroyed();
 	bool IsDestroyed() const { return mIsDestoryed; }
 
+	mage::String mName;
 	std::type_index mTypeIndex;
 	mage::Array<GameEntity*> mChildEntities;
 
 protected:
-	GameEntity(std::type_index inTypeIndex, GameEntity* inParentEntity);
+	GameEntity(struct GameEntitySetup const& inSetup);
 
 	void AddChildEntity(GameEntity* inChildEntity);
 	void RemoveChildEntity(GameEntity* inChildEntity);
@@ -30,10 +31,15 @@ protected:
 	bool mIsDestoryed = false;
 };
 
+struct GameEntitySetup
+{
+	mage::String Name;
+	std::type_index TypeIndex = typeid(GameEntity);
+	GameEntity* ParentEntity = nullptr;
+};
+
 template <typename Type>
 concept EntityType = std::derived_from<Type, GameEntity> && !std::same_as<Type, GameEntity>;
-
-struct GameEntitySetup {};
 
 template <typename Type>
 concept EntitySetupType = std::derived_from<Type, GameEntitySetup> && !std::same_as<Type, GameEntitySetup>;
@@ -50,8 +56,7 @@ public:
 	}
 
 protected:
-	ChildGameEntity(std::type_index inTypeIndex, GameEntity* inParentEntity)
-		: GameEntity(inTypeIndex, inParentEntity) {}
+	ChildGameEntity(GameEntitySetup const& inSetup) : GameEntity(inSetup) {}
 };
 
 class TransformEntity : public GameEntity
@@ -65,7 +70,7 @@ public:
 		TransformTreeEntryId TransformParentId = mage::InvalidIndex;
 	};
 
-	TransformEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	TransformEntity(Setup const& inSetup);
 
 	TransformTreeEntryId mTransformId = mage::InvalidIndex;
 };
@@ -90,7 +95,7 @@ public:
 		AssetHandle<Texture> Texture = nullptr;
 	};
 
-	StaticMeshEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	StaticMeshEntity(Setup const& inSetup);
 
 	AssetHandle<StaticMesh> mMesh;
 	AssetHandle<Texture> mTexture;
@@ -115,7 +120,7 @@ public:
 		AssetHandle<PhysicsMaterial> Material = nullptr;
 	};
 
-	StaticRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	StaticRigidBodyEntity(Setup const& inSetup);
 
 	AssetHandle<PhysicsShape> mShape;
 	AssetHandle<PhysicsMaterial> mMaterial;
@@ -144,7 +149,7 @@ public:
 		glm::vec3 AngularVelocity = glm::vec3(0.0f);
 	};
 
-	DynamicRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	DynamicRigidBodyEntity(Setup const& inSetup);
 
 	AssetHandle<PhysicsShape> mShape;
 	AssetHandle<PhysicsMaterial> mMaterial;
@@ -173,7 +178,7 @@ public:
 		AssetHandle<PhysicsShape> Shape = nullptr;
 	};
 
-	StaticTriggerVolumeEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	StaticTriggerVolumeEntity(Setup const& inSetup);
 
 	AssetHandle<PhysicsShape> mShape;
 	physx::PxRigidStatic* mPhysicsActor;
@@ -202,7 +207,7 @@ public:
 		AssetHandle<Texture> Texture = nullptr;
 	};
 
-	SpriteEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	SpriteEntity(Setup const& inSetup);
 
 	glm::vec2 mScreenPosition;
 	glm::vec2 mScreenSize;
@@ -239,7 +244,7 @@ public:
 		AssetHandle<Font> Font = nullptr;
 	};
 
-	TextEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	TextEntity(Setup const& inSetup);
 
 	mage::String mText;
 	glm::vec4 mColor;
@@ -268,8 +273,7 @@ class FreeMoveTargetEntity : public ChildGameEntity<TransformEntity>
 public:
 	struct Setup : public GameEntitySetup {};
 
-	FreeMoveTargetEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
-		: ChildGameEntity(inTypeIndex, inParentEntity) {}
+	FreeMoveTargetEntity(Setup const& inSetup) : ChildGameEntity(inSetup) {}
 };
 
 class CameraEntity : public ChildGameEntity<TransformEntity>
@@ -277,8 +281,7 @@ class CameraEntity : public ChildGameEntity<TransformEntity>
 public:
 	struct Setup : public GameEntitySetup {};
 
-	CameraEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
-		: ChildGameEntity(inTypeIndex, inParentEntity) {}
+	CameraEntity(Setup const& inSetup) : ChildGameEntity(inSetup) {}
 };
 
 template <EntitySetupType Type>
@@ -287,7 +290,7 @@ struct Property<Type> : public PropertyNode
 	static void GetChildProperties(PropertyTree& inOutContainer) {}
 };
 
-using EntityFactoryCallback = std::function<GameEntity*(GameWorld&, GameEntity*, PropertyValueMap const&)>;
+using EntityFactoryCallback = std::function<GameEntity*(GameWorld&, mage::String, GameEntity*, PropertyValueMap const&)>;
 extern std::unordered_map<mage::String, EntityFactoryCallback> gEntityFactoryFunctions;
 
 class EntityFactoryFunction
@@ -300,9 +303,15 @@ public:
 };
 
 #define REGISTER_ENTITY_FACTORY_FUNCTION(Type) \
-EntityFactoryFunction Type##FactoryFunction(#Type, [](GameWorld& inWorld, GameEntity* inParentEntity, PropertyValueMap const& inProperties) \
+EntityFactoryFunction Type##FactoryFunction(#Type, [](GameWorld& inWorld, mage::String inName, GameEntity* inParentEntity, PropertyValueMap const& inProperties) \
 { \
 	Type::Setup setup; \
+	if (inName.GetLength() == 0) \
+	{ \
+		static u32 counter = 0; \
+		inName = #Type; \
+		inName.Append('_').Append(mage::String().FromNumber(counter++)); \
+	} \
 	PropertyTree(setup).ApplyPropertyValues(inProperties); \
-	return inWorld.CreateEntity<Type>(inParentEntity, setup); \
+	return inWorld.CreateEntity<Type>(inName, inParentEntity, setup); \
 });

@@ -10,6 +10,7 @@ struct WorldComponentSetup
 
 struct EntitySetup
 {
+	mage::String Name;
 	mage::String Type;
 	PropertyValueMap Properties;
 	u32 ParentChainDepth = 0;

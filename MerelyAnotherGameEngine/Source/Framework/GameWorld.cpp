@@ -26,7 +26,7 @@ GameWorld::GameWorld(WorldSetup const& inWorldSetup)
 
 		parentChain.ResizeUninitialized(entitySetup.ParentChainDepth + 1);
 
-		GameEntity* entity = gEntityFactoryFunctions[entitySetup.Type](*this, parentChain[entitySetup.ParentChainDepth], entitySetup.Properties);
+		GameEntity* entity = gEntityFactoryFunctions[entitySetup.Type](*this, entitySetup.Name, parentChain[entitySetup.ParentChainDepth], entitySetup.Properties);
 		parentChain.Add(entity);
 	}
 }

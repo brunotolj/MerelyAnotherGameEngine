@@ -51,13 +51,17 @@ public:
 		return (Type*)(component->second);
 	}
 
-	template <EntityType Type, typename... Args>
-	Type* CreateEntity(GameEntity* inParentEntity, Type::Setup const& inSetup)
+	template <EntityType Type>
+	Type* CreateEntity(mage::StringView inName, GameEntity* inParentEntity, Type::Setup& inSetup)
 	{
 		if (Type::IsParentEntityValid(inParentEntity) == false)
 			return nullptr;
 
-		Type* entity = new Type(typeid(Type), inParentEntity, inSetup);
+		inSetup.Name = inName;
+		inSetup.TypeIndex = typeid(Type);
+		inSetup.ParentEntity = inParentEntity;
+
+		Type* entity = new Type(inSetup);
 
 		mEntities.Add(entity);
 		mEntitiesByClass[entity->mTypeIndex].Add(entity);

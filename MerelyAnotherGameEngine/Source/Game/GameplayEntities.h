@@ -11,7 +11,7 @@ public:
 		i32 InputCodePositive;
 	};
 
-	CapsuleMoverEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	CapsuleMoverEntity(Setup const& inSetup);
 
 	mage::Transform mOriginalTransform;
 	f32 mPosition = 0.0f;
@@ -39,7 +39,7 @@ public:
 		glm::vec3 Variance{ 0.0f, 0.0f, 0.0f };
 	};
 
-	BallSpawnerEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	BallSpawnerEntity(Setup const& inSetup);
 
 	glm::vec3 mSpawnVelocity;
 	glm::vec3 mSpawnVelocityVariance;

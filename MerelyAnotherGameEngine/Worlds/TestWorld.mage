@@ -34,19 +34,18 @@ Components
 Entities
 {
 	SpriteEntity { ScreenPosition.x=130 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
-	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=130 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	> Player1_Score=TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=130 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 	
 	SpriteEntity { ScreenPosition.x=350 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
-	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=350 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	> Player2_Score=TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=350 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 	
 	SpriteEntity { ScreenPosition.x=1570 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
-	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1570 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	> Player3_Score=TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1570 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 
 	SpriteEntity { ScreenPosition.x=1790 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
-	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1790 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	> Player4_Score=TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1790 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 
 	TransformEntity { Position.y=-26 Position.z=25 RotationAxis.x=1 RotationAngle=50 }
-	> FreeMoveTargetEntity
 	> CameraEntity
 
 	TransformEntity { }
@@ -78,38 +77,38 @@ Entities
 	>> BallSpawnerEntity { Velocity.x=12 Variance.x=2 Variance.y=5 }
 	
 	TransformEntity { Position.y=-20 Position.z=2 RotationAxis.z=1 RotationAngle=-90 }
-	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> Player1_Capsule=DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
 	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
 	> CapsuleMoverEntity { InputCodeNegative=75 InputCodePositive=76 }
 
 	TransformEntity { Position.y=-24 RotationAxis.z=1 RotationAngle=-90 }
 	> StaticMeshEntity { Mesh=:TriggerMesh Texture=Textures/cone.png }
-	> StaticTriggerVolumeEntity { Shape=:TriggerCollision }
+	> Player1_TriggerBox=StaticTriggerVolumeEntity { Shape=:TriggerCollision }
 
 	TransformEntity { Position.x=20 Position.z=2 RotationAxis.z=1 RotationAngle=180 }
-	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> Player2_Capsule=DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
 	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
 	> CapsuleMoverEntity { InputCodeNegative=79 InputCodePositive=80 }
 	
 	TransformEntity { Position.x=24 RotationAxis.z=1 RotationAngle=180 }
 	> StaticMeshEntity { Mesh=:TriggerMesh Texture=Textures/cone.png }
-	> StaticTriggerVolumeEntity { Shape=:TriggerCollision }
+	> Player2_TriggerBox=StaticTriggerVolumeEntity { Shape=:TriggerCollision }
 	
 	TransformEntity { Position.y=20 Position.z=2 RotationAxis.z=1 RotationAngle=90 }
-	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> Player3_Capsule=DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
 	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
 	> CapsuleMoverEntity { InputCodeNegative=85 InputCodePositive=73 }
 	
 	TransformEntity { Position.y=24 RotationAxis.z=1 RotationAngle=90 }
 	> StaticMeshEntity { Mesh=:TriggerMesh Texture=Textures/cone.png }
-	> StaticTriggerVolumeEntity { Shape=:TriggerCollision }
+	> Player3_TriggerBox=StaticTriggerVolumeEntity { Shape=:TriggerCollision }
 
 	TransformEntity { Position.x=-20 Position.z=2 }
-	> DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
+	> Player4_Capsule=DynamicRigidBodyEntity { Shape=:CapsuleCollision Material=:DefaultMaterial IsKinematic=1 }
 	> StaticMeshEntity { Mesh=:CapsuleMesh Texture=Textures/capsule.png }
 	> CapsuleMoverEntity { InputCodeNegative=72 InputCodePositive=74 }
 	
 	TransformEntity { Position.x=-24 }
 	> StaticMeshEntity { Mesh=:TriggerMesh Texture=Textures/cone.png }
-	> StaticTriggerVolumeEntity { Shape=:TriggerCollision }
+	> Player4_TriggerBox=StaticTriggerVolumeEntity { Shape=:TriggerCollision }
 }

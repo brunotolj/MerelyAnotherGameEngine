@@ -25,14 +25,42 @@ namespace mage
 
 		String(StringView inStringView) : String(inStringView.GetCString())
 		{
+
+		}
+
+		String(String const& inOther) { *this = inOther; }
+		String(String&& inOther) { *this = std::move(inOther); }
+
+		String& operator=(String const& inOther)
+		{
+			InitFrom_Copy(inOther.GetData(), inOther.GetSize());
+			return *this;
+		}
+
+		String& operator=(String&& inOther)
+		{
+			Empty();
+
+			mElements = inOther.mElements;
+			mCapacity = inOther.mCapacity;
+			mSize = inOther.mSize;
+
+			inOther.mElements = nullptr;
+			inOther.mCapacity = 0;
+			inOther.mSize = 0;
+
+			inOther.AppendNull();
+
+			return *this;
 		}
 
 		template <NumericType T>
-		void FromNumber(T inValue)
+		String& FromNumber(T inValue, u32 inPrecision = 0)
 		{
-			i32 size = snprintf(nullptr, 0, "%f", f64(inValue));
-			Reserve(size + 1);
-			snprintf(GetData(), size + 1, "%f", f64(inValue));
+			i32 size = snprintf(nullptr, 0, "%.*f", inPrecision, f64(inValue));
+			ResizeUninitialized(size + 1);
+			snprintf(GetData(), size + 1, "%.*f", inPrecision, f64(inValue));
+			return *this;
 		}
 
 		String& Append(char inChar)
