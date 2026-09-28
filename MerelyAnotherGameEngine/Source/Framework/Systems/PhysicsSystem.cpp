@@ -2,11 +2,14 @@
 #include "Framework/Systems/PhysicsSystem.h"
 #include "Engine/Engine.h"
 
+#include <iostream>
+
 REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(PhysicsSystem);
 
 PhysicsSystem::PhysicsSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
-	mScene = gEngine->mPhysicsEngine.CreateScene();
+	mDummyMaterial = Factory<PhysicsMaterial>::Impl().Create("Dummy");
+	mScene = gEngine->mPhysicsEngine.CreateScene(mCallbacks);
 }
 
 PhysicsSystem::~PhysicsSystem()
@@ -18,6 +21,7 @@ void PhysicsSystem::GetEntityCallbackTypes(mage::Array<std::type_index>& outType
 {
 	outTypes.AddConstruct(typeid(StaticRigidBodyEntity));
 	outTypes.AddConstruct(typeid(DynamicRigidBodyEntity));
+	outTypes.AddConstruct(typeid(StaticTriggerVolumeEntity));
 }
 
 void PhysicsSystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
@@ -28,6 +32,7 @@ void PhysicsSystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const*
 		StaticRigidBodyEntity::Setup const* setup = (StaticRigidBodyEntity::Setup const*)(inSetup);
 
 		entity->mPhysicsActor = CreateStaticRigidBody(entity->GetParentEntity().mTransformId, setup->Shape, setup->Material);
+		entity->mPhysicsActor->userData = entity;
 	}
 	else if (inType == typeid(DynamicRigidBodyEntity))
 	{
@@ -36,6 +41,16 @@ void PhysicsSystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const*
 
 		entity->mPhysicsActor = CreateDynamicRigidBody(entity->GetParentEntity().mTransformId, setup->Shape,
 			setup->Material, setup->IsKinematic, setup->LinearVelocity, setup->AngularVelocity);
+
+		entity->mPhysicsActor->userData = entity;
+	}
+	else if (inType == typeid(StaticTriggerVolumeEntity))
+	{
+		StaticTriggerVolumeEntity* entity = (StaticTriggerVolumeEntity*)(inEntity);
+		StaticTriggerVolumeEntity::Setup const* setup = (StaticTriggerVolumeEntity::Setup const*)(inSetup);
+
+		entity->mPhysicsActor = CreateStaticTriggerVolume(entity->GetParentEntity().mTransformId, setup->Shape);
+		entity->mPhysicsActor->userData = entity;
 	}
 	else
 	{
@@ -55,6 +70,13 @@ void PhysicsSystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inTy
 	else if (inType == typeid(DynamicRigidBodyEntity))
 	{
 		DynamicRigidBodyEntity* entity = (DynamicRigidBodyEntity*)(inEntity);
+
+		RemoveActor(entity->mPhysicsActor);
+		entity->mPhysicsActor = nullptr;
+	}
+	else if (inType == typeid(StaticTriggerVolumeEntity))
+	{
+		StaticTriggerVolumeEntity* entity = (StaticTriggerVolumeEntity*)(inEntity);
 
 		RemoveActor(entity->mPhysicsActor);
 		entity->mPhysicsActor = nullptr;
@@ -83,18 +105,30 @@ void PhysicsSystem::Update(f32 inDeltaTime)
 		physx::PxTransform pose = dynamicBody->mPhysicsActor->getGlobalPose();
 		WriteTransformToTransformTree(dynamicBody->GetParentEntity().mTransformId, pose);
 	}
+	
+	for (PhysicsCallbacks::OverlapEvent const& overlapEvent : mCallbacks.mTriggerOverlapEvents)
+	{
+		StaticTriggerVolumeEntity* triggerEntity = (StaticTriggerVolumeEntity*)(overlapEvent.ActorA->userData);
+		DynamicRigidBodyEntity* overlappedEntity = (DynamicRigidBodyEntity*)(overlapEvent.ActorB->userData);
+
+		if (overlapEvent.AreActorsOverlapping)
+			triggerEntity->mOverlaps.Add(overlappedEntity);
+		else
+			triggerEntity->mOverlaps.Remove(overlappedEntity);
+	}
+
+	mCallbacks.mTriggerOverlapEvents.Empty();
 }
 
-physx::PxRigidStatic* PhysicsSystem::CreateStaticRigidBody(TransformTreeEntryId inTransformId,
-	AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial)
+physx::PxRigidStatic* PhysicsSystem::CreateStaticRigidBody(TransformTreeEntryId inTransformId, AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial)
 {
-	physx::PxShape* shape = gEngine->mPhysicsEngine.CreateShape(inShape, inMaterial);
-	mage_check(shape);
-
 	physx::PxTransform pose = ReadTransformFromTransformTree(inTransformId);
 
 	physx::PxRigidStatic* actor = gEngine->mPhysicsEngine.CreateStaticActor(pose);
 	mage_check(actor);
+
+	physx::PxShape* shape = gEngine->mPhysicsEngine.CreateShape(inShape, inMaterial);
+	mage_check(shape);
 
 	actor->attachShape(*shape);
 	mScene->addActor(*actor);
@@ -103,21 +137,16 @@ physx::PxRigidStatic* PhysicsSystem::CreateStaticRigidBody(TransformTreeEntryId 
 	return actor;
 }
 
-physx::PxRigidDynamic* PhysicsSystem::CreateDynamicRigidBody(
-	TransformTreeEntryId inTransformId,
-	AssetHandle<PhysicsShape> inShape,
-	AssetHandle<PhysicsMaterial> inMaterial,
-	bool inIsKinematic,
-	glm::vec3 inLinearVelocity,
-	glm::vec3 inAngularVelocity)
+physx::PxRigidDynamic* PhysicsSystem::CreateDynamicRigidBody(TransformTreeEntryId inTransformId, AssetHandle<PhysicsShape> inShape, AssetHandle<PhysicsMaterial> inMaterial,
+	bool inIsKinematic, glm::vec3 inLinearVelocity, glm::vec3 inAngularVelocity)
 {
-	physx::PxShape* shape = gEngine->mPhysicsEngine.CreateShape(inShape, inMaterial);
-	mage_check(shape);
-
 	physx::PxTransform pose = ReadTransformFromTransformTree(inTransformId);
 
 	physx::PxRigidDynamic* actor = gEngine->mPhysicsEngine.CreateDynamicActor(pose);
 	mage_check(actor);
+
+	physx::PxShape* shape = gEngine->mPhysicsEngine.CreateShape(inShape, inMaterial);
+	mage_check(shape);
 
 	if (inIsKinematic)
 	{
@@ -128,6 +157,26 @@ physx::PxRigidDynamic* PhysicsSystem::CreateDynamicRigidBody(
 		actor->setLinearVelocity((physx::PxVec3 const&)inLinearVelocity, false);
 		actor->setAngularVelocity((physx::PxVec3 const&)inAngularVelocity, false);
 	}
+
+	actor->attachShape(*shape);
+	mScene->addActor(*actor);
+	shape->release();
+
+	return actor;
+}
+
+physx::PxRigidStatic* PhysicsSystem::CreateStaticTriggerVolume(TransformTreeEntryId inTransformId, AssetHandle<PhysicsShape> inShape)
+{
+	physx::PxTransform pose = ReadTransformFromTransformTree(inTransformId);
+
+	physx::PxRigidStatic* actor = gEngine->mPhysicsEngine.CreateStaticActor(pose);
+	mage_check(actor);
+
+	physx::PxShape* shape = gEngine->mPhysicsEngine.CreateShape(inShape, mDummyMaterial);
+	mage_check(shape);
+
+	shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+	shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 
 	actor->attachShape(*shape);
 	mScene->addActor(*actor);

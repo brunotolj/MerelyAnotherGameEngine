@@ -165,6 +165,30 @@ struct Property<DynamicRigidBodyEntity::Setup> : public PropertyNode
 	}
 };
 
+class StaticTriggerVolumeEntity : public ChildGameEntity<TransformEntity>
+{
+public:
+	struct Setup : public GameEntitySetup
+	{
+		AssetHandle<PhysicsShape> Shape = nullptr;
+	};
+
+	StaticTriggerVolumeEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+
+	AssetHandle<PhysicsShape> mShape;
+	physx::PxRigidStatic* mPhysicsActor;
+	mage::Array<DynamicRigidBodyEntity*> mOverlaps;
+};
+
+template <>
+struct Property<StaticTriggerVolumeEntity::Setup> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(StaticTriggerVolumeEntity::Setup, Shape);
+	}
+};
+
 class SpriteEntity : public GameEntity
 {
 public:

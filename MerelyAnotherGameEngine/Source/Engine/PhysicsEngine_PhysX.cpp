@@ -1,5 +1,25 @@
 #include "Engine/PhysicsEngine_PhysX.h"
 
+void PhysicsCallbacks::onTrigger(physx::PxTriggerPair* inPairs, physx::PxU32 inCount)
+{
+	for (physx::PxU32 i = 0; i < inCount; i++)
+	{
+		physx::PxTriggerPair& pair = inPairs[i];
+
+		physx::PxActor* triggerActor = pair.triggerActor;
+		physx::PxActor* otherActor = pair.otherActor;
+
+		if (pair.status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+		{
+			mTriggerOverlapEvents.AddConstruct(triggerActor, otherActor, true);
+		}
+		else if (pair.status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+		{
+			mTriggerOverlapEvents.AddConstruct(triggerActor, otherActor, false);
+		}
+	}
+}
+
 PhysicsEngine_PhysX::PhysicsEngine_PhysX()
 {
 	mFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, mAllocator, mErrorCallback);
@@ -14,12 +34,13 @@ PhysicsEngine_PhysX::~PhysicsEngine_PhysX()
 	PX_RELEASE(mFoundation);
 }
 
-physx::PxScene* PhysicsEngine_PhysX::CreateScene() const
+physx::PxScene* PhysicsEngine_PhysX::CreateScene(PhysicsCallbacks& inCallbacks) const
 {
 	physx::PxSceneDesc sceneDesc(mPhysics->getTolerancesScale());
 	sceneDesc.gravity = physx::PxVec3(0.0f, 0.0f, -9.81f);
 	sceneDesc.cpuDispatcher = mDispatcher;
 	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader;
+	sceneDesc.simulationEventCallback = &inCallbacks;
 	return mPhysics->createScene(sceneDesc);
 }
 

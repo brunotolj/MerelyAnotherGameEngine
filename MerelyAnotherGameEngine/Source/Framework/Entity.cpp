@@ -9,6 +9,7 @@ REGISTER_ENTITY_FACTORY_FUNCTION(TransformEntity);
 REGISTER_ENTITY_FACTORY_FUNCTION(StaticMeshEntity);
 REGISTER_ENTITY_FACTORY_FUNCTION(StaticRigidBodyEntity);
 REGISTER_ENTITY_FACTORY_FUNCTION(DynamicRigidBodyEntity);
+REGISTER_ENTITY_FACTORY_FUNCTION(StaticTriggerVolumeEntity);
 REGISTER_ENTITY_FACTORY_FUNCTION(SpriteEntity);
 REGISTER_ENTITY_FACTORY_FUNCTION(TextEntity);
 REGISTER_ENTITY_FACTORY_FUNCTION(FreeMoveTargetEntity);
@@ -67,6 +68,9 @@ StaticRigidBodyEntity::StaticRigidBodyEntity(std::type_index inTypeIndex, GameEn
 
 DynamicRigidBodyEntity::DynamicRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, DynamicRigidBodyEntity::Setup const& inSetup)
 	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material), mIsKinematic(inSetup.IsKinematic) {}
+
+StaticTriggerVolumeEntity::StaticTriggerVolumeEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
+	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape) {}
 
 SpriteEntity::SpriteEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, SpriteEntity::Setup const& inSetup)
 	: GameEntity(inTypeIndex, inParentEntity), mScreenPosition(inSetup.ScreenPosition), mScreenSize(inSetup.ScreenSize), mAnchor(inSetup.Anchor),
