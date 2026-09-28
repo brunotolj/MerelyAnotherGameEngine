@@ -54,3 +54,49 @@ struct Property<BallSpawnerEntity::Setup> : public PropertyNode
 		inOutContainer.AddProperty(BallSpawnerEntity::Setup, Variance);
 	}
 };
+
+class PlayerScoreEntity : public ChildGameEntity<TextEntity>
+{
+public:
+	struct Setup : public GameEntitySetup
+	{
+		u32 PlayerIndex = mage::InvalidIndex;
+	};
+
+	PlayerScoreEntity(Setup const& inSetup);
+
+	u32 mPlayerIndex;
+	u32 mScore = 0;
+};
+
+template<>
+struct Property<PlayerScoreEntity::Setup> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(PlayerScoreEntity::Setup, PlayerIndex);
+	}
+};
+
+class PlayerTriggerTrackerEntity : public ChildGameEntity<StaticTriggerVolumeEntity>
+{
+public:
+	struct Setup : public GameEntitySetup
+	{
+		u32 PlayerIndex = mage::InvalidIndex;
+	};
+
+	PlayerTriggerTrackerEntity(Setup const& inSetup);
+
+	u32 mPlayerIndex;
+	mage::Array<mage::String> mProcessedOverlaps;
+};
+
+template<>
+struct Property<PlayerTriggerTrackerEntity::Setup> : public PropertyNode
+{
+	static void GetChildProperties(PropertyTree& inOutContainer)
+	{
+		inOutContainer.AddProperty(PlayerTriggerTrackerEntity::Setup, PlayerIndex);
+	}
+};

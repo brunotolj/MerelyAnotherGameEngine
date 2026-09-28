@@ -2,18 +2,20 @@
 #include "Game/GameplayEntities.h"
 #include "Game/GameplaySystem.h"
 
-REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(GameplaySystem);
+REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(CapsuleMoveSystem);
+REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(BallSpawnerSystem);
+REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(GameScoreSystem);
 
-GameplaySystem::GameplaySystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
+CapsuleMoveSystem::CapsuleMoveSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
 {
 }
 
-void GameplaySystem::GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const
+void CapsuleMoveSystem::GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const
 {
 	outTypes.AddConstruct(typeid(CapsuleMoverEntity));
 }
 
-void GameplaySystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
+void CapsuleMoveSystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
 {
 	if (inType == typeid(CapsuleMoverEntity))
 	{
@@ -28,7 +30,7 @@ void GameplaySystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const
 	}
 }
 
-void GameplaySystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inType)
+void CapsuleMoveSystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inType)
 {
 	if (inType == typeid(CapsuleMoverEntity))
 	{
@@ -40,18 +42,8 @@ void GameplaySystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inT
 	}
 }
 
-void GameplaySystem::Update(f32 inDeltaTime)
+void CapsuleMoveSystem::Update(f32 inDeltaTime)
 {
-	if (BallSpawnInterval > 0.0f)
-	{
-		mBallSpawnTime += inDeltaTime;
-		while (mBallSpawnTime > BallSpawnInterval)
-		{
-			mBallSpawnTime -= BallSpawnInterval;
-			SpawnBall();
-		}
-	}
-
 	for (CapsuleMoverEntity* capsuleMoverEntity : mWorld.GetEntities<CapsuleMoverEntity>())
 	{
 		f32 input = 0.0f;
@@ -117,7 +109,24 @@ void GameplaySystem::Update(f32 inDeltaTime)
 	}
 }
 
-void GameplaySystem::SpawnBall()
+BallSpawnerSystem::BallSpawnerSystem(GameWorld& inWorld) : GameSystemWithPrerequisites(inWorld)
+{
+}
+
+void BallSpawnerSystem::Update(f32 inDeltaTime)
+{
+	if (SpawnInterval > 0.0f)
+	{
+		mBallSpawnTime += inDeltaTime;
+		while (mBallSpawnTime > SpawnInterval)
+		{
+			mBallSpawnTime -= SpawnInterval;
+			SpawnBall();
+		}
+	}
+}
+
+void BallSpawnerSystem::SpawnBall()
 {
 	mage::Array<BallSpawnerEntity*> const& ballSpawners = mWorld.GetEntities<BallSpawnerEntity>();
 	if (ballSpawners.GetSize() == 0)
@@ -141,9 +150,76 @@ void GameplaySystem::SpawnBall()
 	TransformEntity::Setup transformSetup{ .Position = transform.Position, .RotationAxis = axis, .RotationAngle = angle };
 	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>("", nullptr, transformSetup);
 
-	DynamicRigidBodyEntity::Setup rigidBodySetup{ .Shape = BallPhysicsShape, .Material = BallPhysicsMaterial, .LinearVelocity = velocityTransformed };
-	mWorld.CreateEntity<DynamicRigidBodyEntity>("", transformEntity, rigidBodySetup);
+	mage::String name = "Ball_";
+	name.Append(mage::String().FromNumber(BallCounter++));
 
-	StaticMeshEntity::Setup staticMeshSetup{ .Mesh = BallMesh, .Texture = BallTexture };
+	DynamicRigidBodyEntity::Setup rigidBodySetup{ .Shape = PhysicsShape, .Material = PhysicsMaterial, .LinearVelocity = velocityTransformed };
+	mWorld.CreateEntity<DynamicRigidBodyEntity>(name, transformEntity, rigidBodySetup);
+
+	StaticMeshEntity::Setup staticMeshSetup{ .Mesh = Mesh, .Texture = Texture };
 	mWorld.CreateEntity<StaticMeshEntity>("", transformEntity, staticMeshSetup);
+}
+
+GameScoreSystem::GameScoreSystem(GameWorld& inWorld) : GameSystem(inWorld)
+{
+}
+
+void GameScoreSystem::GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const
+{
+	outTypes.AddConstruct(typeid(PlayerScoreEntity));
+}
+
+void GameScoreSystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
+{
+	if (inType == typeid(PlayerScoreEntity))
+	{
+		PlayerScoreEntity* entity = (PlayerScoreEntity*)(inEntity);
+		PlayerScoreEntity::Setup const* setup = (PlayerScoreEntity::Setup const*)(inSetup);
+
+		entity->mScore = InitialScore;
+		entity->GetParentEntity().mText.FromNumber(InitialScore);
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
+void GameScoreSystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inType)
+{
+	if (inType == typeid(PlayerScoreEntity))
+	{
+		PlayerScoreEntity* entity = (PlayerScoreEntity*)(inEntity);
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
+void GameScoreSystem::Update(f32 inDeltaTime)
+{
+	u32 newOverlapCount[4]{};
+
+	for (PlayerTriggerTrackerEntity* triggerTracker : mWorld.GetEntities<PlayerTriggerTrackerEntity>())
+	{
+		if (triggerTracker->mPlayerIndex >= 4) continue;
+
+		for (DynamicRigidBodyEntity* overlappedBody : triggerTracker->GetParentEntity().mOverlaps)
+		{
+			if (triggerTracker->mProcessedOverlaps.Contains(overlappedBody->mName))
+				continue;
+
+			triggerTracker->mProcessedOverlaps.Add(overlappedBody->mName);
+			newOverlapCount[triggerTracker->mPlayerIndex]++;
+		}
+	}
+
+	for (PlayerScoreEntity* scoreEntity : mWorld.GetEntities<PlayerScoreEntity>())
+	{
+		if (scoreEntity->mPlayerIndex >= 4) continue;
+
+		scoreEntity->mScore -= std::min(scoreEntity->mScore, newOverlapCount[scoreEntity->mPlayerIndex]);
+		scoreEntity->GetParentEntity().mText.FromNumber(scoreEntity->mScore);
+	}
 }
