@@ -110,13 +110,13 @@ DynamicRigidBodyEntity::~DynamicRigidBodyEntity()
 }
 
 SpriteEntity::SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, SpriteEntity::Setup const& inSetup)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity), mScreenCoordsMin(inSetup.ScreenCoordsMin), mScreenCoordsMax(inSetup.ScreenCoordsMax),
+	: GameEntity(inWorld, inTypeIndex, inParentEntity), mScreenPosition(inSetup.ScreenPosition), mScreenSize(inSetup.ScreenSize), mAnchor(inSetup.Anchor),
 	mTextureCoordsMin(inSetup.TextureCoordsMin), mTextureCoordsMax(inSetup.TextureCoordsMax), mTexture(inSetup.Texture)
 {
 }
 
 TextEntity::TextEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, TextEntity::Setup const& inSetup)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity), mText(inSetup.Text), mColor(inSetup.Color),
-	mScreenPosition(inSetup.ScreenPosition), mScale(inSetup.Scale), mFont(inSetup.Font)
+	: GameEntity(inWorld, inTypeIndex, inParentEntity), mText(inSetup.Text), mColor(inSetup.Color), mScreenPosition(inSetup.ScreenPosition),
+	mJustification(inSetup.Justification), mScale(inSetup.Scale), mFont(inSetup.Font)
 {
 }

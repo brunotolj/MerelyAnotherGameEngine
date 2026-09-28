@@ -20,7 +20,6 @@ Components
 {
 	TransformTree
 	Renderer
-	FreeMoveSystem { Speed=10 }
 	GameplaySystem { HalfSpan=10 MaxSpeed=80 Acceleration=80 Deceleration=150 BallSpawnInterval=2 BallPhysicsShape=:BallCollision BallPhysicsMaterial=:BallMaterial BallMesh=:BallMesh BallTexture=Textures/ball.png }
 	PhysicsSystem
 	WorldBoundsSystem { BoundsMin.x=-10000 BoundsMax.x=10000 BoundsMin.y=-10000 BoundsMax.y=10000 BoundsMin.z=-10 BoundsMax.z=10000 }
@@ -31,12 +30,19 @@ Components
 
 Entities
 {
-	SpriteEntity { ScreenCoordsMin.x=50 ScreenCoordsMin.y=50 ScreenCoordsMax.x=150 ScreenCoordsMax.y=150 Texture=Textures/default.png }
-	TextEntity { Text="Merely Another Game Engine" Color.r=1.0 Color.g=0.5 Color.b=0.0 ScreenPosition.x=180 ScreenPosition.y=90 Scale=40 Font=Fonts/ArianaVioleta-dz2K.ttf }
-	TextEntity { Text=M.A.G.E Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=180 ScreenPosition.y=140 Scale=40 Font=Fonts/Orbitron-Regular.ttf }
+	SpriteEntity { ScreenPosition.x=130 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
+	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=130 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	
+	SpriteEntity { ScreenPosition.x=430 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
+	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=430 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	
+	SpriteEntity { ScreenPosition.x=1490 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
+	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1490 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 
-	TransformEntity { Position.y=-30 Position.z=10 }
-	> FreeMoveTargetEntity
+	SpriteEntity { ScreenPosition.x=1790 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
+	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1790 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+
+	TransformEntity { Position.y=-26 Position.z=25 RotationAxis.x=1 RotationAngle=50 }
 	> CameraEntity
 
 	TransformEntity { }

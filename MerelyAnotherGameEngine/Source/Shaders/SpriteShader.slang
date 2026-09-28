@@ -32,7 +32,7 @@ VSOutput vertMain(VSInput input)
     VSOutput output;
 
     float2 localCoords = float2(fmod(input.Index, 2.0), floor(input.Index / 2.0));
-    float2 screenCoords = push.ScreenCoords.xy + localCoords * push.ScreenCoords.zw;
+    float2 screenCoords = (1.0 - localCoords) * push.ScreenCoords.xy + localCoords * push.ScreenCoords.zw;
 
     output.Position.xy = push.UniformBuffer->ScreenTransform.xy + screenCoords * push.UniformBuffer->ScreenTransform.zw;
     output.Position.z = 0.0;

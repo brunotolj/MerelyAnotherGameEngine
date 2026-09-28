@@ -34,8 +34,9 @@ void SpriteRenderSystem::Update(f32 inDeltaTime)
 	for (SpriteEntity* spriteEntity : mWorld.GetEntities<SpriteEntity>())
 	{
 		spriteData.AddConstruct(
-			spriteEntity->mScreenCoordsMin,
-			spriteEntity->mScreenCoordsMax,
+			spriteEntity->mScreenPosition,
+			spriteEntity->mScreenSize,
+			spriteEntity->mAnchor,
 			spriteEntity->mTextureCoordsMin,
 			spriteEntity->mTextureCoordsMax,
 			spriteEntity->mTexture);
@@ -69,10 +70,10 @@ void SpriteRenderSystem::RenderSprites(Vulkan::RenderFrameData const& frameData,
 			PushConstantData push;
 
 			push.ScreenCoords = {
-				spriteData.ScreenCoordsMin.x,
-				spriteData.ScreenCoordsMin.y,
-				spriteData.ScreenCoordsMax.x - spriteData.ScreenCoordsMin.x,
-				spriteData.ScreenCoordsMax.y - spriteData.ScreenCoordsMin.y };
+				spriteData.ScreenPosition.x - 0.5f * spriteData.ScreenSize.x * (spriteData.Anchor.x + 1.0f),
+				spriteData.ScreenPosition.y - 0.5f * spriteData.ScreenSize.y * (spriteData.Anchor.y + 1.0f),
+				spriteData.ScreenPosition.x - 0.5f * spriteData.ScreenSize.x * (spriteData.Anchor.x - 1.0f),
+				spriteData.ScreenPosition.y - 0.5f * spriteData.ScreenSize.y * (spriteData.Anchor.y - 1.0f) };
 
 			push.TextureCoords = {
 				spriteData.TextureCoordsMin.x,

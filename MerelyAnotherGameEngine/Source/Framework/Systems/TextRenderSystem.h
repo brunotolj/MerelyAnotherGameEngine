@@ -16,6 +16,7 @@ struct TextRenderData
 	mage::StringView Text;
 	glm::vec4 Color;
 	glm::vec2 ScreenPosition;
+	f32 Justification;
 	f32 Scale;
 	AssetHandle<Font> Font;
 };

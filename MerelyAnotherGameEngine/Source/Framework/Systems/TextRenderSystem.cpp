@@ -20,6 +20,7 @@ void TextRenderSystem::Update(f32 inDeltaTime)
 			textEntity->mText,
 			textEntity->mColor,
 			textEntity->mScreenPosition,
+			textEntity->mJustification,
 			textEntity->mScale,
 			textEntity->mFont);
 	}
@@ -43,8 +44,15 @@ void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage
 			continue;
 
 		cstr text = textData.Text.GetCString();
-		glm::vec2 position = textData.ScreenPosition;
-		f32 scale = textData.Scale / font->GetUnitsPerEm();
+
+		struct LineData
+		{
+			mage::Array<Font::GlyphData const*> Glyphs;
+			f32 TotalAdvance = 0.0f;
+		};
+
+		mage::Array<LineData> lines;
+		lines.AddDefault();
 
 		while (*text)
 		{
@@ -52,42 +60,57 @@ void TextRenderSystem::RenderText(Vulkan::RenderFrameData const& frameData, mage
 
 			if (glyph == '\n')
 			{
-				position.x = textData.ScreenPosition.x;
-				position.y += 1.25f * textData.Scale;
+				lines.AddDefault();
 				continue;
 			}
 
 			Font::GlyphData const& glyphData = font->GetGlyphData(glyph);
 
-			if (glyphData.Contours.GetSize() > 0)
+			lines.GetLast().Glyphs.Add(&glyphData);
+			lines.GetLast().TotalAdvance += f32(glyphData.AdvanceWidth);
+		}
+
+		glm::vec2 position = textData.ScreenPosition;
+		f32 scale = textData.Scale / font->GetUnitsPerEm();
+
+		for (LineData const& line : lines)
+		{
+			position.x = textData.ScreenPosition.x - scale * line.TotalAdvance * 0.5f * (1.0f + textData.Justification);
+
+			for (Font::GlyphData const* glyph : line.Glyphs)
 			{
-				glm::vec2 offset = { f32(glyphData.LeftSideBearing), -glyphData.MinCoords.y };
-
+				if (glyph->Contours.GetSize() > 0)
 				{
-					PushConstantData push;
-					push.Color = textData.Color;
-					push.Curves = font->GetGlyphBufferDeviceAddress() + glyphData.BufferOffset;
-					push.CurveCount = glyphData.TotalCurveCount;
-					push.ScreenPos = (position + scale * offset) * (2.0f / extent) - 1.0f;
-					push.ScreenSize = 2.0f * scale * (glyphData.MaxCoords - glyphData.MinCoords) / extent;
-					push.GlyphBoundsMin = glyphData.MinCoords;
-					push.GlyphBoundsMax = glyphData.MaxCoords;
+					glm::vec2 offset = { f32(glyph->LeftSideBearing), -glyph->MinCoords.y };
 
-					vk::PushConstantsInfo pushInfo
 					{
-						.stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-						.offset = 0,
-						.size = sizeof(PushConstantData),
-						.pValues = &push
-					};
+						PushConstantData push;
+						push.Color = textData.Color;
+						push.Curves = font->GetGlyphBufferDeviceAddress() + glyph->BufferOffset;
+						push.CurveCount = glyph->TotalCurveCount;
+						push.ScreenPos = (position + scale * offset) * (2.0f / extent) - 1.0f;
+						push.ScreenSize = 2.0f * scale * (glyph->MaxCoords - glyph->MinCoords) / extent;
+						push.GlyphBoundsMin = glyph->MinCoords;
+						push.GlyphBoundsMax = glyph->MaxCoords;
 
-					mPipeline.PushConstants(frameData.CommandBuffer, pushInfo);
+						vk::PushConstantsInfo pushInfo
+						{
+							.stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+							.offset = 0,
+							.size = sizeof(PushConstantData),
+							.pValues = &push
+						};
+
+						mPipeline.PushConstants(frameData.CommandBuffer, pushInfo);
+					}
+
+					frameData.CommandBuffer.draw(4, 1, 0, 0);
 				}
 
-				frameData.CommandBuffer.draw(4, 1, 0, 0);
+				position.x += scale * f32(glyph->AdvanceWidth);
 			}
 
-			position.x += scale * f32(glyphData.AdvanceWidth);
+			position.y += 1.25f * textData.Scale;
 		}
 	}
 }

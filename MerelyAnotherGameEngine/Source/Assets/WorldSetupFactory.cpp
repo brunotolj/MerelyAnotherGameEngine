@@ -11,15 +11,29 @@ AssetHandle<WorldSetup> Factory<WorldSetup>::FromFile(mage::StringView inPath)
 		outToken.Empty();
 
 		bool includeSpaces = false;
+		bool escape = false;
 
 		while (true)
 		{
-			if (*reader == '\"') { includeSpaces = !includeSpaces; ++reader; continue; }
+			if (escape)
+			{
+				escape = false;
+				if (*reader == '\"') { outToken += '\"'; ++reader; continue; }
+				if (*reader == '\\') { outToken += '\\'; ++reader; continue; }
+				if (*reader == 'n') { outToken += '\n'; ++reader; continue; }
+			}
+			else
+			{
+				if (*reader == '\"') { includeSpaces = !includeSpaces; ++reader; continue; }
+				if (*reader == '\\') { escape = true; ++reader; continue; }
+			}
+
 			if (*reader == ' ' && !includeSpaces) break;
-			if (*reader == '\t') break;
+			if (*reader == '\t' && !includeSpaces) break;
 			if (*reader == '\n') break;
 			if (*reader == '\r') break;
 			if (*reader == '\0') break;
+			
 			outToken += *(reader++);
 		}
 	};

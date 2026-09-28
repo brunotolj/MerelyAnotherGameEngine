@@ -177,8 +177,9 @@ class SpriteEntity : public GameEntity
 public:
 	struct Setup : public GameEntitySetup
 	{
-		glm::vec2 ScreenCoordsMin{ 0.0f, 0.0f };
-		glm::vec2 ScreenCoordsMax{ 100.0f, 100.0f };
+		glm::vec2 ScreenPosition{ 0.0f, 0.0f };
+		glm::vec2 ScreenSize{ 100.0f, 100.0f };
+		glm::vec2 Anchor{ 0.0f, 0.0f };
 		glm::vec2 TextureCoordsMin{ 0.0f, 0.0f };
 		glm::vec2 TextureCoordsMax{ 1.0f, 1.0f };
 		AssetHandle<Texture> Texture = nullptr;
@@ -186,8 +187,9 @@ public:
 
 	SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
-	glm::vec2 mScreenCoordsMin;
-	glm::vec2 mScreenCoordsMax;
+	glm::vec2 mScreenPosition;
+	glm::vec2 mScreenSize;
+	glm::vec2 mAnchor;
 	glm::vec2 mTextureCoordsMin;
 	glm::vec2 mTextureCoordsMax;
 	AssetHandle<Texture> mTexture;
@@ -198,8 +200,9 @@ struct Property<SpriteEntity::Setup> : public PropertyNode
 {
 	static void GetChildProperties(PropertyTree& inOutContainer)
 	{
-		inOutContainer.AddProperty(SpriteEntity::Setup, ScreenCoordsMin);
-		inOutContainer.AddProperty(SpriteEntity::Setup, ScreenCoordsMax);
+		inOutContainer.AddProperty(SpriteEntity::Setup, ScreenPosition);
+		inOutContainer.AddProperty(SpriteEntity::Setup, ScreenSize);
+		inOutContainer.AddProperty(SpriteEntity::Setup, Anchor);
 		inOutContainer.AddProperty(SpriteEntity::Setup, TextureCoordsMin);
 		inOutContainer.AddProperty(SpriteEntity::Setup, TextureCoordsMax);
 		inOutContainer.AddProperty(SpriteEntity::Setup, Texture);
@@ -214,6 +217,7 @@ public:
 		mage::String Text;
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec2 ScreenPosition{ 0.0f, 0.0f };
+		f32 Justification = 0.0f;
 		f32 Scale = 1.0f;
 		AssetHandle<Font> Font = nullptr;
 	};
@@ -223,6 +227,7 @@ public:
 	mage::String mText;
 	glm::vec4 mColor;
 	glm::vec2 mScreenPosition;
+	f32 mJustification;
 	f32 mScale;
 	AssetHandle<Font> mFont;
 };
@@ -235,6 +240,7 @@ struct Property<TextEntity::Setup> : public PropertyNode
 		inOutContainer.AddProperty(TextEntity::Setup, Text);
 		inOutContainer.AddProperty(TextEntity::Setup, Color);
 		inOutContainer.AddProperty(TextEntity::Setup, ScreenPosition);
+		inOutContainer.AddProperty(TextEntity::Setup, Justification);
 		inOutContainer.AddProperty(TextEntity::Setup, Scale);
 		inOutContainer.AddProperty(TextEntity::Setup, Font);
 	}

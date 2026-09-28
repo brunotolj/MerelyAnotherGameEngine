@@ -18,8 +18,9 @@ struct SpriteUBO
 
 struct SpriteRenderData
 {
-	glm::vec2 ScreenCoordsMin;
-	glm::vec2 ScreenCoordsMax;
+	glm::vec2 ScreenPosition;
+	glm::vec2 ScreenSize;
+	glm::vec2 Anchor;
 	glm::vec2 TextureCoordsMin;
 	glm::vec2 TextureCoordsMax;
 	AssetHandle<Texture> Texture;
