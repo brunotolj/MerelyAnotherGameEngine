@@ -15,20 +15,25 @@ public:
 
 	void Update(f32 inDeltaTime);
 
-	template <WorldComponentType ComponentClass>
-	ComponentClass* CreateComponent(PropertyValueMap const& inProperties)
+	template <WorldComponentType Type>
+	Type* CreateComponent(PropertyValueMap const& inProperties)
 	{
-		if (GetComponent<ComponentClass>()) return nullptr;
-		if (ComponentClass::CheckPrerequisites(*this) == false) return nullptr;
+		if (GetComponent<Type>()) return nullptr;
+		if (Type::CheckPrerequisites(*this) == false) return nullptr;
 
-		ComponentClass* component = new ComponentClass(*this);
+		Type* component = new Type(*this);
 		PropertyTree(*component).ApplyPropertyValues(inProperties);
 
-		mComponentByClass[typeid(ComponentClass)] = component;
+		mage::Array<std::type_index> callbackTypes;
+		component->GetEntityCallbackTypes(callbackTypes);
+		for (std::type_index callbackType : callbackTypes)
+			mEntityCallbacks[callbackType].Add(component);
 
-		if constexpr (std::is_base_of<GameUtility, ComponentClass>::value)
+		mComponentByClass[typeid(Type)] = component;
+
+		if constexpr (std::is_base_of<GameUtility, Type>::value)
 			mUtilities.Add(component);
-		else if constexpr (std::is_base_of<GameSystem, ComponentClass>::value)
+		else if constexpr (std::is_base_of<GameSystem, Type>::value)
 			mSystems.Add(component);
 		else
 			static_assert(false, "Component is neither a GameUtility or GameSystem");
@@ -36,36 +41,42 @@ public:
 		return component;
 	}
 
-	template <WorldComponentType ComponentClass>
-	ComponentClass* GetComponent()
+	template <WorldComponentType Type>
+	Type* GetComponent()
 	{
-		auto component = mComponentByClass.find(typeid(ComponentClass));
+		auto component = mComponentByClass.find(typeid(Type));
 		if (component == mComponentByClass.end())
 			return nullptr;
 
-		return (ComponentClass*)(component->second);
+		return (Type*)(component->second);
 	}
 
-	template <EntityType EntityClass, typename... Args>
-	EntityClass* CreateEntity(GameEntity* inParentEntity, EntityClass::Setup const& inSetup)
+	template <EntityType Type, typename... Args>
+	Type* CreateEntity(GameEntity* inParentEntity, Type::Setup const& inSetup)
 	{
-		if (EntityClass::IsParentEntityValid(inParentEntity) == false)
+		if (Type::IsParentEntityValid(inParentEntity) == false)
 			return nullptr;
 
-		EntityClass* entity = new EntityClass(*this, typeid(EntityClass), inParentEntity, inSetup);
+		Type* entity = new Type(typeid(Type), inParentEntity, inSetup);
+
 		mEntities.Add(entity);
 		mEntitiesByClass[entity->mTypeIndex].Add(entity);
+
+		if (mEntityCallbacks.contains(typeid(Type)))
+			for (GameWorldComponent* component : mEntityCallbacks.at(typeid(Type)))
+				component->OnEntityCreated(entity, &inSetup, typeid(Type));
+
 		return entity;
 	}
 
 	mage::Array<GameEntity*> const& GetEntities() const { return mEntities; }
 
-	template <EntityType EntityClass>
-	mage::Array<EntityClass*> const& GetEntities() const
+	template <EntityType Type>
+	mage::Array<Type*> const& GetEntities() const
 	{
-		static mage::Array<EntityClass*> dummy;
-		if (mEntitiesByClass.contains(typeid(EntityClass)) == false) return dummy;
-		return (mage::Array<EntityClass*> const&)(mEntitiesByClass.at(typeid(EntityClass)));
+		static mage::Array<Type*> dummy;
+		if (mEntitiesByClass.contains(typeid(Type)) == false) return dummy;
+		return (mage::Array<Type*> const&)(mEntitiesByClass.at(typeid(Type)));
 	}
 
 private:
@@ -77,6 +88,8 @@ private:
 
 	mage::Array<GameEntity*> mEntities;
 	std::unordered_map<std::type_index, mage::Array<GameEntity*>> mEntitiesByClass;
+
+	std::unordered_map<std::type_index, mage::Array<GameWorldComponent*>> mEntityCallbacks;
 };
 
 template <WorldComponentType Prerequisite>

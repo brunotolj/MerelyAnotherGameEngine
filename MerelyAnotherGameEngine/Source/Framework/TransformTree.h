@@ -27,6 +27,11 @@ public:
 	TransformTree(GameWorld& inWorld) : GameUtility(inWorld) {}
 	virtual ~TransformTree() {}
 
+	virtual void GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const override;
+
+	virtual void OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType) override;
+	virtual void OnEntityDestroyed(GameEntity* inEntity, std::type_index inType) override;
+
 	TransformTreeEntryId AddEntry(mage::Transform inInitialTransform = mage::Transform(), TransformTreeEntryId inParentId = mage::InvalidIndex);
 	bool RemoveEntry(TransformTreeEntryId inEntryId);
 

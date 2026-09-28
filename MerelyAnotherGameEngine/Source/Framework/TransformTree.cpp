@@ -3,6 +3,41 @@
 
 REGISTER_WORLD_COMPONENT_FACTORY_FUNCTION(TransformTree);
 
+void TransformTree::GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const
+{
+	outTypes.AddConstruct(typeid(TransformEntity));
+}
+
+void TransformTree::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
+{
+	if (inType == typeid(TransformEntity))
+	{
+		TransformEntity* entity = (TransformEntity*)(inEntity);
+		TransformEntity::Setup const* setup = (TransformEntity::Setup const*)(inSetup);
+
+		entity->mTransformId = AddEntry({ setup->Position, mage::Rotor(setup->RotationAxis, glm::radians(setup->RotationAngle)) }, setup->TransformParentId);
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
+void TransformTree::OnEntityDestroyed(GameEntity* inEntity, std::type_index inType)
+{
+	if (inType == typeid(TransformEntity))
+	{
+		TransformEntity* entity = (TransformEntity*)(inEntity);
+
+		RemoveEntry(entity->mTransformId);
+		entity->mTransformId = mage::InvalidIndex;
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
 TransformTreeEntryId TransformTree::AddEntry(mage::Transform inInitialTransform, TransformTreeEntryId inParentId)
 {
 	TransformTreeEntryId newEntryId = mEntries.AddDefault();

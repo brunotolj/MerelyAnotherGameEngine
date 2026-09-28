@@ -11,9 +11,7 @@ public:
 		i32 InputCodePositive;
 	};
 
-	CapsuleMoverEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
-
-	void SetTransformId(TransformTreeEntryId inTransformId);
+	CapsuleMoverEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	mage::Transform mOriginalTransform;
 	f32 mPosition = 0.0f;
@@ -41,7 +39,7 @@ public:
 		glm::vec3 Variance{ 0.0f, 0.0f, 0.0f };
 	};
 
-	BallSpawnerEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	BallSpawnerEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	glm::vec3 mSpawnVelocity;
 	glm::vec3 mSpawnVelocityVariance;

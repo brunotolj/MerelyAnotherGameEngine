@@ -8,6 +8,38 @@ GameplaySystem::GameplaySystem(GameWorld& inWorld) : GameSystemWithPrerequisites
 {
 }
 
+void GameplaySystem::GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const
+{
+	outTypes.AddConstruct(typeid(CapsuleMoverEntity));
+}
+
+void GameplaySystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
+{
+	if (inType == typeid(CapsuleMoverEntity))
+	{
+		CapsuleMoverEntity* entity = (CapsuleMoverEntity*)(inEntity);
+		CapsuleMoverEntity::Setup const* setup = (CapsuleMoverEntity::Setup const*)(inSetup);
+
+		entity->mOriginalTransform = Get<TransformTree>().GetGlobalTransform(entity->GetParentEntity().mTransformId);
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
+void GameplaySystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inType)
+{
+	if (inType == typeid(CapsuleMoverEntity))
+	{
+		CapsuleMoverEntity* entity = (CapsuleMoverEntity*)(inEntity);
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
 void GameplaySystem::Update(f32 inDeltaTime)
 {
 	if (BallSpawnInterval > 0.0f)
@@ -80,7 +112,7 @@ void GameplaySystem::Update(f32 inDeltaTime)
 		}
 
 		mage::Transform transform = capsuleMoverEntity->mOriginalTransform;
-		transform.Position += capsuleMoverEntity->mPosition * capsuleMoverEntity->mOriginalTransform.Rotation.Rotate({ 0.0f, -1.0f, 0.0f });
+		transform.Position += capsuleMoverEntity->mPosition * transform.Rotation.Rotate({ 0.0f, -1.0f, 0.0f });
 		Get<TransformTree>().SetGlobalTransform(capsuleMoverEntity->GetParentEntity().mTransformId, transform);
 	}
 }
@@ -102,7 +134,11 @@ void GameplaySystem::SpawnBall()
 	mage::Transform const& transform = Get<TransformTree>().GetGlobalTransform(spawner->GetParentEntity().mTransformId);
 	glm::vec3 velocityTransformed = transform.Rotation.Rotate(velocity);
 
-	TransformEntity::Setup transformSetup{ .InitialTransform = transform };
+	glm::vec3 axis;
+	f32 angle;
+	transform.Rotation.GetAxisAndAngle(axis, angle);
+
+	TransformEntity::Setup transformSetup{ .Position = transform.Position, .RotationAxis = axis, .RotationAngle = angle };
 	TransformEntity* transformEntity = mWorld.CreateEntity<TransformEntity>(nullptr, transformSetup);
 
 	DynamicRigidBodyEntity::Setup rigidBodySetup{ .Shape = BallPhysicsShape, .Material = BallPhysicsMaterial, .LinearVelocity = velocityTransformed };

@@ -33,11 +33,11 @@ Entities
 	SpriteEntity { ScreenPosition.x=130 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
 	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=130 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 	
-	SpriteEntity { ScreenPosition.x=430 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
-	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=430 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	SpriteEntity { ScreenPosition.x=350 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
+	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=350 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 	
-	SpriteEntity { ScreenPosition.x=1490 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
-	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1490 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
+	SpriteEntity { ScreenPosition.x=1570 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
+	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1570 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }
 
 	SpriteEntity { ScreenPosition.x=1790 ScreenPosition.y=110 ScreenSize.x=140 ScreenSize.y=140 Texture=Textures/default.png }
 	> TextEntity { Text=15 Color.r=0.5 Color.g=1.0 Color.b=1.0 ScreenPosition.x=1790 ScreenPosition.y=250 Scale=60 Font=Fonts/Orbitron-Regular.ttf }

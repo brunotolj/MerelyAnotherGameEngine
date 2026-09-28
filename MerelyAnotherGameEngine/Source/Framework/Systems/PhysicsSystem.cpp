@@ -14,6 +14,57 @@ PhysicsSystem::~PhysicsSystem()
 	PX_RELEASE(mScene);
 }
 
+void PhysicsSystem::GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const
+{
+	outTypes.AddConstruct(typeid(StaticRigidBodyEntity));
+	outTypes.AddConstruct(typeid(DynamicRigidBodyEntity));
+}
+
+void PhysicsSystem::OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType)
+{
+	if (inType == typeid(StaticRigidBodyEntity))
+	{
+		StaticRigidBodyEntity* entity = (StaticRigidBodyEntity*)(inEntity);
+		StaticRigidBodyEntity::Setup const* setup = (StaticRigidBodyEntity::Setup const*)(inSetup);
+
+		entity->mPhysicsActor = CreateStaticRigidBody(entity->GetParentEntity().mTransformId, setup->Shape, setup->Material);
+	}
+	else if (inType == typeid(DynamicRigidBodyEntity))
+	{
+		DynamicRigidBodyEntity* entity = (DynamicRigidBodyEntity*)(inEntity);
+		DynamicRigidBodyEntity::Setup const* setup = (DynamicRigidBodyEntity::Setup const*)(inSetup);
+
+		entity->mPhysicsActor = CreateDynamicRigidBody(entity->GetParentEntity().mTransformId, setup->Shape,
+			setup->Material, setup->IsKinematic, setup->LinearVelocity, setup->AngularVelocity);
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
+void PhysicsSystem::OnEntityDestroyed(GameEntity* inEntity, std::type_index inType)
+{
+	if (inType == typeid(StaticRigidBodyEntity))
+	{
+		StaticRigidBodyEntity* entity = (StaticRigidBodyEntity*)(inEntity);
+
+		RemoveActor(entity->mPhysicsActor);
+		entity->mPhysicsActor = nullptr;
+	}
+	else if (inType == typeid(DynamicRigidBodyEntity))
+	{
+		DynamicRigidBodyEntity* entity = (DynamicRigidBodyEntity*)(inEntity);
+
+		RemoveActor(entity->mPhysicsActor);
+		entity->mPhysicsActor = nullptr;
+	}
+	else
+	{
+		mage_check(false);
+	}
+}
+
 void PhysicsSystem::Update(f32 inDeltaTime)
 {
 	for (DynamicRigidBodyEntity* dynamicBody : mWorld.GetEntities<DynamicRigidBodyEntity>())

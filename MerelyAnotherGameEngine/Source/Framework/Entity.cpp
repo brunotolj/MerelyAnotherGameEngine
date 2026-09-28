@@ -33,8 +33,8 @@ void GameEntity::MarkDestroyed()
 	mIsDestoryed = true;
 }
 
-GameEntity::GameEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity)
-	: mWorld(inWorld), mTypeIndex(inTypeIndex), mParentEntity(inParentEntity)
+GameEntity::GameEntity(std::type_index inTypeIndex, GameEntity* inParentEntity)
+	: mTypeIndex(inTypeIndex), mParentEntity(inParentEntity)
 {
 	if (mParentEntity)
 		mParentEntity->AddChildEntity(this);
@@ -56,67 +56,22 @@ void GameEntity::RemoveChildEntity(GameEntity* inChildEntity)
 	mChildEntities.Remove(inChildEntity);
 }
 
-TransformEntity::TransformEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, TransformEntity::Setup const& inSetup)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity)
-{
-	if (TransformTree* transformTree = mWorld.GetComponent<TransformTree>())
-	{
-		mTransformId = transformTree->AddEntry({ inSetup.Position, mage::Rotor(inSetup.RotationAxis, glm::radians(inSetup.RotationAngle)) }, inSetup.TransformParentId);
-	}
-	else
-	{
-		mTransformId = mage::InvalidIndex;
-		mage_check(false);
-	}
-}
+TransformEntity::TransformEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, TransformEntity::Setup const& inSetup)
+	: GameEntity(inTypeIndex, inParentEntity) {}
 
-TransformEntity::~TransformEntity()
-{
-	if (TransformTree* transformTree = mWorld.GetComponent<TransformTree>())
-	{
-		transformTree->RemoveEntry(mTransformId);
-		mTransformId = mage::InvalidIndex;
-	}
-}
+StaticMeshEntity::StaticMeshEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, StaticMeshEntity::Setup const& inSetup)
+	: ChildGameEntity(inTypeIndex, inParentEntity), mMesh(inSetup.Mesh), mTexture(inSetup.Texture) {}
 
-StaticMeshEntity::StaticMeshEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, StaticMeshEntity::Setup const& inSetup)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mMesh(inSetup.Mesh), mTexture(inSetup.Texture)
-{
-}
+StaticRigidBodyEntity::StaticRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, StaticRigidBodyEntity::Setup const& inSetup)
+	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material) {}
 
-StaticRigidBodyEntity::StaticRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, StaticRigidBodyEntity::Setup const& inSetup)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material)
-{
-	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateStaticRigidBody(GetParentEntity().mTransformId, mShape, mMaterial);
-}
+DynamicRigidBodyEntity::DynamicRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, DynamicRigidBodyEntity::Setup const& inSetup)
+	: ChildGameEntity(inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material), mIsKinematic(inSetup.IsKinematic) {}
 
-StaticRigidBodyEntity::~StaticRigidBodyEntity()
-{
-	mWorld.GetComponent<PhysicsSystem>()->RemoveActor(mPhysicsActor);
-	mPhysicsActor = nullptr;
-}
+SpriteEntity::SpriteEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, SpriteEntity::Setup const& inSetup)
+	: GameEntity(inTypeIndex, inParentEntity), mScreenPosition(inSetup.ScreenPosition), mScreenSize(inSetup.ScreenSize), mAnchor(inSetup.Anchor),
+	mTextureCoordsMin(inSetup.TextureCoordsMin), mTextureCoordsMax(inSetup.TextureCoordsMax), mTexture(inSetup.Texture) {}
 
-DynamicRigidBodyEntity::DynamicRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, DynamicRigidBodyEntity::Setup const& inSetup)
-	: ChildGameEntity(inWorld, inTypeIndex, inParentEntity), mShape(inSetup.Shape), mMaterial(inSetup.Material), mIsKinematic(inSetup.IsKinematic)
-{
-	mPhysicsActor = mWorld.GetComponent<PhysicsSystem>()->CreateDynamicRigidBody(
-		GetParentEntity().mTransformId, mShape, mMaterial, mIsKinematic, inSetup.LinearVelocity, inSetup.AngularVelocity);
-}
-
-DynamicRigidBodyEntity::~DynamicRigidBodyEntity()
-{
-	mWorld.GetComponent<PhysicsSystem>()->RemoveActor(mPhysicsActor);
-	mPhysicsActor = nullptr;
-}
-
-SpriteEntity::SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, SpriteEntity::Setup const& inSetup)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity), mScreenPosition(inSetup.ScreenPosition), mScreenSize(inSetup.ScreenSize), mAnchor(inSetup.Anchor),
-	mTextureCoordsMin(inSetup.TextureCoordsMin), mTextureCoordsMax(inSetup.TextureCoordsMax), mTexture(inSetup.Texture)
-{
-}
-
-TextEntity::TextEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, TextEntity::Setup const& inSetup)
-	: GameEntity(inWorld, inTypeIndex, inParentEntity), mText(inSetup.Text), mColor(inSetup.Color), mScreenPosition(inSetup.ScreenPosition),
-	mJustification(inSetup.Justification), mScale(inSetup.Scale), mFont(inSetup.Font)
-{
-}
+TextEntity::TextEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, TextEntity::Setup const& inSetup)
+	: GameEntity(inTypeIndex, inParentEntity), mText(inSetup.Text), mColor(inSetup.Color), mScreenPosition(inSetup.ScreenPosition),
+	mJustification(inSetup.Justification), mScale(inSetup.Scale), mFont(inSetup.Font) {}

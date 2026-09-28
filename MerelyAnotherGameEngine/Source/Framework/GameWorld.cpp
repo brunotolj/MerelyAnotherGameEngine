@@ -83,5 +83,9 @@ void GameWorld::DestroyEntity(GameEntity* inEntity)
 	mEntities.RemoveSwap(inEntity);
 	mEntitiesByClass.at(inEntity->mTypeIndex).RemoveSwap(inEntity);
 
+	if (mEntityCallbacks.contains(inEntity->mTypeIndex))
+		for (GameWorldComponent* component : mEntityCallbacks.at(inEntity->mTypeIndex))
+			component->OnEntityDestroyed(inEntity, inEntity->mTypeIndex);
+
 	delete inEntity;
 }

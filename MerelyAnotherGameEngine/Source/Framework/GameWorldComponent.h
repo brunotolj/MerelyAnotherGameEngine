@@ -2,7 +2,9 @@
 
 #include "Property.h"
 
+class GameEntity;
 class GameWorld;
+struct GameEntitySetup;
 
 class GameWorldComponent : public NonMovable
 {
@@ -11,6 +13,11 @@ public:
 
 	GameWorldComponent(GameWorld& inWorld) : mWorld(inWorld) {}
 	virtual ~GameWorldComponent() {}
+
+	virtual void GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const {}
+
+	virtual void OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType) {}
+	virtual void OnEntityDestroyed(GameEntity* inEntity, std::type_index inType) {}
 
 protected:
 	GameWorld& mWorld;

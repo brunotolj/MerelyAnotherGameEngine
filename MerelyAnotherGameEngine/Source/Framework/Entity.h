@@ -21,12 +21,11 @@ public:
 	mage::Array<GameEntity*> mChildEntities;
 
 protected:
-	GameEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity);
+	GameEntity(std::type_index inTypeIndex, GameEntity* inParentEntity);
 
 	void AddChildEntity(GameEntity* inChildEntity);
 	void RemoveChildEntity(GameEntity* inChildEntity);
 
-	GameWorld& mWorld;
 	GameEntity* mParentEntity;
 	bool mIsDestoryed = false;
 };
@@ -51,8 +50,8 @@ public:
 	}
 
 protected:
-	ChildGameEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity)
-		: GameEntity(inWorld, inTypeIndex, inParentEntity) {}
+	ChildGameEntity(std::type_index inTypeIndex, GameEntity* inParentEntity)
+		: GameEntity(inTypeIndex, inParentEntity) {}
 };
 
 class TransformEntity : public GameEntity
@@ -66,11 +65,9 @@ public:
 		TransformTreeEntryId TransformParentId = mage::InvalidIndex;
 	};
 
-	TransformEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	TransformEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
-	virtual ~TransformEntity();
-
-	TransformTreeEntryId mTransformId;
+	TransformTreeEntryId mTransformId = mage::InvalidIndex;
 };
 
 template <>
@@ -93,7 +90,7 @@ public:
 		AssetHandle<Texture> Texture = nullptr;
 	};
 
-	StaticMeshEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	StaticMeshEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	AssetHandle<StaticMesh> mMesh;
 	AssetHandle<Texture> mTexture;
@@ -118,9 +115,7 @@ public:
 		AssetHandle<PhysicsMaterial> Material = nullptr;
 	};
 
-	StaticRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
-
-	virtual ~StaticRigidBodyEntity();
+	StaticRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	AssetHandle<PhysicsShape> mShape;
 	AssetHandle<PhysicsMaterial> mMaterial;
@@ -149,9 +144,7 @@ public:
 		glm::vec3 AngularVelocity = glm::vec3(0.0f);
 	};
 
-	DynamicRigidBodyEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
-
-	virtual ~DynamicRigidBodyEntity();
+	DynamicRigidBodyEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	AssetHandle<PhysicsShape> mShape;
 	AssetHandle<PhysicsMaterial> mMaterial;
@@ -185,7 +178,7 @@ public:
 		AssetHandle<Texture> Texture = nullptr;
 	};
 
-	SpriteEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	SpriteEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	glm::vec2 mScreenPosition;
 	glm::vec2 mScreenSize;
@@ -222,7 +215,7 @@ public:
 		AssetHandle<Font> Font = nullptr;
 	};
 
-	TextEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
+	TextEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup);
 
 	mage::String mText;
 	glm::vec4 mColor;
@@ -251,8 +244,8 @@ class FreeMoveTargetEntity : public ChildGameEntity<TransformEntity>
 public:
 	struct Setup : public GameEntitySetup {};
 
-	FreeMoveTargetEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
-		: ChildGameEntity(inWorld, inTypeIndex, inParentEntity) {}
+	FreeMoveTargetEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
+		: ChildGameEntity(inTypeIndex, inParentEntity) {}
 };
 
 class CameraEntity : public ChildGameEntity<TransformEntity>
@@ -260,8 +253,8 @@ class CameraEntity : public ChildGameEntity<TransformEntity>
 public:
 	struct Setup : public GameEntitySetup {};
 
-	CameraEntity(GameWorld& inWorld, std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
-		: ChildGameEntity(inWorld, inTypeIndex, inParentEntity) {}
+	CameraEntity(std::type_index inTypeIndex, GameEntity* inParentEntity, Setup const& inSetup)
+		: ChildGameEntity(inTypeIndex, inParentEntity) {}
 };
 
 template <EntitySetupType Type>

@@ -27,6 +27,23 @@ namespace mage
 			ZX = factor * inAxis.y;
 		}
 
+		void GetAxisAndAngle(glm::vec3& outAxis, f32& outAngle) const
+		{
+			if (S >= 0.999f)
+			{
+				outAxis = glm::vec3(0.0f);
+				outAngle = 0.0f;
+			}
+
+			f32 halfAngle = glm::acos(S);
+			outAngle = 0.01f * std::roundf(100.0f * glm::degrees(2.0f * halfAngle));
+
+			f32 factor = 1000.0f / glm::sqrt(1.0f - S * S);
+			outAxis.x = 0.001f * std::roundf(factor * YZ);
+			outAxis.y = 0.001f * std::roundf(factor * ZX);
+			outAxis.z = 0.001f * std::roundf(factor * XY);
+		}
+
 		glm::vec3 Rotate(glm::vec3 inVector) const
 		{
 			f32 x = S * inVector.x + XY * inVector.y - ZX * inVector.z;

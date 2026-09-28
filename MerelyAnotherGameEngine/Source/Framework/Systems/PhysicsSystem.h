@@ -13,6 +13,11 @@ public:
 	PhysicsSystem(GameWorld& inWorld);
 	virtual ~PhysicsSystem();
 
+	virtual void GetEntityCallbackTypes(mage::Array<std::type_index>& outTypes) const override;
+
+	virtual void OnEntityCreated(GameEntity* inEntity, GameEntitySetup const* inSetup, std::type_index inType) override;
+	virtual void OnEntityDestroyed(GameEntity* inEntity, std::type_index inType) override;
+
 	virtual void Update(f32 inDeltaTime) override;
 
 	physx::PxRigidStatic* CreateStaticRigidBody(
